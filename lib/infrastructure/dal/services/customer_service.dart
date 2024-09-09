@@ -1,0 +1,115 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../../../domain/core/interfaces/customer_repository.dart';
+import '../../models/customer_model.dart';
+import '../database/powersync.dart';
+
+class CustomerService extends GetxService implements CustomerRepository {
+  late final customers = <CustomerModel>[].obs;
+  late final foundCustomers = <CustomerModel>[].obs;
+  late final lastCustomersId = 'CST0'.obs;
+
+  @override
+  void onInit() async {
+    super.onInit();
+  }
+
+  void search(String searchValue) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (searchValue.isEmpty) {
+        List<CustomerModel> customersList = [];
+        customersList.addAll(customers);
+        customersList.sort((a, b) => a.createdAt!.compareTo(b.createdAt!));
+        List<CustomerModel> subList = customersList.take(200).toList();
+        foundCustomers.clear();
+        foundCustomers.addAll(subList);
+        customersList.sort((a, b) {
+          int aNumber = int.parse(a.customerId!.substring(3));
+          int bNumber = int.parse(b.customerId!.substring(3));
+          return aNumber.compareTo(bNumber);
+        });
+        lastCustomersId.value =
+            customersList.isEmpty ? 'CST0' : customersList.last.customerId!;
+      } else {
+        foundCustomers.value = customers.where((customer) {
+          return customer.name
+              .toLowerCase()
+              .contains(searchValue.toLowerCase());
+        }).toList();
+      }
+    });
+  }
+
+  @override
+  Future<void> subscribe(String storeId) async {
+    try {
+      var stream = await db.watch('SELECT * FROM customers WHERE store_id = ?',
+          parameters: [
+            storeId
+          ]).map(
+          (data) => data.map((json) => CustomerModel.fromJson(json)).toList());
+
+      stream.listen((update) {
+        customers.assignAll(update);
+        search('');
+      });
+    } on PostgrestException catch (e) {
+      print(e.message);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> insert(CustomerModel customer) async {
+    await db.execute(
+      '''
+    INSERT INTO customers(
+      id, customer_id, created_at, name, phone, address, store_id
+    ) VALUES(uuid(), ?, ?, ?, ?, ?, ?)
+    ''',
+      [
+        customer.customerId,
+        customer.createdAt?.toIso8601String(),
+        customer.name,
+        customer.phone,
+        customer.address,
+        customer.storeId,
+      ],
+    );
+  }
+
+  @override
+  Future<void> update(CustomerModel customer) async {
+    await db.execute(
+      '''
+    UPDATE customers SET
+      customer_id = ?, 
+      created_at = ?, 
+      name = ?, 
+      phone = ?, 
+      address = ?, 
+      store_id = ?
+    WHERE id = ?
+    ''',
+      [
+        customer.customerId,
+        customer.createdAt?.toIso8601String(),
+        customer.name,
+        customer.phone,
+        customer.address,
+        customer.storeId,
+        customer.id,
+      ],
+    );
+  }
+
+  @override
+  Future<void> delete(String id) async {
+    await db.execute(
+      'DELETE FROM customers WHERE id = ?',
+      [id],
+    );
+  }
+}

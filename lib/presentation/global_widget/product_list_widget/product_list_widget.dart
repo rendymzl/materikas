@@ -1,0 +1,116 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:material_symbols_icons/material_symbols_icons.dart';
+
+import '../../../infrastructure/models/product_model.dart';
+import '../../../infrastructure/utils/display_format.dart';
+import '../../product/detail_product/detail_product.dart';
+import 'product_list_widget_controller.dart';
+
+class ProductListWidget extends StatelessWidget {
+  final Function(ProductModel) onClick;
+
+  const ProductListWidget({
+    super.key,
+    required this.onClick,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = Get.put(ProductListWidgetController());
+
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: const BorderRadius.all(
+                        Radius.circular(12),
+                      ),
+                    ),
+                    height: 50,
+                    child: TextField(
+                      decoration: const InputDecoration(
+                        labelText: "Cari Barang",
+                        labelStyle: TextStyle(color: Colors.grey),
+                        prefixIcon: Icon(Symbols.search),
+                        border: InputBorder.none,
+                      ),
+                      onChanged: (value) => controller.filterProducts(value),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 20),
+                Container(
+                  height: 48,
+                  width: 48,
+                  decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primary,
+                      borderRadius: const BorderRadius.all(Radius.circular(5))),
+                  child: IconButton(
+                    onPressed: () => detailProduct(),
+                    icon: const Icon(
+                      Symbols.add,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: Obx(
+              () => ListView.builder(
+                itemCount: controller.foundProducts.length,
+                itemBuilder: (BuildContext context, int index) {
+                  final foundProduct = controller.foundProducts[index];
+                  double getPrice =
+                      foundProduct.getPrice(controller.priceType.value).value;
+                  double sellPrice = getPrice.toInt() != 0
+                      ? getPrice
+                      : foundProduct.sellPrice1.value;
+                  return Container(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    decoration: BoxDecoration(
+                      border: Border.symmetric(
+                        horizontal: BorderSide(color: Colors.grey[200]!),
+                      ),
+                    ),
+                    child: ListTile(
+                        leading: SizedBox(
+                          width: 80,
+                          child: Obx(
+                            () => Text(
+                              '${number.format(foundProduct.stock.value)} ${foundProduct.unit}',
+                              style: context.textTheme.bodySmall,
+                            ),
+                          ),
+                        ),
+                        title: Text(
+                          foundProduct.productName,
+                          style: context.textTheme.titleLarge,
+                        ),
+                        trailing: Text(
+                          'Rp ${currency.format(sellPrice)}',
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                        onTap: () => onClick(foundProduct)),
+                  );
+                },
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
+      ),
+    );
+  }
+}
