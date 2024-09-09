@@ -36,7 +36,7 @@ class CustomerList extends StatelessWidget {
               onChanged: (value) => controller.filterCustomers(value),
             ),
           ),
-          TableHeader(), //* TableHeader
+          const TableHeader(), //* TableHeader
           Divider(color: Colors.grey[500]),
           Expanded(
             child: Obx(
@@ -129,7 +129,7 @@ class TableContent extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.only(right: 30),
               child: Text(
-                foundCustomer.name ?? '',
+                foundCustomer.name,
                 style: context.textTheme.titleMedium,
               ),
             ),

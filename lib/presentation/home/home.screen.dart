@@ -28,7 +28,7 @@ class HomeScreen extends GetView<HomeController> {
                     }),
                   ),
                 ),
-                Expanded(flex: 4, child: Card(child: const SelectedProduct())),
+                const Expanded(flex: 4, child: Card(child: SelectedProduct())),
               ],
             ),
           ),

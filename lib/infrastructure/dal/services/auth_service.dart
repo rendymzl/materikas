@@ -36,6 +36,14 @@ class AuthService extends GetxService implements AuthRepository {
 
   @override
   Future<AccountModel> getAccount() async {
+    while (db.currentStatus.lastSyncedAt == null) {
+      await Future.delayed(const Duration(seconds: 2));
+      print(db.currentStatus);
+      print('menunggu koneksi');
+      if (db.currentStatus.lastSyncedAt == null) {
+        print('mencoba koneksi ulang');
+      }
+    }
     final row = await db.get('SELECT * FROM accounts WHERE account_id = ?',
         [supabaseClient.auth.currentUser!.id]);
     account.value = await AccountModel.fromRow(row);

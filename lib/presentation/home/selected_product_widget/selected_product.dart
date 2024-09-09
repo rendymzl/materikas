@@ -16,11 +16,11 @@ class SelectedProduct extends StatelessWidget {
       padding: const EdgeInsets.all(8.0),
       child: Column(
         children: [
-          PriceTypeWidget(),
+          const PriceTypeWidget(),
           Divider(color: Colors.grey[100]),
           Obx(() {
             return controller.cart.value.items.isNotEmpty
-                ? Expanded(
+                ? const Expanded(
                     flex: 10,
                     child: CartListWidget(),
                   )
@@ -43,7 +43,7 @@ class SelectedProduct extends StatelessWidget {
                           decoration: const BoxDecoration(
                               borderRadius:
                                   BorderRadius.all(Radius.circular(10))),
-                          child: CalculatePrice(),
+                          child: const CalculatePrice(),
                         ),
                       ],
                     ),

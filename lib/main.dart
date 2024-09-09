@@ -9,6 +9,7 @@ import 'infrastructure/navigation/routes.dart';
 import 'infrastructure/theme/app_theme.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   var initialRoute = await Routes.initialRoute;
   await openDatabase();
   runApp(Main(initialRoute));
