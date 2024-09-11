@@ -25,6 +25,32 @@ class EditInvoiceController extends GetxController {
     );
   }
 
+  void addToReturnCart(ProductModel product, Cart cart,
+      {bool isReturn = false}) {
+    //! add product to initCartItem
+    var initCartItem = checkExistence(product, initCartList);
+
+    if (initCartItem == null) {
+      ProductModel initProduct = ProductModel.fromJson(product.toJson());
+      CartItem initItem =
+          CartItem(product: initProduct, quantity: 0, quantityReturn: 0);
+      initCartList.add(initItem);
+      initCartItem = initItem;
+    }
+    //!---
+
+    //! add product to cart
+    CartItem cartItem =
+        CartItem(product: product, quantity: 0, quantityReturn: 1);
+    cart.addReturnItem(cartItem);
+    //!---
+
+    //! change Stock
+    cartItem.product.stock.value += 1;
+    print('stock: ${cartItem.product.stock.value}');
+    //!---
+  }
+
   void addToCart(ProductModel product, Cart cart, {bool isReturn = false}) {
     //! add product to initCartItem
     var initCartItem = checkExistence(product, initCartList);

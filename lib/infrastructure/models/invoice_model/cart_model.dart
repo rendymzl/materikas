@@ -115,6 +115,16 @@ class Cart {
     }
   }
 
+  void addReturnItem(CartItem newItem) {
+    final existingItem =
+        items.firstWhereOrNull((item) => item.product.id == newItem.product.id);
+    if (existingItem != null) {
+      existingItem.quantityReturn.value += newItem.quantityReturn.value;
+    } else {
+      items.add(newItem);
+    }
+  }
+
   void removeItem(String productId) {
     items.removeWhere((item) => item.product.id == productId);
   }

@@ -2,22 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
+import '../../infrastructure/models/invoice_model/cart_item_model.dart';
+import '../../infrastructure/models/invoice_model/cart_model.dart';
 import '../../infrastructure/models/invoice_model/invoice_model.dart';
 import '../../infrastructure/utils/display_format.dart';
 
 import 'add_product_dialog.dart';
+import 'detail_invoice/SingleReturnCartList.dart';
 import 'edit_invoice/single_cart_list.dart';
 
 class CardListWidget extends StatelessWidget {
-  const CardListWidget({
-    super.key,
-    required this.editInvoice,
-  });
+  const CardListWidget(
+      {super.key, required this.editInvoice, this.isReturnPage = false});
 
   final InvoiceModel editInvoice;
+  final bool isReturnPage;
 
   @override
   Widget build(BuildContext context) {
+    if (editInvoice.returnList.value != null) {
+      editInvoice.returnList.value = Cart(items: <CartItem>[].obs);
+    }
     return Column(
       children: [
         Row(
@@ -37,15 +42,34 @@ class CardListWidget extends StatelessWidget {
                     cartItemList: editInvoice.purchaseList.value,
                     isReturn: true,
                   ),
+                  const SizedBox(height: 12),
+
+                  Obx(
+                    () {
+                      return isReturnPage &&
+                              editInvoice.returnList.value!.items.isNotEmpty
+                          ? Column(
+                              children: [
+                                Divider(color: Colors.grey[200]),
+                                Text(
+                                  'Return Tambahan',
+                                  style: Theme.of(Get.context!)
+                                      .textTheme
+                                      .titleLarge,
+                                  textAlign: TextAlign.end,
+                                ),
+                                const SizedBox(height: 12),
+                                SingleReturnCartList(
+                                  editInvoice: editInvoice,
+                                  cartItemList: editInvoice.returnList.value!,
+                                  isReturn: true,
+                                ),
+                              ],
+                            )
+                          : const SizedBox();
+                    },
+                  )
                   // const SizedBox(height: 12),
-                  SizedBox(
-                      height: 150,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          ReturnFeeWidget(editInvoice: editInvoice),
-                        ],
-                      )),
                 ],
               ),
             ),
@@ -63,38 +87,62 @@ class CardListWidget extends StatelessWidget {
                       editInvoice: editInvoice,
                       cartItemList: editInvoice.purchaseList.value,
                     ),
+                    const SizedBox(height: 12),
+                    // if (isReturnPage)
+                    //   SingleCartList(
+                    //     editInvoice: editInvoice,
+                    //     cartItemList: editInvoice.returnList.value!,
+                    //   ),
                     // const SizedBox(height: 12),
-                    SizedBox(
-                      height: 150,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.end,
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        Row(
+          children: [
+            Expanded(
+              child: SizedBox(
+                height: 150,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    ReturnFeeWidget(editInvoice: editInvoice),
+                  ],
+                ),
+              ),
+            ),
+            Expanded(
+              child: SizedBox(
+                height: 150,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    editInvoice.purchaseList.value.bundleDiscount.value > 0
+                        ? ListTile(
+                            title: Text(
+                              'Diskon Tambahan: Rp-${currency.format(editInvoice.purchaseList.value.bundleDiscount.value)}',
+                              textAlign: TextAlign.right,
+                            ),
+                          )
+                        : const SizedBox(),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      child: Row(
                         children: [
-                          editInvoice.purchaseList.value.bundleDiscount.value >
-                                  0
-                              ? ListTile(
-                                  title: Text(
-                                    'Diskon Tambahan: Rp-${currency.format(editInvoice.purchaseList.value.bundleDiscount.value)}',
-                                    textAlign: TextAlign.right,
-                                  ),
-                                )
-                              : const SizedBox(),
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            child: Row(
-                              children: [
-                                const Expanded(child: SizedBox()),
-                                Expanded(
-                                  flex: 2,
-                                  child: ElevatedButton(
-                                    onPressed: () => addProductDialog(
-                                        editInvoice.purchaseList.value),
-                                    child: const Text(
-                                      'Tambah Barang',
-                                    ),
-                                  ),
-                                ),
-                              ],
+                          const Expanded(child: SizedBox()),
+                          Expanded(
+                            flex: 2,
+                            child: ElevatedButton(
+                              onPressed: () => addProductDialog(
+                                editInvoice.returnList.value!,
+                                isReturnPage: isReturnPage,
+                              ),
+                              child: const Text(
+                                'Tambah Barang',
+                              ),
                             ),
                           ),
                         ],
@@ -105,7 +153,7 @@ class CardListWidget extends StatelessWidget {
               ),
             ),
           ],
-        ),
+        )
       ],
     );
   }

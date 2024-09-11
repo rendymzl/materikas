@@ -34,7 +34,11 @@ void returnProduct(InvoiceModel invoice) {
         Card(
           child: Padding(
             padding: const EdgeInsets.all(8.0),
-            child: CardListWidget(editInvoice: editInvoice),
+            child: Column(
+              children: [
+                CardListWidget(editInvoice: editInvoice, isReturnPage: true),
+              ],
+            ),
           ),
         ),
       ],

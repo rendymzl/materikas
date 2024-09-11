@@ -8,10 +8,10 @@ import '../../../infrastructure/models/invoice_model/invoice_model.dart';
 import '../../../infrastructure/utils/display_format.dart';
 import '../../global_widget/field_discount_widget/field_discount_widget.dart';
 import '../../global_widget/field_quantity_widget/field_quantity_widget.dart';
-import 'edit_invoice_controller.dart';
+import '../edit_invoice/edit_invoice_controller.dart';
 
-class SingleCartList extends StatelessWidget {
-  const SingleCartList({
+class SingleReturnCartList extends StatelessWidget {
+  const SingleReturnCartList({
     super.key,
     required this.editInvoice,
     required this.cartItemList,
@@ -85,35 +85,26 @@ class SingleCartList extends StatelessWidget {
                             softWrap: true,
                             overflow: TextOverflow.visible,
                           ),
-                        if (isReturn)
-                          if (productCart.quantityReturn.value > 0)
-                            ReturnButton(
-                                productCart: productCart, isReturn: true),
-                        if (!isReturn)
-                          if (productCart.quantity.value > 0)
-                            ReturnButton(productCart: productCart),
                       ],
                     ),
-                    trailing: isReturn
-                        ? null
-                        : Container(
-                            height: 28,
-                            width: 28,
-                            decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.primary,
-                                borderRadius:
-                                    const BorderRadius.all(Radius.circular(6))),
-                            child: IconButton(
-                              onPressed: () {
-                                controller.remove(productCart, cartItemList);
-                              },
-                              icon: const Icon(
-                                Symbols.close,
-                                size: 12,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
+                    trailing: Container(
+                      height: 28,
+                      width: 28,
+                      decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary,
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(6))),
+                      child: IconButton(
+                        onPressed: () {
+                          controller.remove(productCart, cartItemList);
+                        },
+                        icon: const Icon(
+                          Symbols.close,
+                          size: 12,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
                   ),
                   ListTile(
                     enabled: !emptyQty,
@@ -203,56 +194,6 @@ class SingleCartList extends StatelessWidget {
             },
           );
         },
-      ),
-    );
-  }
-}
-
-class ReturnButton extends StatelessWidget {
-  const ReturnButton({
-    super.key,
-    required this.productCart,
-    this.isReturn = false,
-  });
-
-  final CartItem productCart;
-  final bool isReturn;
-
-  @override
-  Widget build(BuildContext context) {
-    final EditInvoiceController controller = Get.find();
-    return InkWell(
-      onTap: () => controller.quantityMoveHandle(productCart, isReturn),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          vertical: 4,
-          horizontal: 8,
-        ),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.primary,
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: Row(
-          children: [
-            if (!isReturn)
-              const Icon(
-                Symbols.arrow_left,
-                color: Colors.white,
-              ),
-            Text(
-              isReturn ? 'Batal Return' : 'Return',
-              style: const TextStyle(
-                color: Colors.white,
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-            if (isReturn)
-              const Icon(
-                Symbols.arrow_right,
-                color: Colors.white,
-              ),
-          ],
-        ),
       ),
     );
   }

@@ -6,7 +6,7 @@ import '../global_widget/popup_page_widget.dart';
 import '../global_widget/product_list_widget/product_list_widget.dart';
 import 'edit_invoice/edit_invoice_controller.dart';
 
-void addProductDialog(Cart cart) {
+void addProductDialog(Cart cart, {bool isReturnPage = false}) {
   final EditInvoiceController controller = Get.find();
   showPopupPageWidget(
     title: 'Tambah Barang',
@@ -20,7 +20,9 @@ void addProductDialog(Cart cart) {
           height: MediaQuery.of(Get.context!).size.height * (0.7),
           child: ProductListWidget(
             onClick: (product) {
-              controller.addToCart(product, cart);
+              isReturnPage
+                  ? controller.addToReturnCart(product, cart)
+                  : controller.addToCart(product, cart);
               Get.back();
             },
           ),
