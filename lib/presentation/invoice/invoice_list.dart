@@ -31,6 +31,7 @@ class InvoiceList extends StatelessWidget {
                         Radius.circular(12),
                       ),
                     ),
+                    height: 50,
                     child: TextField(
                       decoration: const InputDecoration(
                         border: InputBorder.none,
@@ -40,7 +41,6 @@ class InvoiceList extends StatelessWidget {
                       ),
                       onChanged: (value) => controller.filterInvoices(value),
                     ),
-                    height: 50,
                   ),
                 ),
                 const SizedBox(width: 80),
@@ -127,12 +127,12 @@ class InvoiceList extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(child: BuildListTile(isDebt: false)),
+                const Expanded(child: BuildListTile(isDebt: false)),
                 VerticalDivider(thickness: 1, color: Colors.grey[200]),
-                Expanded(child: BuildListTile(isDebt: true)),
+                const Expanded(child: BuildListTile(isDebt: true)),
               ],
             ),
-          ), //! Build ListTile
+          ),
         ],
       ),
     );

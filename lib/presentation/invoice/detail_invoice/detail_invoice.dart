@@ -5,13 +5,14 @@ import 'package:material_symbols_icons/material_symbols_icons.dart';
 
 import '../../../infrastructure/models/invoice_model/invoice_model.dart';
 import '../../../infrastructure/utils/display_format.dart';
-import '../../global_widget/payment_widget/payment_widget.dart';
+import '../../global_widget/payment_widget/payment_popup_widget.dart';
 import '../../global_widget/popup_page_widget.dart';
 import '../controllers/invoice.controller.dart';
 import '../edit_invoice/edit_invoice.dart';
 import 'othercost_dialog_widget.dart';
 import 'product_table_card.dart';
 import 'properties_row.dart';
+import 'return_product.dart';
 
 void detailDialog(InvoiceModel invoice) {
   final InvoiceController controller = Get.find();
@@ -24,8 +25,8 @@ void detailDialog(InvoiceModel invoice) {
       title: 'Invoice ${invoice.invoiceId}',
       iconButton: IconButton(
           // onPressed: () => controller.destroyHandle(foundProduct),
-          onPressed: () => null,
-          icon: Icon(
+          onPressed: () {},
+          icon: const Icon(
             Symbols.delete,
             color: Colors.red,
           )),
@@ -117,7 +118,7 @@ void detailDialog(InvoiceModel invoice) {
                 ),
               ],
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             ProductTableCard(invoice: invoice),
             Container(
               decoration: BoxDecoration(
@@ -218,7 +219,7 @@ void detailDialog(InvoiceModel invoice) {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          SizedBox(),
+                          const SizedBox(),
                           SizedBox(
                             width: 500,
                             child: PropertiesRow(
@@ -262,13 +263,8 @@ void detailDialog(InvoiceModel invoice) {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                SizedBox(),
-                Container(
-                  // color: invoice.totalPaid > 0
-                  //     ? null
-                  //     : invoice.totalBill <= 0
-                  //         ? Colors.green[50]
-                  //         : Colors.red[50],
+                const SizedBox(),
+                SizedBox(
                   width: 500,
                   child: Column(
                     children: [
@@ -287,7 +283,7 @@ void detailDialog(InvoiceModel invoice) {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  SizedBox(),
+                  const SizedBox(),
                   SizedBox(
                     width: 500,
                     child: Obx(
@@ -315,7 +311,7 @@ void detailDialog(InvoiceModel invoice) {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  SizedBox(),
+                  const SizedBox(),
                   SizedBox(width: 500, child: Divider(color: Colors.grey[300])),
                 ],
               ),
@@ -323,7 +319,7 @@ void detailDialog(InvoiceModel invoice) {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                SizedBox(),
+                const SizedBox(),
                 Container(
                   color: invoice.totalPaid < invoice.totalBill
                       ? Colors.red[50]
@@ -352,6 +348,12 @@ void detailDialog(InvoiceModel invoice) {
       ),
       buttonList: [
         ElevatedButton(
+          onPressed: () => returnProduct(invoice),
+          child: const Text(
+            'Return Barang',
+          ),
+        ),
+        ElevatedButton(
           onPressed: () => editInvoice(invoice),
           child: const Text(
             'Edit Invoice',
@@ -363,7 +365,10 @@ void detailDialog(InvoiceModel invoice) {
         ),
         if (!invoice.isDebtPaid.value)
           ElevatedButton(
-            onPressed: () => paymentWidget(invoice),
+            onPressed: () => paymentPopup(
+              invoice,
+              onlyPayment: true,
+            ),
             child: Text((invoice.totalPaid > 0)
                 ? 'Tambah Pembayaran'
                 : 'Bayar Tagihan'),

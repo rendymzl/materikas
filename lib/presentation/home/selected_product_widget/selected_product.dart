@@ -43,7 +43,7 @@ class SelectedProduct extends StatelessWidget {
                           decoration: const BoxDecoration(
                               borderRadius:
                                   BorderRadius.all(Radius.circular(10))),
-                          child: const CalculatePrice(),
+                          child: CalculatePrice(invoice: controller.invoice),
                         ),
                       ],
                     ),

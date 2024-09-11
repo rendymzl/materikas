@@ -8,7 +8,8 @@ import '../field_customer_widget/field_customer_widget_controller.dart';
 import 'payment_content_widget.dart';
 import 'payment_widget_controller.dart';
 
-void paymentWidget(InvoiceModel invoice) {
+void paymentPopup(InvoiceModel invoice,
+    {bool isEdit = false, bool onlyPayment = false}) {
   PaymentController controller = Get.put(PaymentController());
   late CustomerInputFieldController customerFieldC =
       Get.put(CustomerInputFieldController());
@@ -37,7 +38,15 @@ void paymentWidget(InvoiceModel invoice) {
         if (controller.selectedPaymentMethod.value != '') {
           return Expanded(
             child: ElevatedButton(
-              onPressed: () async => await controller.saveInvoice(invoice),
+              onPressed: () async {
+                if (isEdit) {
+                  await controller.addPayment(invoice);
+                  Get.back();
+                } else {
+                  await controller.saveInvoice(invoice,
+                      onlyPayment: onlyPayment);
+                }
+              },
               child: const Text('Bayar'),
             ),
           );

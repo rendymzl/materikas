@@ -13,9 +13,9 @@ import '../field_customer_widget/field_customer_widget_controller.dart';
 
 class PaymentController extends GetxController {
   late CustomerInputFieldController customerFieldC = Get.find();
-  late HomeController _homeC = Get.find();
-  late ProductService _productService = Get.find();
-  late InvoiceService _invoiceService = Get.find();
+  late final HomeController _homeC = Get.find();
+  late final ProductService _productService = Get.find();
+  late final InvoiceService _invoiceService = Get.find();
   final paymentMethod = ['cash', 'transfer'].obs;
   final selectedPaymentMethod = ''.obs;
   final moneyChange = 0.0.obs;
@@ -121,7 +121,8 @@ class PaymentController extends GetxController {
 
   bool validateCustomer = false;
   bool validateTotal = false;
-  Future<void> saveInvoice(InvoiceModel invoice) async {
+  Future<void> saveInvoice(InvoiceModel invoice,
+      {bool onlyPayment = false}) async {
     if (customerFieldC.validateCustomer() && invoice.id == null) {
       await Get.defaultDialog(
         title: 'Ups',
@@ -173,7 +174,7 @@ class PaymentController extends GetxController {
       validateTotal = true;
     }
     if (validateCustomer & validateTotal) {
-      saveToDatabase(invoice);
+      saveToDatabase(invoice, onlyPayment: onlyPayment);
     }
   }
 
@@ -187,7 +188,8 @@ class PaymentController extends GetxController {
     }
   }
 
-  Future saveToDatabase(InvoiceModel invoice) async {
+  Future saveToDatabase(InvoiceModel invoice,
+      {bool onlyPayment = false}) async {
     final isNewInvoice = invoice.invoiceId == null;
     await customerFieldC.addCustomer(invoice);
     if (isNewInvoice) {
@@ -219,13 +221,17 @@ class PaymentController extends GetxController {
         productList.add(updatedProduct);
       }
       await _productService.updateList(productList);
+
       if (isNewInvoice) {
         await _invoiceService.insert(invoice);
         _homeC.resetData();
+        Get.back();
       } else {
         await _invoiceService.update(invoice);
+        clear();
+        if (onlyPayment) Get.back();
       }
-      Get.back();
+
       Get.back();
 
       AppDialog.show(

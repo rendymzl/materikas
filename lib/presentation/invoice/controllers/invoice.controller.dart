@@ -7,7 +7,7 @@ import '../../../infrastructure/dal/services/invoice_service.dart';
 import '../../../infrastructure/models/invoice_model/invoice_model.dart';
 
 class InvoiceController extends GetxController {
-  late InvoiceService _invoiceService = Get.find();
+  late final InvoiceService _invoiceService = Get.find();
   late final invoices = _invoiceService.invoices;
   late final foundInvoices = _invoiceService.foundInvoices;
   late InvoiceModel initInvoice;

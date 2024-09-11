@@ -10,13 +10,13 @@ class InvoiceScreen extends GetView<InvoiceController> {
   const InvoiceScreen({super.key});
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       body: Column(
         children: [
-          const MenuWidget(title: 'Invoice'),
+          MenuWidget(title: 'Invoice'),
           Expanded(
             child: Card(
-              child: Expanded(child: const InvoiceList()),
+              child: Expanded(child: InvoiceList()),
             ),
           ),
         ],

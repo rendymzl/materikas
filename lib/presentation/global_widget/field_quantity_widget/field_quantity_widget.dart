@@ -9,18 +9,21 @@ class QuantityTextField extends StatelessWidget {
     super.key,
     required this.item,
     required this.onChanged,
+    this.isReturn = false,
   });
 
   final CartItem item;
   final Function(String) onChanged;
+  final bool isReturn;
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
       final qtyTextC = TextEditingController();
-      String displayValue = item.quantity.value % 1 == 0
-          ? item.quantity.value.toInt().toString()
-          : item.quantity.value.toString().replaceAll('.', ',');
+      var qty = isReturn ? item.quantityReturn.value : item.quantity.value;
+      String displayValue = qty % 1 == 0
+          ? qty.toInt().toString()
+          : qty.toString().replaceAll('.', ',');
       qtyTextC.text = displayValue;
       qtyTextC.selection = TextSelection.fromPosition(
         TextPosition(offset: qtyTextC.text.length),

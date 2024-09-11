@@ -13,16 +13,18 @@ import '../../global_widget/date_picker_widget/date_picker_widget_controller.dar
 import '../../global_widget/field_customer_widget/field_customer_widget_controller.dart';
 
 class HomeController extends GetxController {
-  late ProductService _productService = Get.find<ProductService>();
-  late AuthService _authService = Get.find<AuthService>();
-  late InvoiceService _invoiceService = Get.put(InvoiceService());
-  late DatePickerController _datePickerC = Get.put(DatePickerController());
-  late CustomerInputFieldController _customerInputFieldC =
+  late final ProductService _productService = Get.find<ProductService>();
+  late final AuthService _authService = Get.find<AuthService>();
+  late final InvoiceService _invoiceService = Get.put(InvoiceService());
+  late final DatePickerController _datePickerC =
+      Get.put(DatePickerController());
+  late final CustomerInputFieldController _customerInputFieldC =
       Get.put(CustomerInputFieldController());
 
   late final products = _productService.products;
   late final foundProducts = _productService.foundProducts;
 
+  late InvoiceModel invoice;
   final cart = Cart(items: <CartItem>[].obs).obs;
   final initCartList = <CartItem>[].obs;
 
@@ -31,7 +33,8 @@ class HomeController extends GetxController {
   late ScrollController scrollController = ScrollController();
 
   @override
-  void onInit() {
+  void onInit() async {
+    invoice = await createInvoice();
     super.onInit();
   }
 
