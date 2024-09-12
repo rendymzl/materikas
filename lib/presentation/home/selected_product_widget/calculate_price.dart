@@ -18,6 +18,7 @@ class CalculatePrice extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print(invoice.totalBill);
     return SizedBox(
       child: Row(
         children: [
@@ -120,7 +121,7 @@ class CalculatePrice extends StatelessWidget {
                       if (isEdit)
                         PropertiesRowWidget(
                           title: 'Return Tambahan',
-                          value: currency.format(invoice.totalAdditionalReturn),
+                          value: currency.format(invoice.subtotalReturn),
                           color: Colors.red,
                         ),
                       if (invoice.totalPaid < invoice.totalBill)

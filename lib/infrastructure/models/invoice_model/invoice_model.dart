@@ -284,13 +284,21 @@ class InvoiceModel {
   }
 
   double get totalBill {
+    print('berubah');
     return purchaseList.value.items
             .fold(0.0, (prev, item) => prev + (item.getBill(priceType.value))) -
         purchaseList.value.bundleDiscount.value +
         totalOtherCosts +
-        returnFee.value -
-        subtotalAdditionalReturn;
+        subtotalReturn -
+        totalReturnFinal;
   }
+  // double get totalBill {
+  //   return subtotalBill -
+  //       totalDiscount +
+  //       totalOtherCosts +
+  //       subtotalReturn -
+  //       totalReturnFinal;
+  // }
 
 //! Cost
   double get subtotalCost {
@@ -303,13 +311,13 @@ class InvoiceModel {
   }
 
 //! Return
-  double get subtotalpurchaseReturn {
+  double get subtotalReturn {
     return purchaseList.value.getTotalReturn(priceType.value);
   }
 
-  double get totalPurchaseReturn {
-    return subtotalpurchaseReturn - returnFee.value;
-  }
+  // double get totalPurchaseReturn {
+  //   return subtotalpurchaseReturn - returnFee.value;
+  // }
 
   double get subtotalAdditionalReturn {
     double value = 0.0;
@@ -319,25 +327,29 @@ class InvoiceModel {
     return value;
   }
 
-  double get totalAdditionalReturn {
-    return subtotalAdditionalReturn - returnFee.value;
+  // double get totalAdditionalReturn {
+  //   return subtotalAdditionalReturn - returnFee.value;
+  // }
+
+  double get totalReturn {
+    return subtotalReturn + subtotalAdditionalReturn;
   }
 
   double get totalReturnFinal {
-    return subtotalpurchaseReturn + subtotalAdditionalReturn - returnFee.value;
+    return totalReturn - returnFee.value;
   }
 
 //! Purchase
   double get subTotalPurchase {
-    return subtotalBill + subtotalpurchaseReturn;
+    return subtotalBill + subtotalReturn;
   }
 
   double get totalPurchase {
-    return totalBill + returnFee.value + totalPurchaseReturn;
+    return totalBill + totalReturnFinal;
   }
 
   bool get isReturn {
-    return subtotalpurchaseReturn + subtotalAdditionalReturn > 0;
+    return subtotalReturn + subtotalAdditionalReturn > 0;
   }
 
   double get remainingReturn {

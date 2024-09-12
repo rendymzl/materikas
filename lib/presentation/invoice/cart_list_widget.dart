@@ -21,7 +21,9 @@ class CardListWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (editInvoice.returnList.value != null) {
-      editInvoice.returnList.value = Cart(items: <CartItem>[].obs);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        editInvoice.returnList.value = Cart(items: <CartItem>[].obs);
+      });
     }
     return Column(
       children: [

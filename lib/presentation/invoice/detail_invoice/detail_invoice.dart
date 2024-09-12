@@ -138,7 +138,7 @@ void detailDialog(InvoiceModel invoice) {
                               subtraction: true,
                               title: 'Total Pesanan di Return',
                               value:
-                                  'Rp-${currency.format(invoice.subtotalpurchaseReturn)}',
+                                  'Rp-${currency.format(invoice.subtotalReturn)}',
                             ),
                           ),
                         SizedBox(
