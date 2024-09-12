@@ -138,7 +138,7 @@ void detailDialog(InvoiceModel invoice) {
                               subtraction: true,
                               title: 'Total Pesanan di Return',
                               value:
-                                  'Rp-${currency.format(invoice.subtotalReturn)}',
+                                  'Rp-${currency.format(invoice.subtotalpurchaseReturn)}',
                             ),
                           ),
                         SizedBox(
@@ -147,8 +147,6 @@ void detailDialog(InvoiceModel invoice) {
                             primary: true,
                             title:
                                 'SUBTOTAL HARGA (${invoice.purchaseList.value.items.length} Barang)',
-                            subValue:
-                                'Rp${currency.format((invoice.subTotalPurchase))}',
                             value:
                                 'Rp${currency.format((invoice.subTotalPurchase))}',
                           ),
@@ -225,7 +223,7 @@ void detailDialog(InvoiceModel invoice) {
                             child: PropertiesRow(
                               primary: true,
                               title:
-                                  'TOTAL TAGIHAN ${invoice.totalReturn != 0 ? '(Sebelum Return)' : ''}',
+                                  'TOTAL TAGIHAN ${invoice.totalReturnFinal != 0 ? '(Sebelum Return)' : ''}',
                               value:
                                   'Rp${currency.format((invoice.totalPurchase))}',
                             ),
@@ -241,7 +239,7 @@ void detailDialog(InvoiceModel invoice) {
                               subtraction: true,
                               title: 'TOTAL RETURN',
                               value:
-                                  'Rp-${currency.format(invoice.totalReturn)}',
+                                  'Rp-${currency.format(invoice.totalReturnFinal)}',
                             ),
                           ),
                           SizedBox(
@@ -251,7 +249,7 @@ void detailDialog(InvoiceModel invoice) {
                               subtraction: true,
                               title: 'TOTAL RETURN',
                               value:
-                                  'Rp-${currency.format(invoice.totalReturn)}',
+                                  'Rp-${currency.format(invoice.totalReturnFinal)}',
                             ),
                           ),
                         ],
@@ -334,7 +332,7 @@ void detailDialog(InvoiceModel invoice) {
                     title: invoice.totalPaid < invoice.totalBill
                         ? 'SISA TAGIHAN'
                         : invoice.isReturn
-                            ? 'Nominal yang harus di return'
+                            ? ''
                             : '',
                     value: invoice.totalPaid < invoice.totalBill
                         ? 'Rp${currency.format((invoice.totalBill - invoice.totalPaid))}'

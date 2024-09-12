@@ -65,7 +65,7 @@ void returnProduct(InvoiceModel invoice) {
               invoice.debtAmount.value = editInvoice.debtAmount.value;
               invoice.isDebtPaid.value = editInvoice.isDebtPaid.value;
               invoice.otherCosts.value = editInvoice.otherCosts;
-              controller.saveInvoice(invoice);
+              controller.updateInvoice(invoice);
               Get.back();
             },
             onCancel: () => Get.back(),

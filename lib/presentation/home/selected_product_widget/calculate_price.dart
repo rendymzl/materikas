@@ -111,6 +111,18 @@ class CalculatePrice extends StatelessWidget {
                           title: 'Total Belanja',
                           value: currency.format(invoice.totalBill),
                         ),
+                      if (isEdit)
+                        PropertiesRowWidget(
+                          title: 'Total Pembayaran',
+                          value: currency.format(invoice.totalPaid),
+                          color: Colors.green,
+                        ),
+                      if (isEdit)
+                        PropertiesRowWidget(
+                          title: 'Return Tambahan',
+                          value: currency.format(invoice.totalAdditionalReturn),
+                          color: Colors.red,
+                        ),
                       if (invoice.totalPaid < invoice.totalBill)
                         SizedBox(
                           height: 48,

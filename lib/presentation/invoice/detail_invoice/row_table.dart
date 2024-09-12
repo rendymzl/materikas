@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:material_symbols_icons/material_symbols_icons.dart';
+// import 'package:material_symbols_icons/material_symbols_icons.dart';
 
 import '../../../infrastructure/models/invoice_model/cart_item_model.dart';
 import '../../../infrastructure/models/invoice_model/invoice_model.dart';
@@ -28,7 +28,7 @@ class RowTable extends StatelessWidget {
     String price = '-';
     String discount = '-';
     String totalPurchase = '-';
-    String qtyReturnDisplay = '';
+    String quantityReturnDisplay = '';
     String quantityReturn = '';
     late String subTotalReturn;
     late String quantityPurchase;
@@ -45,19 +45,19 @@ class RowTable extends StatelessWidget {
       totalPurchase =
           'Rp${currency.format(purchaseItem!.getPurchase(invoice!.priceType.value) + purchaseItem!.individualDiscount.value)}';
 
-      qtyReturnDisplay = purchaseItem!.qtyReturnDisplay;
+      quantityReturnDisplay = purchaseItem!.quantityReturnDisplay;
       quantityReturn =
-          '-${purchaseItem!.qtyReturnDisplay} ${purchaseItem!.product.unit}';
+          '-${purchaseItem!.quantityReturnDisplay} ${purchaseItem!.product.unit}';
       subTotalReturn =
-          'Rp-${currency.format(purchaseItem!.getPurchaseReturn(invoice!.priceType.value))}';
+          'Rp-${currency.format(purchaseItem!.getReturn(invoice!.priceType.value))}';
       quantityPurchase =
-          '${purchaseItem!.quantityDisplay} ${purchaseItem!.product.unit}';
+          '${purchaseItem!.quantityTotalDisplay} ${purchaseItem!.product.unit}';
       subTotalPurchase =
           'Rp${currency.format(purchaseItem!.getPurchase(invoice!.priceType.value))}';
     }
 
     return (!isAdditionalDiscount)
-        ? (isReturn && (qtyReturnDisplay == '0'))
+        ? (isReturn && (quantityReturnDisplay == '0'))
             ? const SizedBox()
             : ListTile(
                 dense: true,

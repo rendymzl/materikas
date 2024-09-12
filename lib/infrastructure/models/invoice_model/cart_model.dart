@@ -36,28 +36,30 @@ class Cart {
   }
 
   double getTotalBill(int priceType) {
-    double total = items.fold(0, (sum, item) => sum + item.getBill(priceType));
+    double total =
+        items.fold(0.0, (sum, item) => sum + item.getBill(priceType)) -
+            bundleDiscount.value;
 
     return total;
   }
 
 //! Cost
   double get subtotalCost {
-    double costPrice = items.fold(0, (sum, item) => sum + item.subCost);
+    double costPrice = items.fold(0.0, (sum, item) => sum + item.subCost);
 
     return costPrice;
   }
 
   double get totalCost {
-    double costPrice = items.fold(0, (sum, item) => sum + item.cost);
+    double costPrice = items.fold(0.0, (sum, item) => sum + item.cost);
 
     return costPrice;
   }
 
 //! Return
-  double getTotalReturnPurchase(int priceType) {
+  double getTotalReturn(int priceType) {
     double totalReturn =
-        items.fold(0, (sum, item) => sum + item.getPurchaseReturn(priceType));
+        items.fold(0.0, (sum, item) => sum + item.getReturn(priceType));
 
     return totalReturn;
   }
@@ -65,14 +67,15 @@ class Cart {
   //! Purchase
   double getSubtotalPurchase(int priceType) {
     double purchasePrice =
-        items.fold(0, (sum, item) => sum + item.getSubPurchase(priceType));
+        items.fold(0.0, (sum, item) => sum + item.getSubPurchase(priceType));
 
     return purchasePrice;
   }
 
   double getTotalPurchase(int priceType) {
     double purchasePrice =
-        items.fold(0, (sum, item) => sum + item.getPurchase(priceType));
+        items.fold(0.0, (sum, item) => sum + item.getPurchase(priceType)) -
+            bundleDiscount.value;
 
     return purchasePrice;
   }
@@ -80,28 +83,28 @@ class Cart {
 //! Quantity
   double get totalQuantity {
     double totalQuantity =
-        items.fold(0, (sum, item) => sum + item.quantity.value);
+        items.fold(0.0, (sum, item) => sum + item.quantity.value);
 
     return totalQuantity;
   }
 
   double get totalQuantityReturn {
     double quantityReturn =
-        items.fold(0, (sum, item) => sum + item.quantityReturn.value);
+        items.fold(0.0, (sum, item) => sum + item.quantityReturn.value);
 
     return quantityReturn;
   }
 
   double get totalQuantityPurchase {
     double totalQuantityReturn =
-        items.fold(0, (sum, item) => sum + item.purchaseQuantity);
+        items.fold(0.0, (sum, item) => sum + item.purchaseQuantity);
 
     return totalQuantityReturn;
   }
 
 //! Discount
   double get totalIndividualDiscount {
-    return items.fold(0, (sum, item) => sum + item.individualDiscount.value);
+    return items.fold(0.0, (sum, item) => sum + item.individualDiscount.value);
   }
 
 //! func

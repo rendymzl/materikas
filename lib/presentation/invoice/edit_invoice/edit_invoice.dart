@@ -93,7 +93,7 @@ void editInvoice(InvoiceModel invoice) {
               invoice.createdAt.value = editInvoice.createdAt.value;
               invoice.customer.value = editInvoice.customer.value;
               invoice.purchaseList.value = editInvoice.purchaseList.value;
-              invoice.returnList.value = editInvoice.returnList.value;
+              // invoice.returnList.value = editInvoice.returnList.value;
               invoice.priceType.value = editInvoice.priceType.value;
               invoice.discount.value = editInvoice.discount.value;
               invoice.returnFee.value = editInvoice.returnFee.value;
@@ -101,7 +101,7 @@ void editInvoice(InvoiceModel invoice) {
               invoice.debtAmount.value = editInvoice.debtAmount.value;
               invoice.isDebtPaid.value = editInvoice.isDebtPaid.value;
               invoice.otherCosts.value = editInvoice.otherCosts;
-              controller.saveInvoice(invoice);
+              controller.updateInvoice(invoice);
               Get.back();
             },
             onCancel: () => Get.back(),

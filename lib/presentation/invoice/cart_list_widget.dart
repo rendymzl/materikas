@@ -43,32 +43,31 @@ class CardListWidget extends StatelessWidget {
                     isReturn: true,
                   ),
                   const SizedBox(height: 12),
-
-                  Obx(
-                    () {
-                      return isReturnPage &&
-                              editInvoice.returnList.value!.items.isNotEmpty
-                          ? Column(
-                              children: [
-                                Divider(color: Colors.grey[200]),
-                                Text(
-                                  'Return Tambahan',
-                                  style: Theme.of(Get.context!)
-                                      .textTheme
-                                      .titleLarge,
-                                  textAlign: TextAlign.end,
-                                ),
-                                const SizedBox(height: 12),
-                                SingleReturnCartList(
-                                  editInvoice: editInvoice,
-                                  cartItemList: editInvoice.returnList.value!,
-                                  isReturn: true,
-                                ),
-                              ],
-                            )
-                          : const SizedBox();
-                    },
-                  )
+                  if (isReturnPage)
+                    Obx(
+                      () {
+                        return editInvoice.returnList.value!.items.isNotEmpty
+                            ? Column(
+                                children: [
+                                  Divider(color: Colors.grey[200]),
+                                  Text(
+                                    'Return Tambahan',
+                                    style: Theme.of(Get.context!)
+                                        .textTheme
+                                        .titleLarge,
+                                    textAlign: TextAlign.end,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  SingleReturnCartList(
+                                    editInvoice: editInvoice,
+                                    cartItemList: editInvoice.returnList.value!,
+                                    isReturn: true,
+                                  ),
+                                ],
+                              )
+                            : const SizedBox();
+                      },
+                    )
                   // const SizedBox(height: 12),
                 ],
               ),
@@ -137,7 +136,9 @@ class CardListWidget extends StatelessWidget {
                             flex: 2,
                             child: ElevatedButton(
                               onPressed: () => addProductDialog(
-                                editInvoice.returnList.value!,
+                                isReturnPage
+                                    ? editInvoice.returnList.value!
+                                    : editInvoice.purchaseList.value,
                                 isReturnPage: isReturnPage,
                               ),
                               child: const Text(
@@ -240,7 +241,7 @@ class ReturnFeeWidget extends StatelessWidget {
               Expanded(
                 child: Obx(
                   () => Text(
-                    'Rp${currency.format(editInvoice.totalReturn)}',
+                    'Rp${currency.format(editInvoice.totalReturnFinal)}',
                     textAlign: TextAlign.end,
                     style: Theme.of(Get.context!).textTheme.bodyLarge!.copyWith(
                           color: Theme.of(Get.context!).colorScheme.primary,

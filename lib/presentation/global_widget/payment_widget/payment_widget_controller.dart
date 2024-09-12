@@ -113,6 +113,16 @@ class PaymentController extends GetxController {
     moneyChange.value = bill.value - pay;
   }
 
+  Future addPayment(InvoiceModel invoice) async {
+    if (paymentTextC.text != '') {
+      invoice.addPayment(
+        double.parse(paymentTextC.text.replaceAll('.', '')),
+        method: selectedPaymentMethod.value,
+        date: DateTime.now(),
+      );
+    }
+  }
+
   void clear() {
     selectedPaymentMethod.value = '';
     paymentTextC.text = '';
@@ -178,16 +188,6 @@ class PaymentController extends GetxController {
     }
   }
 
-  Future addPayment(InvoiceModel invoice) async {
-    if (paymentTextC.text != '') {
-      invoice.addPayment(
-        double.parse(paymentTextC.text.replaceAll('.', '')),
-        method: selectedPaymentMethod.value,
-        date: DateTime.now(),
-      );
-    }
-  }
-
   Future saveToDatabase(InvoiceModel invoice,
       {bool onlyPayment = false}) async {
     final isNewInvoice = invoice.invoiceId == null;
@@ -206,21 +206,24 @@ class PaymentController extends GetxController {
       barrierDismissible: false,
     );
     try {
-      var productList = <ProductModel>[];
+      if (!onlyPayment) {
+        var productList = <ProductModel>[];
 
-      for (var updatedCart in invoice.purchaseList.value.items) {
-        if (updatedCart.product.sold != null) {
-          updatedCart.product.sold!.value =
-              updatedCart.product.sold!.value + updatedCart.quantity.value;
-        } else {
-          updatedCart.product.sold = updatedCart.quantity;
+        for (var updatedCart in invoice.purchaseList.value.items) {
+          if (updatedCart.product.sold != null) {
+            updatedCart.product.sold!.value =
+                updatedCart.product.sold!.value + updatedCart.quantity.value;
+          } else {
+            updatedCart.product.sold = updatedCart.quantity;
+          }
+          print('stock updatedCart ${updatedCart.product.stock.value}');
+          ProductModel updatedProduct =
+              ProductModel.fromJson(updatedCart.product.toJson());
+          productList.add(updatedProduct);
         }
-        print('stock ${updatedCart.product.stock.value}');
-        ProductModel updatedProduct =
-            ProductModel.fromJson(updatedCart.product.toJson());
-        productList.add(updatedProduct);
+
+        await _productService.updateList(productList);
       }
-      await _productService.updateList(productList);
 
       if (isNewInvoice) {
         await _invoiceService.insert(invoice);

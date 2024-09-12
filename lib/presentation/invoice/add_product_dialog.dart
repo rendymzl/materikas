@@ -20,6 +20,7 @@ void addProductDialog(Cart cart, {bool isReturnPage = false}) {
           height: MediaQuery.of(Get.context!).size.height * (0.7),
           child: ProductListWidget(
             onClick: (product) {
+              print('add ${product.stock.value}');
               isReturnPage
                   ? controller.addToReturnCart(product, cart)
                   : controller.addToCart(product, cart);

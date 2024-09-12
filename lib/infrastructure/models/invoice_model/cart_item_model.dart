@@ -75,11 +75,11 @@ class CartItem {
       case 1:
         return product.sellPrice1.value;
       case 2:
-        return (product.sellPrice2 != null && product.sellPrice2 != 0)
+        return (product.sellPrice2 != null && product.sellPrice2 != 0.0.obs)
             ? product.sellPrice2!.value
             : product.sellPrice1.value;
       case 3:
-        return (product.sellPrice3 != null && product.sellPrice3 != 0)
+        return (product.sellPrice3 != null && product.sellPrice3 != 0.0.obs)
             ? product.sellPrice3!.value
             : product.sellPrice1.value;
       default:
@@ -107,18 +107,18 @@ class CartItem {
   }
 
 //! Return
-  double getPurchaseReturn(int priceType) {
+  double getReturn(int priceType) {
     double price = getPrice(priceType);
     return price * quantityReturn.value;
   }
 
 //! Purchase
   double getSubPurchase(int priceType) {
-    return getSubBill(priceType) + getPurchaseReturn(priceType);
+    return getSubBill(priceType) + getReturn(priceType);
   }
 
   double getPurchase(int priceType) {
-    return getBill(priceType) + getPurchaseReturn(priceType);
+    return getBill(priceType) + getReturn(priceType);
   }
 
 //! Quantity
@@ -132,9 +132,16 @@ class CartItem {
         : quantity.value.toString().replaceAll('.', ',');
   }
 
-  String get qtyReturnDisplay {
+  String get quantityReturnDisplay {
     return quantityReturn.value % 1 == 0
         ? quantityReturn.value.toInt().toString()
         : quantityReturn.value.toString().replaceAll('.', ',');
+  }
+
+  String get quantityTotalDisplay {
+    double quantityTotal = quantity.value + quantityReturn.value;
+    return quantityTotal % 1 == 0
+        ? quantityTotal.toInt().toString()
+        : quantityTotal.toString().replaceAll('.', ',');
   }
 }

@@ -287,7 +287,9 @@ class InvoiceModel {
     return purchaseList.value.items
             .fold(0.0, (prev, item) => prev + (item.getBill(priceType.value))) -
         purchaseList.value.bundleDiscount.value +
-        totalOtherCosts;
+        totalOtherCosts +
+        returnFee.value -
+        subtotalAdditionalReturn;
   }
 
 //! Cost
@@ -301,41 +303,45 @@ class InvoiceModel {
   }
 
 //! Return
-  double get subtotalReturnPurchase {
-    return purchaseList.value.getTotalReturnPurchase(priceType.value);
+  double get subtotalpurchaseReturn {
+    return purchaseList.value.getTotalReturn(priceType.value);
+  }
+
+  double get totalPurchaseReturn {
+    return subtotalpurchaseReturn - returnFee.value;
   }
 
   double get subtotalAdditionalReturn {
     double value = 0.0;
     if (returnList.value != null) {
-      value = returnList.value!.getTotalReturnPurchase(priceType.value);
+      value = returnList.value!.getTotalReturn(priceType.value);
     }
     return value;
   }
 
-  double get subtotalReturn {
-    return subtotalReturnPurchase + subtotalAdditionalReturn;
+  double get totalAdditionalReturn {
+    return subtotalAdditionalReturn - returnFee.value;
   }
 
-  double get totalReturn {
-    return subtotalReturnPurchase + subtotalAdditionalReturn - returnFee.value;
+  double get totalReturnFinal {
+    return subtotalpurchaseReturn + subtotalAdditionalReturn - returnFee.value;
   }
 
 //! Purchase
   double get subTotalPurchase {
-    return subtotalBill + subtotalAdditionalReturn;
+    return subtotalBill + subtotalpurchaseReturn;
   }
 
   double get totalPurchase {
-    return totalBill + totalReturn;
+    return totalBill + returnFee.value + totalPurchaseReturn;
   }
 
   bool get isReturn {
-    return subtotalReturnPurchase + subtotalAdditionalReturn > 0;
+    return subtotalpurchaseReturn + subtotalAdditionalReturn > 0;
   }
 
   double get remainingReturn {
-    return totalReturn - remainingDebt;
+    return totalReturnFinal - remainingDebt;
   }
 
   double get totalDiscount {
@@ -368,10 +374,6 @@ class InvoiceModel {
     return totalBill - totalPaid;
   }
 
-  double get change {
-    return totalBill - totalPaid;
-  }
-
   void addPayment(double amount, {String? method, DateTime? date}) {
     payments.add(PaymentModel(
         method: method,
@@ -395,7 +397,7 @@ class InvoiceModel {
   }
 
   void updateReturn() {
-    totalReturn;
+    totalReturnFinal;
   }
 
   void addOtherCost(String name, double amount) {

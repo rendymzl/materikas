@@ -179,8 +179,8 @@ class BuildListTile extends StatelessWidget {
       () {
         List<InvoiceModel> inv = controller.foundInvoices.where((i) {
           return isDebt
-              ? i.totalPaid < i.totalPurchase
-              : i.totalPaid >= i.totalPurchase;
+              ? i.totalPaid < i.totalBill
+              : i.totalPaid >= i.totalBill;
         }).map((purchased) {
           InvoiceModel invPurchase = InvoiceModel.fromJson(purchased.toJson());
           return invPurchase;
@@ -229,36 +229,35 @@ class BuildListTile extends StatelessWidget {
                     Expanded(
                         flex: 4,
                         child: Text(
-                          'Rp${number.format(invoice.totalPurchase)}',
+                          'Rp${number.format(invoice.totalBill)}',
                           style: context.textTheme.titleLarge!
                               .copyWith(fontSize: 15),
                           textAlign: TextAlign.end,
                         )),
                     Expanded(
-                        flex: 5,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 2),
-                          margin: const EdgeInsets.only(left: 50),
-                          decoration: BoxDecoration(
-                            color: isDebt
-                                ? Colors.red
-                                : invoice.totalReturn > 0
-                                    ? Colors.amber
-                                    : Colors.green,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            isDebt
-                                ? 'Rp${number.format(invoice.change)}'
-                                : invoice.totalReturn > 0
-                                    ? 'Rp${number.format(invoice.change)}'
-                                    : 'Lunas',
-                            textAlign: TextAlign.end,
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 15),
-                          ),
-                        )),
+                      flex: 5,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 2),
+                        margin: const EdgeInsets.only(left: 50),
+                        decoration: BoxDecoration(
+                          color: isDebt
+                              ? Colors.red
+                              : invoice.totalReturnFinal > 0
+                                  ? Colors.amber
+                                  : Colors.green,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          isDebt
+                              ? 'Rp${number.format(invoice.remainingDebt)}'
+                              : 'Lunas',
+                          textAlign: TextAlign.end,
+                          style: const TextStyle(
+                              color: Colors.white, fontSize: 15),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
                 subtitle: Padding(

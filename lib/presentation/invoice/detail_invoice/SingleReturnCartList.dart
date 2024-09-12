@@ -178,7 +178,7 @@ class SingleReturnCartList extends StatelessWidget {
                                   const SizedBox(width: 12),
                                   isReturn
                                       ? Text(
-                                          'Rp${currency.format(productCart.getPurchaseReturn(editInvoice.priceType.value))}')
+                                          'Rp${currency.format(productCart.getReturn(editInvoice.priceType.value))}')
                                       : Text(
                                           'Rp${currency.format(productCart.getBill(editInvoice.priceType.value))}'),
                                 ],
