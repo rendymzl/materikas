@@ -54,7 +54,6 @@ class QuantityTextField extends StatelessWidget {
             String unformattedValue = value.replaceAll('.', '');
             String processedValue = unformattedValue.replaceAll(',', '.');
             print('QuantityTextField $processedValue');
-            // controller.quantityHandle(item, processedValue);
             onChanged(processedValue);
           }
         },

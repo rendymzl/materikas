@@ -1,23 +1,61 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../infrastructure/dal/services/invoice_sales_service.dart';
+import '../../../infrastructure/dal/services/sales_service.dart';
+import '../../../infrastructure/models/invoice_sales_model.dart';
+import '../../../infrastructure/models/sales_model.dart';
+import '../../global_widget/app_dialog_widget.dart';
+
 class SalesController extends GetxController {
-  //TODO: Implement SalesController
+  late SalesService salesCustomerSecvice = Get.find();
+  late InvoiceSalesService invoiceSalesService = Get.find();
 
-  final count = 0.obs;
-  @override
-  void onInit() {
-    super.onInit();
+  late final sales = salesCustomerSecvice.sales;
+  late final foundSales = salesCustomerSecvice.foundSales;
+
+  Rx<SalesModel?> selectedSales = Rx<SalesModel?>(null);
+
+  late final salesInvoices = invoiceSalesService.invoices;
+  final invoiceById = <InvoiceSalesModel>[].obs;
+
+  final salesTextC = TextEditingController();
+  final GlobalKey textFieldKey = GlobalKey();
+  final showSuffixClear = false.obs;
+
+  void filterSales(String salesName) {
+    salesCustomerSecvice.search(salesName);
   }
 
-  @override
-  void onReady() {
-    super.onReady();
+  void selectedSalesHandle(SalesModel sales) {
+    selectedSales.value = sales;
+    showSuffixClear.value = true;
+    salesTextC.text = selectedSales.value!.name!;
+    invoiceById.value =
+        selectedSales.value!.getInvoiceListBySalesId(salesInvoices);
   }
 
-  @override
-  void onClose() {
-    super.onClose();
+  //! delete
+  destroyHandle(SalesModel customer) async {
+    AppDialog.show(
+      title: 'Hapus Sales',
+      content: 'Hapus Sales ini?',
+      confirmText: "Ya",
+      cancelText: "Tidak",
+      confirmColor: Colors.grey,
+      cancelColor: Get.theme.primaryColor,
+      onConfirm: () async {
+        salesCustomerSecvice.delete(customer.id!);
+        Get.back();
+        Get.back();
+      },
+      onCancel: () => Get.back(),
+    );
   }
 
-  void increment() => count.value++;
+  void clear() {
+    showSuffixClear.value = false;
+    selectedSales.value = null;
+    salesTextC.text = '';
+  }
 }

@@ -71,7 +71,7 @@ class CartWidget extends StatelessWidget {
                           style: context.textTheme.bodyMedium,
                         ),
                         if (controller.priceType.value != 1 &&
-                            sellPrice != item.product.sellPrice1)
+                            sellPrice != item.product.sellPrice1.value)
                           Text(
                             'Rp${currency.format(item.product.sellPrice1.value)}',
                             maxLines: 1,

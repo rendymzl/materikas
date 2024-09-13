@@ -1,38 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:materikas/infrastructure/models/invoice_sales_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 
-import '../../../domain/core/interfaces/invoice_repository.dart';
-import '../../models/invoice_model/invoice_model.dart';
+import '../../../domain/core/interfaces/invoice_sales_repository.dart';
 import '../database/powersync.dart';
 
-class InvoiceService extends GetxService implements InvoiceRepository {
-  var invoices = <InvoiceModel>[].obs;
-  var foundInvoices = <InvoiceModel>[].obs;
+class InvoiceSalesService extends GetxService
+    implements InvoiceSalesRepository {
+  var invoices = <InvoiceSalesModel>[].obs;
+  var foundInvoices = <InvoiceSalesModel>[].obs;
+
+  @override
+  void onInit() async {
+    super.onInit();
+  }
 
   void searchInvoicesByName(String invoiceName) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (invoiceName == '') {
         DateTime sevenDaysAgo =
-            DateTime.now().subtract(const Duration(days: 60));
+            DateTime.now().subtract(const Duration(days: 7));
 
-        List<InvoiceModel> subList = invoices.where((invoice) {
+        List<InvoiceSalesModel> subList = invoices.where((invoice) {
           return invoice.createdAt.value!.isAfter(sevenDaysAgo);
         }).toList();
-        List<InvoiceModel> sortInvoice = sortByDate(subList);
+        List<InvoiceSalesModel> sortInvoice = sortByDate(subList);
         foundInvoices.clear();
         foundInvoices.addAll(sortInvoice);
       } else {
-        List<InvoiceModel> sortList = invoices.where((invoice) {
+        List<InvoiceSalesModel> sortList = invoices.where((invoice) {
           return invoice.invoiceId!
-                  .toLowerCase()
-                  .contains(invoiceName.toLowerCase()) ||
-              invoice.customer.value!.name
-                  .toLowerCase()
-                  .contains(invoiceName.toLowerCase());
+              .toLowerCase()
+              .contains(invoiceName.toLowerCase());
         }).toList();
-        List<InvoiceModel> sortInvoice = sortByDate(sortList);
+        List<InvoiceSalesModel> sortInvoice = sortByDate(sortList);
         foundInvoices.clear();
         foundInvoices.addAll(sortInvoice);
       }
@@ -56,7 +59,7 @@ class InvoiceService extends GetxService implements InvoiceRepository {
     // });
   }
 
-  List<InvoiceModel> sortByDate(List<InvoiceModel> invoicesList) {
+  List<InvoiceSalesModel> sortByDate(List<InvoiceSalesModel> invoicesList) {
     invoicesList
         .sort((a, b) => b.createdAt.value!.compareTo(a.createdAt.value!));
     return invoicesList;
@@ -65,11 +68,11 @@ class InvoiceService extends GetxService implements InvoiceRepository {
   @override
   Future<void> subscribe(String storeId) async {
     try {
-      var stream = db.watch('SELECT * FROM invoices WHERE store_id = ?',
+      var stream = db.watch('SELECT * FROM invoices_sales WHERE store_id = ?',
           parameters: [
             storeId
-          ]).map(
-          (data) => data.map((json) => InvoiceModel.fromJson(json)).toList());
+          ]).map((data) =>
+          data.map((json) => InvoiceSalesModel.fromJson(json)).toList());
 
       stream.listen((update) {
         invoices.assignAll(update);
@@ -82,77 +85,58 @@ class InvoiceService extends GetxService implements InvoiceRepository {
   }
 
   @override
-  Future<void> insert(InvoiceModel invoice) async {
+  Future<void> insert(InvoiceSalesModel invoice) async {
     await db.execute(
       '''
-    INSERT INTO invoices(
-      id, store_id, invoice_id, account, created_at, customer, purchase_list,
-      return_list, after_return_list, price_type, discount, tax, return_fee,
-      payments, debt_amount, is_debt_paid, other_costs
-    ) VALUES(uuid(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO invoices_sales(
+      id, store_id, invoice_id, created_at, sales, purchase_list, discount, tax,
+      payments, debt_amount, is_debt_paid
+    ) VALUES(uuid(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''',
       [
         // invoice.id,
         invoice.storeId,
         invoice.invoiceId,
-        invoice.account.value,
         invoice.createdAt.value?.toIso8601String(),
-        invoice.customer.value,
+        invoice.sales.value,
         invoice.purchaseList.value.toJson(),
-        invoice.returnList.value?.toJson(),
-        invoice.afterReturnList.value?.toJson(),
-        invoice.priceType.value,
         invoice.discount.value,
         invoice.tax.value,
-        invoice.returnFee.value,
         invoice.payments.map((e) => e.toJson()).toList(),
         invoice.debtAmount.value,
         invoice.isDebtPaid.value ? 1 : 0,
-        invoice.otherCosts.map((e) => e.toJson()).toList(),
       ],
     );
   }
 
   @override
-  Future<void> update(InvoiceModel updatedInvoice) async {
+  Future<void> update(InvoiceSalesModel updatedInvoice) async {
     await db.execute(
       '''
-    UPDATE invoices SET
+    UPDATE invoices_sales SET
       store_id = ?, 
       invoice_id = ?, 
-      account = ?, 
       created_at = ?, 
-      customer = ?, 
+      sales = ?, 
       purchase_list = ?, 
-      return_list = ?, 
-      after_return_list = ?, 
-      price_type = ?, 
       discount = ?, 
       tax = ?, 
-      return_fee = ?, 
       payments = ?, 
       debt_amount = ?, 
-      is_debt_paid = ?, 
-      other_costs = ?
+      is_debt_paid = ?
     WHERE id = ?
     ''',
       [
         updatedInvoice.storeId,
         updatedInvoice.invoiceId,
-        updatedInvoice.account.value,
         updatedInvoice.createdAt.value?.toIso8601String(),
-        updatedInvoice.customer.value,
+        updatedInvoice.sales.value,
         updatedInvoice.purchaseList.value.toJson(),
-        updatedInvoice.returnList.value?.toJson(),
-        updatedInvoice.afterReturnList.value?.toJson(),
-        updatedInvoice.priceType.value,
         updatedInvoice.discount.value,
         updatedInvoice.tax.value,
-        updatedInvoice.returnFee.value,
         updatedInvoice.payments.map((e) => e.toJson()).toList(),
         updatedInvoice.debtAmount.value,
         updatedInvoice.isDebtPaid.value ? 1 : 0,
-        updatedInvoice.otherCosts.map((e) => e.toJson()).toList(),
         updatedInvoice.id,
       ],
     );
@@ -160,6 +144,11 @@ class InvoiceService extends GetxService implements InvoiceRepository {
 
   @override
   Future<void> delete(String id) async {
-    await db.execute('DELETE FROM invoices WHERE id = ?', [id]);
+    await db.execute(
+      '''
+    DELETE FROM invoices_sales WHERE id = ?
+    ''',
+      [id],
+    );
   }
 }

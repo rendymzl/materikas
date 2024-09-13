@@ -20,7 +20,7 @@ class CardListWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (editInvoice.returnList.value != null) {
+    if (editInvoice.returnList.value == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         editInvoice.returnList.value = Cart(items: <CartItem>[].obs);
       });
@@ -45,31 +45,68 @@ class CardListWidget extends StatelessWidget {
                     isReturn: true,
                   ),
                   const SizedBox(height: 12),
-                  if (isReturnPage)
-                    Obx(
-                      () {
-                        return editInvoice.returnList.value!.items.isNotEmpty
-                            ? Column(
-                                children: [
-                                  Divider(color: Colors.grey[200]),
-                                  Text(
-                                    'Return Tambahan',
+                  isReturnPage
+                      ? Obx(
+                          () {
+                            return editInvoice
+                                    .returnList.value!.items.isNotEmpty
+                                ? Column(
+                                    children: [
+                                      Divider(color: Colors.grey[200]),
+                                      Text(
+                                        'Return Tambahan',
+                                        style: Theme.of(Get.context!)
+                                            .textTheme
+                                            .titleLarge,
+                                        textAlign: TextAlign.end,
+                                      ),
+                                      const SizedBox(height: 12),
+                                      SingleReturnCartList(
+                                        editInvoice: editInvoice,
+                                        cartItemList:
+                                            editInvoice.returnList.value!,
+                                        isReturn: true,
+                                      ),
+                                    ],
+                                  )
+                                : const SizedBox();
+                          },
+                        )
+                      : ListTile(
+                          title: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  'Return Tambahan: ${editInvoice.returnList.value!.items.length}',
+                                  textAlign: TextAlign.right,
+                                  style: Theme.of(Get.context!)
+                                      .textTheme
+                                      .bodyLarge!
+                                      .copyWith(
+                                          color: Theme.of(Get.context!)
+                                              .colorScheme
+                                              .primary),
+                                ),
+                              ),
+                              Expanded(
+                                child: Obx(
+                                  () => Text(
+                                    'Rp${currency.format(editInvoice.subtotalAdditionalReturn)}',
+                                    textAlign: TextAlign.end,
                                     style: Theme.of(Get.context!)
                                         .textTheme
-                                        .titleLarge,
-                                    textAlign: TextAlign.end,
+                                        .bodyLarge!
+                                        .copyWith(
+                                          color: Theme.of(Get.context!)
+                                              .colorScheme
+                                              .primary,
+                                        ),
                                   ),
-                                  const SizedBox(height: 12),
-                                  SingleReturnCartList(
-                                    editInvoice: editInvoice,
-                                    cartItemList: editInvoice.returnList.value!,
-                                    isReturn: true,
-                                  ),
-                                ],
-                              )
-                            : const SizedBox();
-                      },
-                    )
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                   // const SizedBox(height: 12),
                 ],
               ),

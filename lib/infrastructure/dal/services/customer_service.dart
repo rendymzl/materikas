@@ -45,7 +45,7 @@ class CustomerService extends GetxService implements CustomerRepository {
   @override
   Future<void> subscribe(String storeId) async {
     try {
-      var stream = await db.watch('SELECT * FROM customers WHERE store_id = ?',
+      var stream = db.watch('SELECT * FROM customers WHERE store_id = ?',
           parameters: [
             storeId
           ]).map(

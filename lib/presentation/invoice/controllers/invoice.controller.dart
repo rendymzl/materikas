@@ -116,4 +116,8 @@ class InvoiceController extends GetxController {
     dateIsSelected.value = false;
     filterInvoices('');
   }
+
+  destroyHandle(InvoiceModel invoice) async {
+    await _invoiceService.delete(invoice.id!);
+  }
 }

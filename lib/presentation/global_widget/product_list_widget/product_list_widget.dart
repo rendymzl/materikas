@@ -9,10 +9,12 @@ import 'product_list_widget_controller.dart';
 
 class ProductListWidget extends StatelessWidget {
   final Function(ProductModel) onClick;
+  final bool isSales;
 
   const ProductListWidget({
     super.key,
     required this.onClick,
+    this.isSales = false,
   });
 
   @override
@@ -77,6 +79,7 @@ class ProductListWidget extends StatelessWidget {
                   double sellPrice = getPrice.toInt() != 0
                       ? getPrice
                       : foundProduct.sellPrice1.value;
+                  double costPrice = foundProduct.costPrice.value;
                   return Container(
                     padding: const EdgeInsets.symmetric(vertical: 4),
                     decoration: BoxDecoration(
@@ -99,7 +102,7 @@ class ProductListWidget extends StatelessWidget {
                           style: context.textTheme.titleLarge,
                         ),
                         trailing: Text(
-                          'Rp ${currency.format(sellPrice)}',
+                          'Rp ${currency.format(isSales ? costPrice : sellPrice)}',
                           style: const TextStyle(fontSize: 14),
                         ),
                         onTap: () => onClick(foundProduct)),

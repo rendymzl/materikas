@@ -1,21 +1,23 @@
-import '../../domain/core/entities/customer.dart';
 import 'package:powersync/sqlite3_common.dart' as sqlite;
 
-class CustomerModel extends Customer {
-  CustomerModel({
+import '../../domain/core/entities/sales.dart';
+import 'invoice_sales_model.dart';
+
+class SalesModel extends Sales {
+  SalesModel({
     super.id,
-    super.customerId,
+    super.salesId,
     super.createdAt,
-    required super.name,
+    super.name,
     super.phone,
     super.address,
     super.storeId,
   });
 
-  factory CustomerModel.fromJson(Map<String, dynamic> json) {
-    return CustomerModel(
+  factory SalesModel.fromJson(Map<String, dynamic> json) {
+    return SalesModel(
       id: json['id'],
-      customerId: json['customer_id'],
+      salesId: json['sales_id'],
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at']).toLocal()
           : null,
@@ -29,7 +31,7 @@ class CustomerModel extends Customer {
   Map<String, dynamic> toJson() {
     final data = <String, dynamic>{};
     if (id != null) data['id'] = id;
-    data['customer_id'] = customerId;
+    data['sales_id'] = salesId;
     if (createdAt != null) data['created_at'] = createdAt?.toIso8601String();
     data['name'] = name;
     data['phone'] = phone;
@@ -38,10 +40,10 @@ class CustomerModel extends Customer {
     return data;
   }
 
-  factory CustomerModel.fromRow(sqlite.Row row) {
-    return CustomerModel(
+  factory SalesModel.fromRow(sqlite.Row row) {
+    return SalesModel(
       id: row['id'],
-      customerId: row['customer_id'],
+      salesId: row['sales_id'],
       createdAt: row['created_at'] != null
           ? DateTime.parse(row['created_at']).toLocal()
           : null,
@@ -50,5 +52,20 @@ class CustomerModel extends Customer {
       address: row['address'],
       storeId: row['store_id'],
     );
+  }
+
+  List<InvoiceSalesModel> getInvoiceListBySalesId(
+      List<InvoiceSalesModel> salesInvoices) {
+    return salesInvoices
+        .where((invoice) =>
+            invoice.sales.value?.id?.toLowerCase() == id!.toLowerCase())
+        .toList();
+  }
+
+  double getTotalDebt(List<InvoiceSalesModel> salesInvoices) {
+    double totalDebt = getInvoiceListBySalesId(salesInvoices)
+        .fold(0, (prev, invoice) => prev + invoice.remainingDebt);
+
+    return totalDebt;
   }
 }

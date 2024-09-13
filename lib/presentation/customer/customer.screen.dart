@@ -20,7 +20,7 @@ class CustomerScreen extends GetView<CustomerController> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Expanded(child: const CustomerList()),
+                  const Expanded(child: CustomerList()),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Row(

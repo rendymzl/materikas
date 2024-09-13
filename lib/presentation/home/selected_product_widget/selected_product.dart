@@ -47,7 +47,7 @@ class SelectedProduct extends StatelessWidget {
                         ),
                       ],
                     ),
-                  ) //* 2.0 CalculatePrice
+                  )
                 : const SizedBox();
           })
         ],

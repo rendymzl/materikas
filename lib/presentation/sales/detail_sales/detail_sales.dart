@@ -3,27 +3,27 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 
-import '../../../infrastructure/models/customer_model.dart';
+import '../../../infrastructure/models/sales_model.dart';
 import '../../global_widget/popup_page_widget.dart';
-import 'detail_customer_controller.dart';
+import 'detail_sales_controller.dart';
 
-void detailCustomer({CustomerModel? foundCustomer}) {
-  DetailCustomerController controller = Get.put(DetailCustomerController());
+void detailSales({SalesModel? selectedSales}) {
+  DetailSalesController controller = Get.put(DetailSalesController());
 
-  controller.bindingEditData(foundCustomer);
+  controller.bindingEditData(selectedSales);
 
   controller.clickedField['name'] = false;
   controller.clickedField['phone'] = false;
   controller.clickedField['address'] = false;
 
-  final outlineRed =
-      const OutlineInputBorder(borderSide: BorderSide(color: Colors.red));
+  const outlineRed =
+      OutlineInputBorder(borderSide: BorderSide(color: Colors.red));
 
   showPopupPageWidget(
-      title: foundCustomer != null ? 'Edit Pelanggan' : 'Tambah Pelanggan',
-      iconButton: foundCustomer != null
+      title: selectedSales != null ? 'Edit Sales' : 'Tambah Sales',
+      iconButton: selectedSales != null
           ? IconButton(
-              onPressed: () => controller.destroyHandle(foundCustomer),
+              onPressed: () => controller.destroyHandle(selectedSales),
               icon: const Icon(
                 Symbols.delete,
                 color: Colors.red,
@@ -44,7 +44,7 @@ void detailCustomer({CustomerModel? foundCustomer}) {
                   controller: controller.idController,
                   decoration: InputDecoration(
                     border: const OutlineInputBorder(),
-                    labelText: 'ID Pelanggan',
+                    labelText: 'ID Sales',
                     labelStyle: const TextStyle(color: Colors.grey),
                     floatingLabelStyle: TextStyle(
                         color: Theme.of(Get.context!).colorScheme.primary),
@@ -53,14 +53,14 @@ void detailCustomer({CustomerModel? foundCustomer}) {
                   ),
                   onChanged: (value) => controller.clickedField['id'] = true,
                   validator: (value) => controller.idValidator(value!),
-                  onFieldSubmitted: (_) => controller.handleSave(foundCustomer),
+                  onFieldSubmitted: (_) => controller.handleSave(selectedSales),
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
                   controller: controller.nameController,
                   decoration: InputDecoration(
                     border: const OutlineInputBorder(),
-                    labelText: 'Nama Pelanggan',
+                    labelText: 'Nama Sales',
                     labelStyle: const TextStyle(color: Colors.grey),
                     floatingLabelStyle: TextStyle(
                         color: Theme.of(Get.context!).colorScheme.primary),
@@ -69,7 +69,7 @@ void detailCustomer({CustomerModel? foundCustomer}) {
                   ),
                   onChanged: (value) => controller.clickedField['name'] = true,
                   validator: (value) => controller.nameValidator(value!),
-                  onFieldSubmitted: (_) => controller.handleSave(foundCustomer),
+                  onFieldSubmitted: (_) => controller.handleSave(selectedSales),
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
@@ -89,7 +89,7 @@ void detailCustomer({CustomerModel? foundCustomer}) {
                     FilteringTextInputFormatter.allow(RegExp(r'[0-9]'))
                   ],
                   onChanged: (value) => controller.clickedField['phone'] = true,
-                  onFieldSubmitted: (_) => controller.handleSave(foundCustomer),
+                  onFieldSubmitted: (_) => controller.handleSave(selectedSales),
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
@@ -107,7 +107,7 @@ void detailCustomer({CustomerModel? foundCustomer}) {
                   ),
                   onChanged: (value) =>
                       controller.clickedField['address'] = true,
-                  onFieldSubmitted: (_) => controller.handleSave(foundCustomer),
+                  onFieldSubmitted: (_) => controller.handleSave(selectedSales),
                 ),
               ],
             ),
@@ -124,7 +124,7 @@ void detailCustomer({CustomerModel? foundCustomer}) {
         const SizedBox(width: 8),
         Expanded(
           child: ElevatedButton(
-            onPressed: () async => await controller.handleSave(foundCustomer),
+            onPressed: () async => await controller.handleSave(selectedSales),
             child: const Text('Simpan'),
           ),
         ),

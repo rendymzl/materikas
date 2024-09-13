@@ -3,8 +3,10 @@ import 'package:get/get.dart';
 
 import '../../../infrastructure/dal/services/auth_service.dart';
 import '../../../infrastructure/dal/services/customer_service.dart';
+import '../../../infrastructure/dal/services/invoice_sales_service.dart';
 import '../../../infrastructure/dal/services/invoice_service.dart';
 import '../../../infrastructure/dal/services/product_service.dart';
+import '../../../infrastructure/dal/services/sales_service.dart';
 import '../../../infrastructure/models/account_model.dart';
 import '../../../infrastructure/navigation/routes.dart';
 import '../../global_widget/app_dialog_widget.dart';
@@ -15,6 +17,9 @@ class SelectUserController extends GetxController {
   final ProductService _productService = Get.put(ProductService());
   final InvoiceService _invoiceService = Get.put(InvoiceService());
   final CustomerService _customerService = Get.put(CustomerService());
+  final SalesService _salesService = Get.put(SalesService());
+  final InvoiceSalesService _invoiceSalesService =
+      Get.put(InvoiceSalesService());
   final MenuWidgetController _menuC =
       Get.put(MenuWidgetController(), permanent: true);
 
@@ -42,6 +47,8 @@ class SelectUserController extends GetxController {
     await _invoiceService.subscribe(account!.storeId!);
     await _productService.subscribe(account!.storeId!);
     await _customerService.subscribe(account!.storeId!);
+    await _salesService.subscribe(account!.storeId!);
+    await _invoiceSalesService.subscribe(account!.storeId!);
     print('SelectUserController FINISH INIT');
     // print('SelectUserController : ${account.value}');
     super.onInit();

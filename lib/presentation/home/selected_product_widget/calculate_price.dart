@@ -102,6 +102,18 @@ class CalculatePrice extends StatelessWidget {
                             );
                           },
                         ),
+                      if (isEdit)
+                        PropertiesRowWidget(
+                          title: 'Return Tambahan',
+                          value:
+                              '-${currency.format(invoice.subtotalAdditionalReturn)}',
+                          color: Colors.red,
+                        ),
+                      if (isEdit)
+                        PropertiesRowWidget(
+                          title: 'Biaya Return',
+                          value: currency.format(invoice.returnFee.value),
+                        ),
                       // PropertiesRowWidget(
                       //   title: 'Total Biaya Lainnya',
                       //   value: '-${currency.format(invoice.totalOtherCosts)}',
@@ -118,12 +130,7 @@ class CalculatePrice extends StatelessWidget {
                           value: currency.format(invoice.totalPaid),
                           color: Colors.green,
                         ),
-                      if (isEdit)
-                        PropertiesRowWidget(
-                          title: 'Return Tambahan',
-                          value: currency.format(invoice.subtotalReturn),
-                          color: Colors.red,
-                        ),
+
                       if (invoice.totalPaid < invoice.totalBill)
                         SizedBox(
                           height: 48,
