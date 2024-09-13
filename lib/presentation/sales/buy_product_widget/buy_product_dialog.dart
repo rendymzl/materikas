@@ -36,7 +36,7 @@ void buyProductDialog() async {
     height: MediaQuery.of(Get.context!).size.height * (6 / 7),
     width: MediaQuery.of(Get.context!).size.width * (0.75),
     content: SizedBox(
-      height: MediaQuery.of(Get.context!).size.height * (0.68),
+      height: MediaQuery.of(Get.context!).size.height * (0.65),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

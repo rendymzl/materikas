@@ -109,11 +109,11 @@ class CartSalesWidget extends StatelessWidget {
                             Expanded(
                               child: CostTextfield(
                                 item: item,
-                                onChanged: (value) {},
-                                // onChanged: (value) => controller.costHandle(
-                                //   item,
-                                //   value,
-                                // ),
+                                // onChanged: (value) {},
+                                onChanged: (value) => controller.costHandle(
+                                  item,
+                                  value,
+                                ),
                               ),
                             ),
                           ],
@@ -138,11 +138,10 @@ class CartSalesWidget extends StatelessWidget {
                             Expanded(
                               child: QuantityTextField(
                                 item: item,
-                                onChanged: (value) {},
-                                // onChanged: (value) => controller.quantityHandle(
-                                //   item,
-                                //   value,
-                                // ),
+                                onChanged: (value) => controller.quantityHandle(
+                                  item,
+                                  value,
+                                ),
                               ),
                             ),
                           ],
@@ -201,7 +200,10 @@ class CartSalesWidget extends StatelessWidget {
                               child: SellTextfield(
                                 title: 'Harga Jual 1',
                                 asignNumber: item.product.sellPrice1,
-                                onChanged: (value) {},
+                                onChanged: (value) => controller.sellHandle(
+                                  item.product.sellPrice1,
+                                  value,
+                                ),
                               ),
                             ),
                           ],
@@ -218,7 +220,10 @@ class CartSalesWidget extends StatelessWidget {
                               child: SellTextfield(
                                 title: 'Harga Jual 2',
                                 asignNumber: item.product.sellPrice2 ?? 0.0.obs,
-                                onChanged: (value) {},
+                                onChanged: (value) => controller.sellHandle(
+                                  item.product.sellPrice2 ?? 0.0.obs,
+                                  value,
+                                ),
                               ),
                             ),
                           ],
@@ -235,7 +240,10 @@ class CartSalesWidget extends StatelessWidget {
                               child: SellTextfield(
                                 title: 'Harga Jual 3',
                                 asignNumber: item.product.sellPrice3 ?? 0.0.obs,
-                                onChanged: (value) {},
+                                onChanged: (value) => controller.sellHandle(
+                                  item.product.sellPrice3 ?? 0.0.obs,
+                                  value,
+                                ),
                               ),
                             ),
                           ],

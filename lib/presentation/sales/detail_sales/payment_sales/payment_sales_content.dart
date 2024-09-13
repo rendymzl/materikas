@@ -104,76 +104,13 @@ class PaymentSalesContent extends StatelessWidget {
           ),
           // const SizedBox(height: 12),
           if ((invoice.totalDiscount > 0 &&
-                  invoice.totalCost == invoice.remainingDebt) ||
-              controller.isAdditionalDiscount.value)
+              invoice.totalCost == invoice.remainingDebt))
             Text(
               'Rp${currency.format(invoice.subtotalCost)}',
               style: context.textTheme.bodySmall!.copyWith(
                   fontStyle: FontStyle.italic,
                   decoration: TextDecoration.lineThrough),
             ),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: SizedBox(
-                  child: InkWell(
-                    onTap: () => controller.checkBoxAdditionalDiscount(invoice),
-                    child: Row(
-                      children: [
-                        Checkbox(
-                          value: controller.isAdditionalDiscount.value,
-                          onChanged: (value) =>
-                              controller.checkBoxAdditionalDiscount(invoice),
-                        ),
-                        controller.isAdditionalDiscount.value
-                            ? const Text('Diskon Tambahan',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ))
-                            : const Text('Tambahan Diskon',
-                                style: TextStyle(
-                                    fontSize: 12, fontStyle: FontStyle.italic)),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(width: 12),
-              Expanded(
-                child: SizedBox(
-                  child: !controller.isAdditionalDiscount.value
-                      ? null
-                      : TextField(
-                          focusNode: controller.additionalDiscountFocusNode,
-                          // autofocus: true,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          textAlign: TextAlign.right,
-                          controller: controller.additionalDiscountTextC,
-                          decoration: const InputDecoration(
-                            prefixIcon: Text('Rp. ',
-                                style: TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.bold)),
-                            prefixIconConstraints:
-                                BoxConstraints(minWidth: 0, minHeight: 0),
-                            hintText: '0',
-                          ),
-                          keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true),
-                          inputFormatters: [
-                            FilteringTextInputFormatter.allow(RegExp(r'[0-9]'))
-                          ],
-                          onChanged: (value) =>
-                              controller.additionalDiscount(invoice, value)),
-                ),
-              ),
-            ],
-          ),
           const SizedBox(height: 12),
           if (controller.selectedPaymentMethod.value != '')
             Row(

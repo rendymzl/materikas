@@ -138,7 +138,8 @@ class InvoiceSalesModel {
   }
 
   double get subtotalCost {
-    return purchaseList.value.items.fold(0, (prev, item) => prev + item.cost);
+    return purchaseList.value.items
+        .fold(0, (prev, item) => prev + item.subCost);
   }
 
   double get totalIndividualDiscount {

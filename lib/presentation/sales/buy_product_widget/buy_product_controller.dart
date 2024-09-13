@@ -53,6 +53,18 @@ class BuyProductController extends GetxController {
     cart.value.updateDiscount(productId, valueDouble);
   }
 
+  //! SELL ===
+  void sellHandle(RxDouble sellprice, String value) {
+    double valueDouble = value == '' ? 0 : double.parse(value);
+    sellprice.value = valueDouble;
+  }
+
+  //! COST ===
+  void costHandle(CartItem cartItem, String value) {
+    double valueDouble = value == '' ? 0 : double.parse(value);
+    cartItem.product.costPrice.value = valueDouble;
+  }
+
   //! ADD TO CART ===
   void addToCart(ProductModel product) async {
     //! add product to initCartItem
@@ -87,6 +99,33 @@ class BuyProductController extends GetxController {
         curve: Curves.easeInOut,
       );
     });
+    //!---
+  }
+
+  //! QUANTITY HANDLE ===
+  void quantityHandle(CartItem cartItem, String quantity) {
+    //! add product to initCartItem
+    var initCartItem = checkExistence(cartItem.product, initCartList);
+
+    if (initCartItem == null) {
+      var foundProduct = foundProducts
+          .firstWhereOrNull((item) => item.id == cartItem.product.id);
+      CartItem initItem = CartItem.fromJson(cartItem.toJson());
+      if (foundProduct != null) {
+        initItem.product.stock.value = foundProduct.stock.value;
+      }
+      initCartList.add(initItem);
+      initCartItem = initItem;
+    }
+    //!---
+
+    //! change Quantity
+    cartItem.quantity.value = double.tryParse(quantity) ?? 0;
+    //!---
+
+    //! change Stock
+    cartItem.product.stock.value =
+        initCartItem.product.stock.value + cartItem.quantity.value;
     //!---
   }
 

@@ -5,13 +5,15 @@ import '../../../../infrastructure/dal/services/invoice_sales_service.dart';
 import '../../../../infrastructure/dal/services/product_service.dart';
 import '../../../../infrastructure/models/invoice_sales_model.dart';
 import '../../../../infrastructure/models/product_model.dart';
+import '../../../../infrastructure/models/sales_model.dart';
 import '../../../../infrastructure/utils/display_format.dart';
-import '../../../global_widget/app_dialog_widget.dart';
 import '../../buy_product_widget/buy_product_controller.dart';
+import '../../controllers/sales.controller.dart';
 
 class PaymentSalesController extends GetxController {
   late final BuyProductController _buyProductC =
       Get.put(BuyProductController());
+  late final SalesController _salesC = Get.find();
   late final ProductService _productService = Get.find();
   late final InvoiceSalesService _invoiceSalesService = Get.find();
   final paymentMethod = ['cash', 'transfer'].obs;
@@ -22,10 +24,7 @@ class PaymentSalesController extends GetxController {
   var bundleDiscount = 0.0;
 
   final paymentTextC = TextEditingController();
-  final additionalDiscountTextC = TextEditingController();
-  final isAdditionalDiscount = false.obs;
 
-  final additionalDiscountFocusNode = FocusNode();
   final paymentTextFocusNode = FocusNode();
   final GlobalKey lastWidgetKey = GlobalKey();
   // final scrollC = ScrollController();
@@ -41,19 +40,6 @@ class PaymentSalesController extends GetxController {
     });
   }
 
-  void checkBoxAdditionalDiscount(InvoiceSalesModel invoice) async {
-    isAdditionalDiscount.value = !isAdditionalDiscount.value;
-    additionalDiscountTextC.text = '';
-    bill.value = invoice.remainingDebt;
-
-    Future.delayed(const Duration(milliseconds: 100)).then((_) {
-      scrollToLastWidget();
-    });
-    Future.delayed(const Duration(milliseconds: 300)).then((_) {
-      additionalDiscountFocusNode.requestFocus();
-    });
-  }
-
   void scrollToLastWidget() async {
     final context = lastWidgetKey.currentContext;
     if (context != null) {
@@ -63,24 +49,6 @@ class PaymentSalesController extends GetxController {
         curve: Curves.easeInOut,
       );
     }
-  }
-
-  void additionalDiscount(InvoiceSalesModel invoice, String value) {
-    if (value.isNotEmpty) {
-      String newValue =
-          currency.format(double.parse(value.replaceAll('.', '')));
-      if (newValue != additionalDiscountTextC.text) {
-        additionalDiscountTextC.value = TextEditingValue(
-          text: newValue,
-          selection: TextSelection.collapsed(offset: newValue.length),
-        );
-      }
-    }
-
-    // double valueInt = value == '' ? 0 : double.parse(value.replaceAll('.', ''));
-    // invoice.purchaseList.value.bundleDiscount.value = valueInt;
-    // bill.value = invoice.remainingDebt - valueInt;
-    updateBill(invoice);
   }
 
   void onPayChanged(InvoiceSalesModel invoice, String value) {
@@ -104,10 +72,8 @@ class PaymentSalesController extends GetxController {
     pay = paymentTextC.text == ''
         ? 0
         : double.parse(paymentTextC.text.replaceAll('.', ''));
-    bundleDiscount = additionalDiscountTextC.text == ''
-        ? 0
-        : double.parse(additionalDiscountTextC.text.replaceAll('.', ''));
-    bill.value = invoice.remainingDebt - bundleDiscount;
+
+    bill.value = invoice.remainingDebt;
     moneyChange.value = bill.value - pay;
   }
 
@@ -164,9 +130,6 @@ class PaymentSalesController extends GetxController {
       {bool isEdit = false, bool onlyPayment = false}) async {
     await addPayment(invoice);
 
-    InvoiceSalesModel printInvoice =
-        InvoiceSalesModel.fromJson(invoice.toJson());
-
     Get.defaultDialog(
       title: 'Menyimpan Invoice...',
       content: const CircularProgressIndicator(),
@@ -195,6 +158,12 @@ class PaymentSalesController extends GetxController {
       if (!isEdit || !onlyPayment) {
         await _invoiceSalesService.insert(invoice);
         _buyProductC.clear();
+        late SalesModel selectedSales;
+        selectedSales = _salesC.sales
+            .firstWhere((sales) => sales.id == _salesC.selectedSales.value!.id);
+        _salesC.selectedSales.value = null;
+        _salesC.selectedSalesHandle(selectedSales);
+        Get.back();
         Get.back();
       } else {
         await _invoiceSalesService.update(invoice);
@@ -204,15 +173,9 @@ class PaymentSalesController extends GetxController {
 
       Get.back();
 
-      AppDialog.show(
+      await Get.defaultDialog(
         title: 'Berhasil',
-        content: 'Invoice berhasil disimpan.',
-        confirmText: "Cetak Invoice",
-        cancelText: "Kembali",
-        onConfirm: () async {
-          print(printInvoice);
-          Get.back();
-        },
+        middleText: 'Invoice berhasil disimpan.',
       );
     } catch (e) {
       await Get.defaultDialog(

@@ -13,8 +13,6 @@ void paymentSalesPopup(InvoiceSalesModel invoice,
   controller.clear();
   controller.bill.value = invoice.remainingDebt;
   controller.moneyChange.value = invoice.remainingDebt;
-  controller.additionalDiscountTextC.text = '';
-  controller.isAdditionalDiscount.value = false;
 
   showPopupPageWidget(
     title: 'Pembayaran',
