@@ -219,6 +219,16 @@ class PaymentController extends GetxController {
           print('stock updatedCart ${updatedCart.product.stock.value}');
           ProductModel updatedProduct =
               ProductModel.fromJson(updatedCart.product.toJson());
+
+          var initCart = _homeC.initCartList.firstWhereOrNull(
+            (cart) => cart.product.id == updatedProduct.id,
+          );
+          if (initCart != null) {
+            updatedProduct.sellPrice1 = initCart.product.sellPrice1;
+            updatedProduct.sellPrice2 = initCart.product.sellPrice2;
+            updatedProduct.sellPrice3 = initCart.product.sellPrice3;
+          }
+
           productList.add(updatedProduct);
         }
 

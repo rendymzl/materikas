@@ -46,6 +46,9 @@ class HomeController extends GetxController {
       );
       if (product != null) {
         product.stock.value = cartItem.product.stock.value;
+        product.sellPrice1 = cartItem.product.sellPrice1;
+        product.sellPrice2 = cartItem.product.sellPrice2;
+        product.sellPrice3 = cartItem.product.sellPrice3;
       }
     }
     super.onClose();
@@ -140,6 +143,13 @@ class HomeController extends GetxController {
   void discountHandle(String productId, String value) {
     double valueDouble = value == '' ? 0 : double.parse(value);
     cart.value.updateDiscount(productId, valueDouble);
+  }
+
+  //! SELLPRICE ===
+  void sellPriceHandle(RxDouble sellPrice, String value) {
+    double valueDouble = value == '' ? 0 : double.parse(value);
+    sellPrice.value = valueDouble;
+    // cart.value.updateDiscount(productId, valueDouble);
   }
 
   Rx<CustomerModel?> selectedCustomer = Rx<CustomerModel?>(null);

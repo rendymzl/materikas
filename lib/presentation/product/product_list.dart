@@ -13,6 +13,18 @@ class ProductList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ProductController controller = Get.find();
+    ScrollController scrollC = ScrollController();
+
+    void onScroll() {
+      double maxScroll = scrollC.position.maxScrollExtent;
+      double currentScroll = scrollC.position.pixels;
+
+      if (maxScroll == currentScroll && controller.hasMore.value) {
+        controller.loadMore();
+      }
+    }
+
+    scrollC.addListener(onScroll);
 
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -74,19 +86,41 @@ class ProductList extends StatelessWidget {
           Divider(color: Colors.grey[500]),
           Expanded(
             child: Obx(
-              () => ListView.separated(
-                separatorBuilder: (context, index) =>
-                    Divider(color: Colors.grey[300]),
-                itemCount: !controller.isLowStock.value
-                    ? controller.lowStockProduct.length
-                    : controller.foundProducts.length,
-                itemBuilder: (BuildContext context, int index) {
-                  final foundProduct = controller.isLowStock.value
-                      ? controller.lowStockProduct[index]
-                      : controller.foundProducts[index];
-                  return TableContent(foundProduct: foundProduct);
-                },
-              ),
+              () {
+                if (controller.displayedItems.isEmpty &&
+                    controller.isLoading.value) {
+                  return const Center(
+                      child:
+                          CircularProgressIndicator()); // Tampilkan loading jika pertama kali
+                }
+                final productList = controller.isLowStock.value
+                    ? controller.lowStockProduct
+                    : controller.displayedItems;
+                return ListView.separated(
+                  separatorBuilder: (context, index) =>
+                      Divider(color: Colors.grey[300]),
+                  controller: controller.isLowStock.value ? null : scrollC,
+                  itemCount: controller.isLowStock.value
+                      ? productList.length
+                      : productList.length + 1,
+                  itemBuilder: (BuildContext context, int index) {
+                    if (index == controller.displayedItems.length) {
+                      // Indikator loading di bagian bawah
+                      if (controller.isLoading.value) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (!controller.hasMore.value) {
+                        return const Center(child: Text("Tidak ada data lagi"));
+                      } else {
+                        return const SizedBox.shrink();
+                      }
+                    }
+
+                    final foundProduct = productList[index];
+
+                    return TableContent(foundProduct: foundProduct);
+                  },
+                );
+              },
             ),
           ),
         ],

@@ -10,6 +10,8 @@ import '../database/powersync.dart';
 class InvoiceService extends GetxService implements InvoiceRepository {
   var invoices = <InvoiceModel>[].obs;
   var foundInvoices = <InvoiceModel>[].obs;
+  var paidInv = <InvoiceModel>[].obs;
+  var debtInv = <InvoiceModel>[].obs;
 
   void searchInvoicesByName(String invoiceName) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -36,6 +38,20 @@ class InvoiceService extends GetxService implements InvoiceRepository {
         foundInvoices.clear();
         foundInvoices.addAll(sortInvoice);
       }
+
+      paidInv.value = foundInvoices.where((i) {
+        return i.totalPaid >= i.totalBill;
+      }).map((purchased) {
+        InvoiceModel invPurchase = InvoiceModel.fromJson(purchased.toJson());
+        return invPurchase;
+      }).toList();
+
+      debtInv.value = foundInvoices.where((i) {
+        return i.totalPaid < i.totalBill;
+      }).map((purchased) {
+        InvoiceModel invPurchase = InvoiceModel.fromJson(purchased.toJson());
+        return invPurchase;
+      }).toList();
     });
   }
 

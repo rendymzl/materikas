@@ -20,7 +20,7 @@ class ProductScreen extends GetView<ProductController> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Expanded(child: const ProductList()),
+                  const Expanded(child: ProductList()),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Row(

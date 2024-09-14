@@ -10,7 +10,52 @@ class InvoiceController extends GetxController {
   late final InvoiceService _invoiceService = Get.find();
   late final invoices = _invoiceService.invoices;
   late final foundInvoices = _invoiceService.foundInvoices;
+  late final paidInv = _invoiceService.paidInv;
+  late final debtInv = _invoiceService.debtInv;
   late InvoiceModel initInvoice;
+
+  // var searchQuery = ''.obs;
+  var displayedItems = <InvoiceModel>[].obs; // Data yang ditampilkan saat ini
+  var isLoading = false.obs; // Untuk memantau status loading
+  var hasMore = true.obs; // Memantau apakah masih ada data lagi
+  var page = 1; // Halaman data saat ini
+
+  final int limit = 20; // Batas data per halaman
+
+  @override
+  void onInit() {
+    super.onInit();
+    loadMore(); // Memuat data awal
+    // ever(
+    //     searchQuery,
+    //     (value) => debounce(searchQuery, (value) {
+    //           filterInvoices(value);
+    //           print(value);
+    //         }, time: const Duration(seconds: 1)));
+  }
+
+  void loadMore() {
+    if (isLoading.value || !hasMore.value) return;
+
+    isLoading.value = true;
+
+    // Ambil data dari list yang ada berdasarkan pagination
+    int startIndex = (page - 1) * limit;
+    int endIndex = startIndex + limit;
+
+    List<InvoiceModel> newData = paidInv.sublist(
+        startIndex, endIndex > paidInv.length ? paidInv.length : endIndex);
+
+    if (newData.isEmpty) {
+      hasMore.value = false; // Tidak ada data lagi
+    } else {
+      displayedItems
+          .addAll(newData); // Tambahkan data baru ke list yang ditampilkan
+      page++; // Naikkan halaman
+    }
+    print(displayedItems.length);
+    isLoading.value = false;
+  }
 
   void filterInvoices(dynamic searchValue) {
     if (searchValue is String) {
@@ -18,6 +63,18 @@ class InvoiceController extends GetxController {
     } else if (searchValue is PickerDateRange) {
       _invoiceService.searchInvoicesByPickerDateRange(searchValue);
     }
+    hasMore.value = true;
+    page = 1;
+
+    debounce(searchValue, (value) {
+      if (value == '') {
+        displayedItems.clear();
+        loadMore();
+      } else {
+        displayedItems.assignAll(foundInvoices);
+      }
+      print(value);
+    }, time: const Duration(seconds: 1));
   }
 
   final startFilteredDate = ''.obs;

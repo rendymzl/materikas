@@ -6,6 +6,7 @@ import '../../../infrastructure/models/invoice_model/cart_item_model.dart';
 import '../../../infrastructure/utils/display_format.dart';
 import '../../global_widget/field_discount_widget/field_discount_widget.dart';
 import '../../global_widget/field_quantity_widget/field_quantity_widget.dart';
+import '../../global_widget/field_sell_widget/field_sell_widget.dart';
 import '../controllers/home.controller.dart';
 
 class CartWidget extends StatelessWidget {
@@ -24,9 +25,22 @@ class CartWidget extends StatelessWidget {
 
     return Obx(
       () {
-        double getPrice = item.getPrice(controller.priceType.value);
-        double sellPrice =
-            getPrice != 0 ? getPrice : item.product.sellPrice1.value;
+        RxDouble sellPrice = switch (controller.priceType.value) {
+          1 => item.product.sellPrice1,
+          2 => item.product.sellPrice2 != null &&
+                  item.product.sellPrice2 != 0.0.obs
+              ? item.product.sellPrice2!
+              : item.product.sellPrice1,
+          3 => item.product.sellPrice3 != null &&
+                  item.product.sellPrice3 != 0.0.obs
+              ? item.product.sellPrice3!
+              : item.product.sellPrice1,
+          _ => item.product.sellPrice1,
+        };
+
+        // var getPrice = item.getPrice(controller.priceType.value).obs;
+        // var sellPrice =
+        //     getPrice != 0.0.obs ? getPrice : item.product.sellPrice1;
         return Container(
           color: index.isEven ? Colors.grey[100] : Colors.white,
           child: ListTile(
@@ -59,6 +73,7 @@ class CartWidget extends StatelessWidget {
               ],
             ),
             subtitle: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   flex: 5,
@@ -66,12 +81,28 @@ class CartWidget extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Rp${currency.format(sellPrice)}',
-                          style: context.textTheme.bodyMedium,
+                        Row(
+                          children: [
+                            Expanded(
+                              child: SellTextfield(
+                                title: 'Harga Jual',
+                                asignNumber: sellPrice,
+                                onChanged: (value) =>
+                                    controller.sellPriceHandle(
+                                  sellPrice,
+                                  value,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
+                        // Text(
+                        //   'Rp${currency.format(sellPrice)}',
+                        //   style: context.textTheme.bodyMedium,
+                        // ),
+
                         if (controller.priceType.value != 1 &&
-                            sellPrice != item.product.sellPrice1.value)
+                            sellPrice != item.product.sellPrice1)
                           Text(
                             'Rp${currency.format(item.product.sellPrice1.value)}',
                             maxLines: 1,
@@ -83,6 +114,7 @@ class CartWidget extends StatelessWidget {
                     ),
                   ),
                 ),
+                const SizedBox(width: 16),
                 Expanded(
                   flex: 6,
                   child: SizedBox(

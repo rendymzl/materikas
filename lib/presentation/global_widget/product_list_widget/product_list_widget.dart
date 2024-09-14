@@ -20,6 +20,18 @@ class ProductListWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(ProductListWidgetController());
+    ScrollController scrollC = ScrollController();
+
+    void onScroll() {
+      double maxScroll = scrollC.position.maxScrollExtent;
+      double currentScroll = scrollC.position.pixels;
+
+      if (maxScroll == currentScroll && controller.hasMore.value) {
+        controller.loadMore();
+      }
+    }
+
+    scrollC.addListener(onScroll);
 
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -70,45 +82,66 @@ class ProductListWidget extends StatelessWidget {
           ),
           Expanded(
             child: Obx(
-              () => ListView.builder(
-                itemCount: controller.foundProducts.length,
-                itemBuilder: (BuildContext context, int index) {
-                  final foundProduct = controller.foundProducts[index];
-                  double getPrice =
-                      foundProduct.getPrice(controller.priceType.value).value;
-                  double sellPrice = getPrice.toInt() != 0
-                      ? getPrice
-                      : foundProduct.sellPrice1.value;
-                  double costPrice = foundProduct.costPrice.value;
-                  return Container(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    decoration: BoxDecoration(
-                      border: Border.symmetric(
-                        horizontal: BorderSide(color: Colors.grey[200]!),
+              () {
+                if (controller.displayedItems.isEmpty &&
+                    controller.isLoading.value) {
+                  return const Center(
+                      child:
+                          CircularProgressIndicator()); // Tampilkan loading jika pertama kali
+                }
+
+                return ListView.builder(
+                  controller: scrollC,
+                  itemCount: controller.displayedItems.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    if (index == controller.displayedItems.length) {
+                      // Indikator loading di bagian bawah
+                      if (controller.isLoading.value) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (!controller.hasMore.value) {
+                        return const Center(child: Text("Tidak ada data lagi"));
+                      } else {
+                        return const SizedBox.shrink();
+                      }
+                    }
+
+                    final foundProduct = controller.displayedItems[index];
+                    double getPrice =
+                        foundProduct.getPrice(controller.priceType.value).value;
+                    double sellPrice = getPrice.toInt() != 0
+                        ? getPrice
+                        : foundProduct.sellPrice1.value;
+                    double costPrice = foundProduct.costPrice.value;
+                    return Container(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      decoration: BoxDecoration(
+                        border: Border.symmetric(
+                          horizontal: BorderSide(color: Colors.grey[200]!),
+                        ),
                       ),
-                    ),
-                    child: ListTile(
-                        leading: SizedBox(
-                          width: 80,
-                          child: Obx(
-                            () => Text(
-                              '${number.format(foundProduct.stock.value)} ${foundProduct.unit}',
-                              style: context.textTheme.bodySmall,
+                      child: ListTile(
+                          leading: SizedBox(
+                            width: 80,
+                            child: Obx(
+                              () => Text(
+                                '${number.format(foundProduct.stock.value)} ${foundProduct.unit}',
+                                style: context.textTheme.bodySmall,
+                              ),
                             ),
                           ),
-                        ),
-                        title: Text(
-                          foundProduct.productName,
-                          style: context.textTheme.titleLarge,
-                        ),
-                        trailing: Text(
-                          'Rp ${currency.format(isSales ? costPrice : sellPrice)}',
-                          style: const TextStyle(fontSize: 14),
-                        ),
-                        onTap: () => onClick(foundProduct)),
-                  );
-                },
-              ),
+                          title: Text(
+                            foundProduct.productName,
+                            style: context.textTheme.titleLarge,
+                          ),
+                          trailing: Text(
+                            'Rp ${currency.format(isSales ? costPrice : sellPrice)}',
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                          onTap: () => onClick(foundProduct)),
+                    );
+                  },
+                );
+              },
             ),
           ),
           const SizedBox(height: 12),

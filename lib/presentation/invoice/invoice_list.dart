@@ -175,22 +175,45 @@ class BuildListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final InvoiceController controller = Get.find();
+    ScrollController scrollC = ScrollController();
+
+    void onScroll() {
+      double maxScroll = scrollC.position.maxScrollExtent;
+      double currentScroll = scrollC.position.pixels;
+
+      if (maxScroll == currentScroll && controller.hasMore.value) {
+        controller.loadMore();
+      }
+    }
+
+    scrollC.addListener(onScroll);
+
     return Obx(
       () {
-        List<InvoiceModel> inv = controller.foundInvoices.where((i) {
-          return isDebt
-              ? i.totalPaid < i.totalBill
-              : i.totalPaid >= i.totalBill;
-        }).map((purchased) {
-          InvoiceModel invPurchase = InvoiceModel.fromJson(purchased.toJson());
-          return invPurchase;
-        }).toList();
+        if (controller.displayedItems.isEmpty && controller.isLoading.value) {
+          return const Center(
+              child:
+                  CircularProgressIndicator()); // Tampilkan loading jika pertama kali
+        }
+
+        final inv = isDebt ? controller.debtInv : controller.displayedItems;
         return ListView.builder(
           // separatorBuilder: (context, index) =>
           //     Divider(color: Colors.grey[200]),
           shrinkWrap: true,
-          itemCount: inv.length > 50 ? 50 : inv.length,
+          controller: isDebt ? null : scrollC,
+          itemCount: isDebt ? inv.length : inv.length + 1,
           itemBuilder: (BuildContext context, int index) {
+            if (index == controller.displayedItems.length) {
+              // Indikator loading di bagian bawah
+              if (controller.isLoading.value) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (!controller.hasMore.value) {
+                return const Center(child: Text("Tidak ada data lagi"));
+              } else {
+                return const SizedBox.shrink();
+              }
+            }
             final invoice = inv[index];
             return SizedBox(
               // height: 70,
