@@ -7,7 +7,6 @@ import '../../../infrastructure/models/invoice_model/cart_item_model.dart';
 import '../../../infrastructure/models/invoice_model/cart_model.dart';
 import '../../../infrastructure/models/invoice_model/invoice_model.dart';
 import '../../../infrastructure/models/product_model.dart';
-import '../../global_widget/app_dialog_widget.dart';
 import '../../global_widget/payment_widget/payment_widget_controller.dart';
 
 class EditInvoiceController extends GetxController {
@@ -244,9 +243,9 @@ class EditInvoiceController extends GetxController {
 
       Get.back();
 
-      AppDialog.show(
+      await Get.defaultDialog(
         title: 'Berhasil',
-        content: 'Invoice berhasil disimpan.',
+        middleText: 'Invoice berhasil diubah.',
       );
     } catch (e) {
       await Get.defaultDialog(

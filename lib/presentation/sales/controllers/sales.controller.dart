@@ -18,6 +18,7 @@ class SalesController extends GetxController {
 
   late final salesInvoices = invoiceSalesService.invoices;
   final invoiceById = <InvoiceSalesModel>[].obs;
+  late InvoiceSalesModel initInvoice;
 
   final salesTextC = TextEditingController();
   final GlobalKey textFieldKey = GlobalKey();
@@ -36,7 +37,7 @@ class SalesController extends GetxController {
   }
 
   //! delete
-  destroyHandle(SalesModel customer) async {
+  destroyHandle(SalesModel sales) async {
     AppDialog.show(
       title: 'Hapus Sales',
       content: 'Hapus Sales ini?',
@@ -45,12 +46,16 @@ class SalesController extends GetxController {
       confirmColor: Colors.grey,
       cancelColor: Get.theme.primaryColor,
       onConfirm: () async {
-        salesCustomerSecvice.delete(customer.id!);
+        salesCustomerSecvice.delete(sales.id!);
         Get.back();
         Get.back();
       },
       onCancel: () => Get.back(),
     );
+  }
+
+  destroyInvoiceHandle(InvoiceSalesModel invoice) async {
+    await invoiceSalesService.delete(invoice.id!);
   }
 
   void clear() {

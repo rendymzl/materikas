@@ -189,7 +189,7 @@ class BuildListTile extends StatelessWidget {
           // separatorBuilder: (context, index) =>
           //     Divider(color: Colors.grey[200]),
           shrinkWrap: true,
-          itemCount: inv.length,
+          itemCount: inv.length > 50 ? 50 : inv.length,
           itemBuilder: (BuildContext context, int index) {
             final invoice = inv[index];
             return SizedBox(

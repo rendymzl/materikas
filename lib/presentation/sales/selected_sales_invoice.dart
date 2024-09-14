@@ -7,6 +7,7 @@ import '../../infrastructure/models/invoice_sales_model.dart';
 import '../../infrastructure/utils/display_format.dart';
 import 'buy_product_widget/buy_product_dialog.dart';
 import 'controllers/sales.controller.dart';
+import 'detail_invoice_sales/detail_invoice_sales.dart';
 import 'detail_sales/detail_sales.dart';
 
 class SelectedSalesInvoice extends StatelessWidget {
@@ -21,7 +22,7 @@ class SelectedSalesInvoice extends StatelessWidget {
       child: Obx(
         () {
           return controller.selectedSales.value != null
-              ? SelectedSalesCard()
+              ? const SelectedSalesCard()
               : const Center(
                   child: Text('Sales yang dipilih akan ditampilkan disini'));
         },
@@ -124,6 +125,7 @@ class BuildListTile extends StatelessWidget {
     return Obx(
       () {
         List<InvoiceSalesModel> invoiceById = controller.invoiceById;
+
         return ListView.builder(
           // separatorBuilder: (context, index) =>
           //     Divider(color: Colors.grey[200]),
@@ -131,6 +133,7 @@ class BuildListTile extends StatelessWidget {
           itemCount: invoiceById.length,
           itemBuilder: (BuildContext context, int index) {
             final invoice = invoiceById[index];
+            print('invoice.isDebtPaid.value ${invoice.isDebtPaid.value}');
             return SizedBox(
               // height: 70,
               child: ListTile(
@@ -187,6 +190,7 @@ class BuildListTile extends StatelessWidget {
                   ),
                 ),
                 onTap: () {
+                  detailSalesInvoice(invoice);
                   // detailDialogInvoiceSales(
                   //     context, controller, invoiceById[index]);
                 },

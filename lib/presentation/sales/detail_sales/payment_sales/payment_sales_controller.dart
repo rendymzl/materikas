@@ -140,13 +140,6 @@ class PaymentSalesController extends GetxController {
         var productList = <ProductModel>[];
 
         for (var updatedCart in invoice.purchaseList.value.items) {
-          if (updatedCart.product.sold != null) {
-            updatedCart.product.sold!.value =
-                updatedCart.product.sold!.value + updatedCart.quantity.value;
-          } else {
-            updatedCart.product.sold = updatedCart.quantity;
-          }
-          print('stock updatedCart ${updatedCart.product.stock.value}');
           ProductModel updatedProduct =
               ProductModel.fromJson(updatedCart.product.toJson());
           productList.add(updatedProduct);
@@ -155,20 +148,15 @@ class PaymentSalesController extends GetxController {
         await _productService.updateList(productList);
       }
 
-      if (!isEdit || !onlyPayment) {
-        await _invoiceSalesService.insert(invoice);
-        _buyProductC.clear();
-        late SalesModel selectedSales;
-        selectedSales = _salesC.sales
-            .firstWhere((sales) => sales.id == _salesC.selectedSales.value!.id);
-        _salesC.selectedSales.value = null;
-        _salesC.selectedSalesHandle(selectedSales);
-        Get.back();
-        Get.back();
-      } else {
+      if (isEdit || onlyPayment) {
         await _invoiceSalesService.update(invoice);
         clear();
         if (onlyPayment) Get.back();
+      } else {
+        await _invoiceSalesService.insert(invoice);
+        _buyProductC.clear();
+        Get.back();
+        Get.back();
       }
 
       Get.back();

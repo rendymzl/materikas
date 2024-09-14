@@ -18,6 +18,7 @@ class SelectedProductSales extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       child: Obx(
         () {
+          final cart = controller.cart.value;
           final cartItems = controller.cart.value.items;
           return ListView(
             shrinkWrap: true,
@@ -41,9 +42,7 @@ class SelectedProductSales extends StatelessWidget {
                             final item = cartItems[index];
 
                             return CartSalesWidget(
-                              item: item,
-                              index: index,
-                            );
+                                item: item, index: index, cart: cart);
                           },
                         )
                       : const Padding(

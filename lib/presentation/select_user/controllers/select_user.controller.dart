@@ -5,6 +5,7 @@ import '../../../infrastructure/dal/services/auth_service.dart';
 import '../../../infrastructure/dal/services/customer_service.dart';
 import '../../../infrastructure/dal/services/invoice_sales_service.dart';
 import '../../../infrastructure/dal/services/invoice_service.dart';
+import '../../../infrastructure/dal/services/operating_cost_service.dart';
 import '../../../infrastructure/dal/services/product_service.dart';
 import '../../../infrastructure/dal/services/sales_service.dart';
 import '../../../infrastructure/models/account_model.dart';
@@ -20,6 +21,8 @@ class SelectUserController extends GetxController {
   final SalesService _salesService = Get.put(SalesService());
   final InvoiceSalesService _invoiceSalesService =
       Get.put(InvoiceSalesService());
+  final OperatingCostService _operatingCostService =
+      Get.put(OperatingCostService());
   final MenuWidgetController _menuC =
       Get.put(MenuWidgetController(), permanent: true);
 
@@ -49,6 +52,7 @@ class SelectUserController extends GetxController {
     await _customerService.subscribe(account!.storeId!);
     await _salesService.subscribe(account!.storeId!);
     await _invoiceSalesService.subscribe(account!.storeId!);
+    await _operatingCostService.subscribe(account!.storeId!);
     print('SelectUserController FINISH INIT');
     // print('SelectUserController : ${account.value}');
     super.onInit();
