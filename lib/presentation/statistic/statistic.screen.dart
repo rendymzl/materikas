@@ -9,6 +9,7 @@ import '../sales/selected_product_sales_widget/calculate_sales.dart';
 import 'add_operating_cost.dart';
 import 'controllers/statistic.controller.dart';
 import 'date_picker_cart.dart';
+import 'detail_operating_cost.dart';
 
 class StatisticScreen extends GetView<StatisticController> {
   const StatisticScreen({super.key});
@@ -29,14 +30,32 @@ class StatisticScreen extends GetView<StatisticController> {
                   ),
                 ),
                 Expanded(
-                  flex: 3,
+                  flex: 4,
                   child: Card(
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Column(
                         children: [
-                          const SizedBox(
-                              height: 40, child: Text('Biaya Operasional')),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  'Biaya Operasional',
+                                  style: TextStyle(),
+                                ),
+                                IconButton(
+                                  onPressed: () => detailOperatingCost(),
+                                  icon: Icon(Symbols.open_in_new,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .primary),
+                                )
+                              ],
+                            ),
+                          ),
+                          Divider(color: Colors.grey[200]),
                           Expanded(
                             child: Obx(
                               () {
@@ -113,7 +132,7 @@ class StatisticScreen extends GetView<StatisticController> {
                   ),
                 ),
                 const Expanded(
-                  flex: 3,
+                  flex: 4,
                   child: DatePickerCard(),
                 )
               ],

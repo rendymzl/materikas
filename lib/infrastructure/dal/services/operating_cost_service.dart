@@ -8,7 +8,7 @@ import '../database/powersync.dart';
 class OperatingCostService extends GetxService
     implements OperatingCostRepository {
   var operatingCosts = <OperatingCostModel>[].obs;
-  var fountOperatingCost = <OperatingCostModel>[].obs;
+  var foundOperatingCost = <OperatingCostModel>[].obs;
 
   @override
   Future<void> subscribe(String storeId) async {
@@ -21,6 +21,7 @@ class OperatingCostService extends GetxService
 
       stream.listen((update) {
         operatingCosts.assignAll(update);
+        foundOperatingCost.assignAll(update);
       });
     } on PostgrestException catch (e) {
       print(e.message);

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -26,12 +28,12 @@ class InvoiceController extends GetxController {
   void onInit() {
     super.onInit();
     loadMore(); // Memuat data awal
-    // ever(
-    //     searchQuery,
-    //     (value) => debounce(searchQuery, (value) {
-    //           filterInvoices(value);
-    //           print(value);
-    //         }, time: const Duration(seconds: 1)));
+    ever(paidInv, (value) {
+      hasMore.value = true;
+      page = 1;
+      displayedItems.clear();
+      loadMore();
+    });
   }
 
   void loadMore() {
@@ -43,8 +45,11 @@ class InvoiceController extends GetxController {
     int startIndex = (page - 1) * limit;
     int endIndex = startIndex + limit;
 
-    List<InvoiceModel> newData = paidInv.sublist(
-        startIndex, endIndex > paidInv.length ? paidInv.length : endIndex);
+    List<InvoiceModel> newData = [];
+    if (startIndex < paidInv.length) {
+      newData = paidInv.sublist(
+          startIndex, endIndex > paidInv.length ? paidInv.length : endIndex);
+    }
 
     if (newData.isEmpty) {
       hasMore.value = false; // Tidak ada data lagi
@@ -57,24 +62,16 @@ class InvoiceController extends GetxController {
     isLoading.value = false;
   }
 
+  Timer? debounceTimer;
   void filterInvoices(dynamic searchValue) {
     if (searchValue is String) {
-      _invoiceService.searchInvoicesByName(searchValue);
+      if (debounceTimer?.isActive ?? false) debounceTimer?.cancel();
+      debounceTimer = Timer(const Duration(milliseconds: 500), () {
+        _invoiceService.searchInvoicesByName(searchValue);
+      });
     } else if (searchValue is PickerDateRange) {
       _invoiceService.searchInvoicesByPickerDateRange(searchValue);
     }
-    hasMore.value = true;
-    page = 1;
-
-    debounce(searchValue, (value) {
-      if (value == '') {
-        displayedItems.clear();
-        loadMore();
-      } else {
-        displayedItems.assignAll(foundInvoices);
-      }
-      print(value);
-    }, time: const Duration(seconds: 1));
   }
 
   final startFilteredDate = ''.obs;

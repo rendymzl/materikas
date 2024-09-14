@@ -2,6 +2,7 @@ export 'package:materikas/infrastructure/navigation/bindings/controllers/custome
 export 'package:materikas/infrastructure/navigation/bindings/controllers/home.controller.binding.dart'; 
 export 'package:materikas/infrastructure/navigation/bindings/controllers/invoice.controller.binding.dart'; 
 export 'package:materikas/infrastructure/navigation/bindings/controllers/login.controller.binding.dart'; 
+export 'package:materikas/infrastructure/navigation/bindings/controllers/operating_cost.controller.binding.dart'; 
 export 'package:materikas/infrastructure/navigation/bindings/controllers/product.controller.binding.dart'; 
 export 'package:materikas/infrastructure/navigation/bindings/controllers/profile.controller.binding.dart'; 
 export 'package:materikas/infrastructure/navigation/bindings/controllers/sales.controller.binding.dart'; 

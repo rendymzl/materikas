@@ -19,6 +19,7 @@ class StatisticController extends GetxController {
   late final invoices = _invoiceService.invoices;
   late final salesInvoices = _invoiceSalesService.invoices;
   late final operatingCosts = _operatingCostService.operatingCosts;
+  late final foundOperatingCosts = _operatingCostService.foundOperatingCost;
   late final dailyOperatingCosts = <OperatingCostModel>[].obs;
 
   final isDaily = true.obs;

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:get/get.dart';
 
 import '../../../infrastructure/dal/services/product_service.dart';
@@ -22,6 +24,12 @@ class ProductController extends GetxController {
   void onInit() {
     super.onInit();
     loadMore(); // Memuat data awal
+    ever(foundProducts, (value) {
+      hasMore.value = true;
+      page = 1;
+      displayedItems.clear();
+      loadMore();
+    });
   }
 
   void loadMore() {
@@ -33,8 +41,11 @@ class ProductController extends GetxController {
     int startIndex = (page - 1) * limit;
     int endIndex = startIndex + limit;
 
-    List<ProductModel> newData = foundProducts.sublist(startIndex,
-        endIndex > foundProducts.length ? foundProducts.length : endIndex);
+    List<ProductModel> newData = [];
+    if (startIndex < foundProducts.length) {
+      newData = foundProducts.sublist(startIndex,
+          endIndex > foundProducts.length ? foundProducts.length : endIndex);
+    }
 
     if (newData.isEmpty) {
       hasMore.value = false; // Tidak ada data lagi
@@ -47,11 +58,15 @@ class ProductController extends GetxController {
     isLoading.value = false;
   }
 
+  Timer? debounceTimer;
   void filterProducts(String productName) {
-    _productService.search(productName);
-    hasMore.value = true;
-    page = 1;
-    displayedItems.assignAll(foundProducts);
+    if (debounceTimer?.isActive ?? false) debounceTimer?.cancel();
+    debounceTimer = Timer(const Duration(milliseconds: 500), () {
+      _productService.search(productName);
+      hasMore.value = true;
+      page = 1;
+      displayedItems.assignAll(foundProducts);
+    });
   }
 
   final isLowStock = false.obs;

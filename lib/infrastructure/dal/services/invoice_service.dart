@@ -38,20 +38,7 @@ class InvoiceService extends GetxService implements InvoiceRepository {
         foundInvoices.clear();
         foundInvoices.addAll(sortInvoice);
       }
-
-      paidInv.value = foundInvoices.where((i) {
-        return i.totalPaid >= i.totalBill;
-      }).map((purchased) {
-        InvoiceModel invPurchase = InvoiceModel.fromJson(purchased.toJson());
-        return invPurchase;
-      }).toList();
-
-      debtInv.value = foundInvoices.where((i) {
-        return i.totalPaid < i.totalBill;
-      }).map((purchased) {
-        InvoiceModel invPurchase = InvoiceModel.fromJson(purchased.toJson());
-        return invPurchase;
-      }).toList();
+      asignPaidDebtInv();
     });
   }
 
@@ -66,10 +53,28 @@ class InvoiceService extends GetxService implements InvoiceRepository {
         }
         return false;
       }).toList();
+      asignPaidDebtInv();
     } else {
       searchInvoicesByName('');
     }
+
     // });
+  }
+
+  void asignPaidDebtInv() {
+    paidInv.value = foundInvoices.where((i) {
+      return i.totalPaid >= i.totalBill;
+    }).map((purchased) {
+      InvoiceModel invPurchase = InvoiceModel.fromJson(purchased.toJson());
+      return invPurchase;
+    }).toList();
+
+    debtInv.value = foundInvoices.where((i) {
+      return i.totalPaid < i.totalBill;
+    }).map((purchased) {
+      InvoiceModel invPurchase = InvoiceModel.fromJson(purchased.toJson());
+      return invPurchase;
+    }).toList();
   }
 
   List<InvoiceModel> sortByDate(List<InvoiceModel> invoicesList) {

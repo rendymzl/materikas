@@ -76,5 +76,10 @@ class Nav {
       page: () => const SelectUserScreen(),
       binding: SelectUserControllerBinding(),
     ),
+    GetPage(
+      name: Routes.OPERATING_COST,
+      page: () => const OperatingCostScreen(),
+      binding: OperatingCostControllerBinding(),
+    ),
   ];
 }

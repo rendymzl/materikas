@@ -2,6 +2,7 @@ export 'package:materikas/presentation/customer/customer.screen.dart';
 export 'package:materikas/presentation/home/home.screen.dart';
 export 'package:materikas/presentation/invoice/invoice.screen.dart';
 export 'package:materikas/presentation/login/login.screen.dart';
+export 'package:materikas/presentation/operating_cost/operating_cost.screen.dart';
 export 'package:materikas/presentation/product/product.screen.dart';
 export 'package:materikas/presentation/profile/profile.screen.dart';
 export 'package:materikas/presentation/sales/sales.screen.dart';

@@ -11,7 +11,8 @@ class Routes {
   static const PRODUCT = '/product';
   static const PROFILE = '/profile';
   static const SALES = '/sales';
+  static const SELECT_USER = '/select-user';
   static const SPLASH = '/splash';
   static const STATISTIC = '/statistic';
-  static const SELECT_USER = '/select-user';
+  static const OPERATING_COST = '/operating-cost';
 }
