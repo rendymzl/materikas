@@ -6,6 +6,7 @@ import 'package:material_symbols_icons/material_symbols_icons.dart';
 import '../../../infrastructure/models/invoice_model/invoice_model.dart';
 import '../../../infrastructure/utils/display_format.dart';
 import '../../global_widget/app_dialog_widget.dart';
+import '../../global_widget/invoice_print_widget/invoice_print.dart';
 import '../../global_widget/payment_widget/payment_popup_widget.dart';
 import '../../global_widget/popup_page_widget.dart';
 import '../controllers/invoice.controller.dart';
@@ -385,7 +386,7 @@ void detailDialog(InvoiceModel invoice) {
                 : 'Bayar Tagihan'),
           ),
         ElevatedButton(
-          onPressed: () => editInvoice(invoice),
+          onPressed: () => printInvoiceDialog(invoice),
           child: const Text(
             'Cetak',
           ),

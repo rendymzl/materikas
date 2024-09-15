@@ -8,13 +8,9 @@ class SplashScreen extends GetView<SplashController> {
   const SplashScreen({super.key});
   @override
   Widget build(BuildContext context) {
-    controller.Init();
-    return Scaffold(
-      // appBar: AppBar(
-      //   title: const Text('SplashScreen'),
-      //   centerTitle: true,
-      // ),
-      body: const Center(
+    controller.init();
+    return const Scaffold(
+      body: Center(
         child: CircularProgressIndicator(),
       ),
     );

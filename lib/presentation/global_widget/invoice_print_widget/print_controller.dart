@@ -6,23 +6,25 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:thermal_printer/thermal_printer.dart';
 
 import '../../../infrastructure/dal/services/auth_service.dart';
+import '../../../infrastructure/dal/services/store_service.dart';
 import '../../../infrastructure/models/invoice_model/cart_item_model.dart';
 import '../../../infrastructure/models/invoice_model/invoice_model.dart';
+import 'invoice_generator.dart';
+import 'receipt_generator.dart';
+import 'transport_print_generator.dart';
 
 class PrinterController extends GetxController {
   final AuthService _authService = Get.find<AuthService>();
+  final StoreService _storeService = Get.find<StoreService>();
   var devices = <PrinterDevice>[].obs;
   var connected = false.obs;
   final textPromo = TextEditingController();
   late ScrollController scrollController = ScrollController();
   late final account = _authService.account.value;
-  late final store = _authService.stores.value;
+  late final store = _authService.store.value;
 
   final isPrinting = false.obs;
   late final selectedDeviceIndex = (-1).obs;
-
-  // final purchase = <Invoice>[].obs;
-  // final returned = <Invoice>[].obs;
 
   @override
   void onInit() async {
@@ -82,8 +84,8 @@ class PrinterController extends GetxController {
         curve: Curves.easeInOut,
       );
     });
-    store!.promo.value = textPromo.text;
-    await store!.update();
+    store!.promo?.value = textPromo.text;
+    await _storeService.update(store!);
   }
 
   Future<void> scan(PrinterType type, {bool isBle = false}) async {
@@ -154,7 +156,7 @@ class PrinterController extends GetxController {
     });
   }
 
-  Future<void> printReceipt(Invoice invoice) async {
+  Future<void> printReceipt(InvoiceModel invoice) async {
     if (!connected.value) {
       debugPrint("Printer not connected");
       return;
@@ -165,7 +167,7 @@ class PrinterController extends GetxController {
         PrinterType.usb); // Sesuaikan dengan jenis printer yang digunakan
   }
 
-  Future<void> printInvoice(Invoice invoice) async {
+  Future<void> printInvoice(InvoiceModel invoice) async {
     if (!connected.value) {
       debugPrint("Printer not connected");
       return;
@@ -176,7 +178,7 @@ class PrinterController extends GetxController {
         PrinterType.usb); // Sesuaikan dengan jenis printer yang digunakan
   }
 
-  Future<void> printTransport(Invoice invoice) async {
+  Future<void> printTransport(InvoiceModel invoice) async {
     if (!connected.value) {
       debugPrint("Printer not connected");
       return;

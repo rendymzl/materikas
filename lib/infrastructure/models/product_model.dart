@@ -6,36 +6,21 @@ import '../utils/display_format.dart';
 
 class ProductModel extends Product {
   ProductModel({
-    String? id,
-    required String storeId,
-    required String productId,
-    DateTime? createdAt,
-    bool? featured,
-    required String productName,
-    required String unit,
-    required RxDouble costPrice,
-    required RxDouble sellPrice1,
-    RxDouble? sellPrice2,
-    RxDouble? sellPrice3,
-    required RxDouble stock,
-    required RxDouble stockMin,
-    RxDouble? sold,
-  }) : super(
-          id: id,
-          storeId: storeId,
-          productId: productId,
-          createdAt: createdAt,
-          featured: featured,
-          productName: productName,
-          unit: unit,
-          costPrice: costPrice,
-          sellPrice1: sellPrice1,
-          sellPrice2: sellPrice2,
-          sellPrice3: sellPrice3,
-          stock: stock,
-          stockMin: stockMin,
-          sold: sold,
-        );
+    super.id,
+    required super.storeId,
+    required super.productId,
+    super.createdAt,
+    super.featured,
+    required super.productName,
+    required super.unit,
+    required super.costPrice,
+    required super.sellPrice1,
+    super.sellPrice2,
+    super.sellPrice3,
+    required super.stock,
+    required super.stockMin,
+    super.sold,
+  });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
     return ProductModel(

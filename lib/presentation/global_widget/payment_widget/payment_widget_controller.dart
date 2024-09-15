@@ -10,6 +10,7 @@ import '../../../infrastructure/utils/display_format.dart';
 import '../../home/controllers/home.controller.dart';
 import '../app_dialog_widget.dart';
 import '../field_customer_widget/field_customer_widget_controller.dart';
+import '../invoice_print_widget/invoice_print.dart';
 
 class PaymentController extends GetxController {
   late CustomerInputFieldController customerFieldC = Get.find();
@@ -255,10 +256,7 @@ class PaymentController extends GetxController {
         onConfirm: () async {
           print(printInvoice);
           Get.back();
-          // printInvoiceDialog(
-          //   context,
-          //   printInvoice,
-          // );
+          printInvoiceDialog(printInvoice);
         },
       );
 

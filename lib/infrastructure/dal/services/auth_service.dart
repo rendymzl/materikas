@@ -9,18 +9,17 @@ import '../database/powersync.dart';
 class AuthService extends GetxService implements AuthRepository {
   final supabaseClient = Supabase.instance.client;
   late final account = Rx<AccountModel?>(null);
-  late final stores = Rx<StoreModel?>(null);
+  late final store = Rx<StoreModel?>(null);
   var isLogin = false;
 
-  @override
-  void onInit() async {
-    print('AuthService INIT');
-    super.onInit();
-  }
+  // @override
+  // void onInit() async {
+  //   super.onInit();
+  // }
 
   @override
   Future<bool> isLoggedIn() async {
-    final dbUser = await supabaseClient.auth.currentUser;
+    final dbUser = supabaseClient.auth.currentUser;
     return dbUser != null;
   }
 
@@ -48,7 +47,7 @@ class AuthService extends GetxService implements AuthRepository {
     }
     final row = await db.get('SELECT * FROM accounts WHERE account_id = ?',
         [supabaseClient.auth.currentUser!.id]);
-    account.value = await AccountModel.fromRow(row);
+    account.value = AccountModel.fromRow(row);
     print('AuthService: ${account.value}');
     return account.value!;
   }
@@ -65,20 +64,7 @@ class AuthService extends GetxService implements AuthRepository {
     }
     final row = await db
         .get('SELECT * FROM stores WHERE id = ?', [account.value!.storeId!]);
-    stores.value = await StoreModel.fromRow(row);
-    return stores.value!;
-  }
-
-  static Future<Stream<List<AccountModel>>> subscribe(String id) async {
-    try {
-      return db.watch('SELECT * FROM accounts WHERE account_id = ?',
-          parameters: [
-            id
-          ]).map(
-          (data) => data.map((json) => AccountModel.fromJson(json)).toList());
-    } on PostgrestException catch (e) {
-      print(e.message);
-      rethrow;
-    }
+    store.value = StoreModel.fromRow(row);
+    return store.value!;
   }
 }

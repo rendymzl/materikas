@@ -8,13 +8,16 @@ import '../../../infrastructure/dal/services/invoice_service.dart';
 import '../../../infrastructure/dal/services/operating_cost_service.dart';
 import '../../../infrastructure/dal/services/product_service.dart';
 import '../../../infrastructure/dal/services/sales_service.dart';
+import '../../../infrastructure/dal/services/store_service.dart';
 import '../../../infrastructure/models/account_model.dart';
+import '../../../infrastructure/models/store_model.dart';
 import '../../../infrastructure/navigation/routes.dart';
 import '../../global_widget/app_dialog_widget.dart';
 import '../../global_widget/menu_widget/menu_controller.dart';
 
 class SelectUserController extends GetxController {
   final AuthService _authService = Get.find<AuthService>();
+
   final ProductService _productService = Get.put(ProductService());
   final InvoiceService _invoiceService = Get.put(InvoiceService());
   final CustomerService _customerService = Get.put(CustomerService());
@@ -27,6 +30,7 @@ class SelectUserController extends GetxController {
       Get.put(MenuWidgetController(), permanent: true);
 
   late final AccountModel? account;
+  late final StoreModel? store;
 
   final List<Map<String, dynamic>> workers = [
     {'name': 'Account 1', 'password': '1234'},
@@ -43,10 +47,12 @@ class SelectUserController extends GetxController {
 
   @override
   void onInit() async {
+    Get.put(StoreService());
     print('SelectUserController INIT');
     isConnected.value = await _menuC.connected.value;
     print('SelectUserController getAccount');
-    account = await _authService.account.value;
+    account = _authService.account.value;
+    // store = await _storeService.getStore(account!.storeId!);
     await _invoiceService.subscribe(account!.storeId!);
     await _productService.subscribe(account!.storeId!);
     await _customerService.subscribe(account!.storeId!);
