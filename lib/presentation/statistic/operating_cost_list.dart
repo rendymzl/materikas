@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:material_symbols_icons/material_symbols_icons.dart';
 
 import '../../infrastructure/models/operating_cost_model.dart';
+import '../../infrastructure/utils/display_format.dart';
 import 'controllers/statistic.controller.dart';
 
 class OperatingCostList extends StatelessWidget {
@@ -89,7 +91,7 @@ class TableHeader extends StatelessWidget {
             flex: 7,
             child: SizedBox(
               child: Text(
-                'Nama Biaya',
+                'Operasional',
                 style: context.textTheme.headlineSmall,
               ),
             ),
@@ -105,6 +107,10 @@ class TableHeader extends StatelessWidget {
           ),
         ],
       ),
+      trailing: Text(
+        'Hapus',
+        style: context.textTheme.headlineSmall,
+      ),
     );
   }
 }
@@ -118,6 +124,8 @@ class TableContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    StatisticController controller = Get.find();
+
     return ListTile(
       leading: SizedBox(
         width: 50,
@@ -133,7 +141,7 @@ class TableContent extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.only(right: 30),
               child: Text(
-                DateFormat('dd/MM HH:mm', 'id')
+                DateFormat('dd/MMM HH:mm', 'id')
                     .format(operatingCost.createdAt!),
                 style: context.textTheme.titleMedium,
               ),
@@ -152,26 +160,39 @@ class TableContent extends StatelessWidget {
             flex: 6,
             child: SizedBox(
               child: Text(
-                operatingCost.amount?.toString() ?? '',
+                'Rp${currency.format(operatingCost.amount ?? 0)}',
                 style: context.textTheme.titleMedium,
               ),
             ),
           ),
         ],
       ),
-      // trailing: controller.isAdmin
-      //     ? Padding(
-      //         padding: const EdgeInsets.symmetric(horizontal: 4),
-      //         child: IconButton(
-      //           onPressed: () => controller.destroyHandle(foundCustomer),
-      //           icon: const Icon(
-      //             Symbols.delete,
-      //             color: Colors.red,
-      //           ),
-      //         ),
-      //       )
-      //     : null,
-      // onTap: () => detailCustomer(foundCustomer: foundCustomer),
+      trailing: IconButton(
+        onPressed: () async => await Get.defaultDialog(
+          title: 'Hapus',
+          middleText: 'Hapus Biaya?',
+          confirm: TextButton(
+            onPressed: () async {
+              controller.deleteOperatingCost(operatingCost);
+              Get.back();
+            },
+            child: const Text('Hapus'),
+          ),
+          cancel: TextButton(
+            onPressed: () {
+              Get.back();
+            },
+            child: Text(
+              'Batal',
+              style: TextStyle(color: Colors.black.withOpacity(0.5)),
+            ),
+          ),
+        ),
+        icon: const Icon(
+          Symbols.delete_forever,
+          color: Colors.red,
+        ),
+      ),
     );
   }
 }

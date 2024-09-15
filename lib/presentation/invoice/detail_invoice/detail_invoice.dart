@@ -384,6 +384,12 @@ void detailDialog(InvoiceModel invoice) {
                 ? 'Tambah Pembayaran'
                 : 'Bayar Tagihan'),
           ),
+        ElevatedButton(
+          onPressed: () => editInvoice(invoice),
+          child: const Text(
+            'Cetak',
+          ),
+        ),
         // Expanded(
         //   child: OutlinedButton(
         //     onPressed: () => Get.back(),

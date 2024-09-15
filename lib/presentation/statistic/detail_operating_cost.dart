@@ -9,8 +9,7 @@ void detailOperatingCost() {
       title: 'Biaya Operasional',
       height: MediaQuery.of(Get.context!).size.height * (0.9),
       width: MediaQuery.of(Get.context!).size.width * (0.9),
-      content: Container(
-          color: Colors.amber,
+      content: SizedBox(
           height: MediaQuery.of(Get.context!).size.height * (0.70),
           width: MediaQuery.of(Get.context!).size.width * (0.9),
           child: const OperatingCostList()),

@@ -4,21 +4,14 @@ import '../../domain/core/entities/account.dart';
 
 class AccountModel extends Account {
   AccountModel({
-    required String? id,
-    required String email,
-    required String role,
-    required String accountId,
-    required DateTime createdAt,
-    required String name,
-    required String? storeId,
-  }) : super(
-            id: id,
-            email: email,
-            role: role,
-            accountId: accountId,
-            createdAt: createdAt,
-            name: name,
-            storeId: storeId);
+    required super.id,
+    required super.email,
+    required super.role,
+    required super.accountId,
+    required super.createdAt,
+    required super.name,
+    required super.storeId,
+  });
 
   factory AccountModel.fromJson(Map<String, dynamic> json) {
     return AccountModel(

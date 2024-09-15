@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:materikas/domain/core/interfaces/operating_cost_repository.dart';
 import 'package:materikas/infrastructure/models/operating_cost_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 
 import '../database/powersync.dart';
 
@@ -9,6 +10,30 @@ class OperatingCostService extends GetxService
     implements OperatingCostRepository {
   var operatingCosts = <OperatingCostModel>[].obs;
   var foundOperatingCost = <OperatingCostModel>[].obs;
+
+  void searchInvoicesByPickerDateRange(PickerDateRange? invoiceCreatedAt) {
+    if (invoiceCreatedAt != null) {
+      foundOperatingCost.clear();
+      foundOperatingCost.value = operatingCosts.where((oc) {
+        if (oc.createdAt != null) {
+          DateTime invoiceDate = oc.createdAt!;
+          return invoiceDate.isAfter(invoiceCreatedAt.startDate!) &&
+              invoiceDate.isBefore(invoiceCreatedAt.endDate!);
+        }
+        return false;
+      }).toList();
+    } else {
+      foundOperatingCost.clear();
+      foundOperatingCost.addAll(operatingCosts);
+    }
+    sortByDate(foundOperatingCost);
+  }
+
+  List<OperatingCostModel> sortByDate(
+      List<OperatingCostModel> operatingCostList) {
+    operatingCostList.sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
+    return operatingCostList;
+  }
 
   @override
   Future<void> subscribe(String storeId) async {
@@ -22,6 +47,7 @@ class OperatingCostService extends GetxService
       stream.listen((update) {
         operatingCosts.assignAll(update);
         foundOperatingCost.assignAll(update);
+        sortByDate(foundOperatingCost);
       });
     } on PostgrestException catch (e) {
       print(e.message);

@@ -3,11 +3,13 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../domain/core/interfaces/auth_repository.dart';
 import '../../models/account_model.dart';
+import '../../models/store_model.dart';
 import '../database/powersync.dart';
 
 class AuthService extends GetxService implements AuthRepository {
   final supabaseClient = Supabase.instance.client;
   late final account = Rx<AccountModel?>(null);
+  late final stores = Rx<StoreModel?>(null);
   var isLogin = false;
 
   @override
@@ -49,6 +51,22 @@ class AuthService extends GetxService implements AuthRepository {
     account.value = await AccountModel.fromRow(row);
     print('AuthService: ${account.value}');
     return account.value!;
+  }
+
+  @override
+  Future<StoreModel> getStore() async {
+    while (db.currentStatus.lastSyncedAt == null) {
+      await Future.delayed(const Duration(seconds: 2));
+      print(db.currentStatus);
+      print('menunggu koneksi');
+      if (db.currentStatus.lastSyncedAt == null) {
+        print('mencoba koneksi ulang');
+      }
+    }
+    final row = await db
+        .get('SELECT * FROM stores WHERE id = ?', [account.value!.storeId!]);
+    stores.value = await StoreModel.fromRow(row);
+    return stores.value!;
   }
 
   static Future<Stream<List<AccountModel>>> subscribe(String id) async {

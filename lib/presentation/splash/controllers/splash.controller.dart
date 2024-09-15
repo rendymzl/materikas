@@ -15,6 +15,7 @@ class SplashController extends GetxController {
     if (isLoggedIn) {
       print('SplashController: Get Account');
       await _authService.getAccount();
+      await _authService.getStore();
       print('SplashController: ${_authService.getAccount()}');
       Get.offAllNamed(Routes.SELECT_USER);
     } else {
