@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 import 'infrastructure/dal/database/powersync.dart';
 import 'infrastructure/navigation/navigation.dart';
@@ -12,6 +13,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   var initialRoute = await Routes.initialRoute;
   await openDatabase();
+  await Hive.initFlutter();
+
   runApp(Main(initialRoute));
 }
 

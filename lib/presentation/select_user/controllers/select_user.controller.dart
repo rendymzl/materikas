@@ -1,44 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:hive/hive.dart';
 
 import '../../../infrastructure/dal/services/auth_service.dart';
-import '../../../infrastructure/dal/services/customer_service.dart';
-import '../../../infrastructure/dal/services/invoice_sales_service.dart';
-import '../../../infrastructure/dal/services/invoice_service.dart';
-import '../../../infrastructure/dal/services/operating_cost_service.dart';
-import '../../../infrastructure/dal/services/product_service.dart';
-import '../../../infrastructure/dal/services/sales_service.dart';
-import '../../../infrastructure/dal/services/store_service.dart';
-import '../../../infrastructure/models/account_model.dart';
-import '../../../infrastructure/models/store_model.dart';
+import '../../../infrastructure/models/user_model.dart';
 import '../../../infrastructure/navigation/routes.dart';
 import '../../global_widget/app_dialog_widget.dart';
-import '../../global_widget/menu_widget/menu_controller.dart';
 
 class SelectUserController extends GetxController {
   final AuthService _authService = Get.find<AuthService>();
 
-  final ProductService _productService = Get.put(ProductService());
-  final InvoiceService _invoiceService = Get.put(InvoiceService());
-  final CustomerService _customerService = Get.put(CustomerService());
-  final SalesService _salesService = Get.put(SalesService());
-  final InvoiceSalesService _invoiceSalesService =
-      Get.put(InvoiceSalesService());
-  final OperatingCostService _operatingCostService =
-      Get.put(OperatingCostService());
-  final MenuWidgetController _menuC =
-      Get.put(MenuWidgetController(), permanent: true);
-
-  late final AccountModel? account;
-  late final StoreModel? store;
-
-  final List<Map<String, dynamic>> workers = [
-    {'name': 'Account 1', 'password': '1234'},
-    {'name': 'Account 2', 'password': '1234'},
-    {'name': 'Account 3', 'password': '1234'},
-  ].obs;
-  var selectedUser = ''.obs;
+  late final Box<dynamic> box;
+  final isLoading = true.obs;
   late final isConnected = false.obs;
+  late final account = _authService.account;
+  late final store = _authService.store;
+
+  final workers = <Cashier>[].obs;
+  var selectedUser = ''.obs;
+
   final TextEditingController passwordController = TextEditingController();
 
   void selectUser(String user) {
@@ -47,41 +27,55 @@ class SelectUserController extends GetxController {
 
   @override
   void onInit() async {
-    Get.put(StoreService());
-    print('SelectUserController INIT');
-    isConnected.value = await _menuC.connected.value;
-    print('SelectUserController getAccount');
-    account = _authService.account.value;
-    // store = await _storeService.getStore(account!.storeId!);
-    await _invoiceService.subscribe(account!.storeId!);
-    await _productService.subscribe(account!.storeId!);
-    await _customerService.subscribe(account!.storeId!);
-    await _salesService.subscribe(account!.storeId!);
-    await _invoiceSalesService.subscribe(account!.storeId!);
-    await _operatingCostService.subscribe(account!.storeId!);
-    print('SelectUserController FINISH INIT');
+    isLoading.value = true;
+    box = await Hive.openBox('selectedUser');
+    isLoading.value = false;
     // print('SelectUserController : ${account.value}');
+    String? user = await isSelectedUser();
+    if (user?.isNotEmpty ?? false) {
+      selectedUser.value = user!;
+      _authService.selectedUser.value = selectedUser.value;
+      Get.offAllNamed(Routes.HOME);
+    }
     super.onInit();
+  }
+
+  Future<String?> isSelectedUser() async {
+    return box.get('user');
+  }
+
+  void goToHome() {
+    _authService.selectedUser.value = selectedUser.value;
+    box.put('user', selectedUser.value);
+    Get.offAllNamed(Routes.HOME);
   }
 
   void loginUserHandle() {
     if (selectedUser.isNotEmpty && passwordController.text.isNotEmpty) {
       // Implementasi logika login
-      final worker = workers
-          .firstWhereOrNull((worker) => worker['name'] == selectedUser.value);
-      if (worker != null && worker['password'] == passwordController.text) {
-        print('Login berhasil untuk ${selectedUser.value}');
-        Get.offAllNamed(Routes.HOME);
-      } else {
-        if ('Admin' == selectedUser.value &&
-            '1234' == passwordController.text) {
+      if (account.value!.role == selectedUser.value) {
+        if (account.value!.password == passwordController.text) {
           print('Login berhasil untuk ${selectedUser.value}');
-          Get.offAllNamed(Routes.HOME);
+          goToHome();
         } else {
           Get.defaultDialog(
             title: 'Error',
             content: Text('Password tidak cocok dengan akun yang dipilih!'),
           );
+        }
+      } else {
+        var cashier = account.value!.users.firstWhereOrNull(
+          (u) => u.name == selectedUser.value,
+        );
+        if (cashier != null) {
+          if (cashier.password == passwordController.text) {
+            goToHome();
+          } else {
+            Get.defaultDialog(
+              title: 'Error',
+              content: Text('Password tidak cocok dengan akun yang dipilih!'),
+            );
+          }
         }
       }
     } else {

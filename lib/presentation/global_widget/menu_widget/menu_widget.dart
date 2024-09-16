@@ -48,29 +48,39 @@ class MenuWidget extends GetView<MenuWidgetController> {
           ),
           IconButton(
             onPressed: () async {
-              controller.connected.value
-                  ? AppDialog.show(
-                      title: 'Keluar',
-                      content: 'Keluar dari aplikasi?',
-                      confirmText: "Ya",
-                      cancelText: "Tidak",
-                      confirmColor: Colors.grey,
-                      cancelColor: Get.theme.primaryColor,
-                      onConfirm: () => controller.signOut(),
-                      onCancel: () => Get.back(),
-                    )
-                  : await Get.defaultDialog(
-                      title: 'Error',
-                      middleText:
-                          'Tidak ada koneksi internet untuk mengeluarkan akun.',
-                      confirm: TextButton(
-                        onPressed: () {
-                          Get.back();
-                          Get.back();
-                        },
-                        child: const Text('OK'),
-                      ),
-                    );
+              AppDialog.show(
+                title: 'Keluar',
+                content: 'Ganti Pengguna?',
+                confirmText: "Ya",
+                cancelText: "Tidak",
+                confirmColor: Colors.grey,
+                cancelColor: Get.theme.primaryColor,
+                onConfirm: () => controller.changeUser(),
+                onCancel: () => Get.back(),
+              );
+              // controller.connected.value
+              //     ? AppDialog.show(
+              //         title: 'Keluar',
+              //         content: 'Keluar dari aplikasi?',
+              //         confirmText: "Ya",
+              //         cancelText: "Tidak",
+              //         confirmColor: Colors.grey,
+              //         cancelColor: Get.theme.primaryColor,
+              //         onConfirm: () => controller.signOut(),
+              //         onCancel: () => Get.back(),
+              //       )
+              //     : await Get.defaultDialog(
+              //         title: 'Error',
+              //         middleText:
+              //             'Tidak ada koneksi internet untuk mengeluarkan akun.',
+              //         confirm: TextButton(
+              //           onPressed: () {
+              //             Get.back();
+              //             Get.back();
+              //           },
+              //           child: const Text('OK'),
+              //         ),
+              //       );
             },
             icon: const Icon(Symbols.logout),
           ),

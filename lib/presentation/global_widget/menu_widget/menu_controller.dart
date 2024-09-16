@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:hive/hive.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
@@ -60,6 +61,12 @@ class MenuWidgetController extends GetxController {
         Get.offNamed(Routes.PROFILE);
         break;
     }
+  }
+
+  Future<void> changeUser() async {
+    var box = await Hive.openBox('selectedUser');
+    box.put('user', '');
+    Get.offAllNamed(Routes.SELECT_USER);
   }
 
   Future<void> signOut() async {

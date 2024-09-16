@@ -11,130 +11,141 @@ class SelectUserScreen extends GetView<SelectUserController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Container(
-          margin: const EdgeInsets.symmetric(vertical: 30),
-          width: 400,
-          height: 550,
-          child: Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('Pilih Akun', style: context.textTheme.titleLarge),
-                      IconButton(
-                        onPressed: () async {
-                          controller.isConnected.value
-                              ? AppDialog.show(
-                                  title: 'Keluar',
-                                  content: 'Keluar dari aplikasi?',
-                                  confirmText: "Ya",
-                                  cancelText: "Tidak",
-                                  confirmColor: Colors.grey,
-                                  cancelColor: Get.theme.primaryColor,
-                                  onConfirm: () => controller.signOut(),
-                                  onCancel: () => Get.back(),
-                                )
-                              : await Get.defaultDialog(
-                                  title: 'Error',
-                                  middleText:
-                                      'Tidak ada koneksi internet untuk mengeluarkan akun.',
-                                  confirm: TextButton(
-                                    onPressed: () {
-                                      Get.back();
-                                      Get.back();
-                                    },
-                                    child: const Text('OK'),
-                                  ),
-                                );
-                        },
-                        icon: const Icon(Symbols.logout),
-                      ),
-                    ],
-                  ),
-                  // Obx(() {
-                  //   return Text('${controller.account.value?.id}');
-                  // }),
-                  // const SizedBox(height: 16),
-                  // Divider(color: Colors.grey[200]),
-                  const SizedBox(height: 16),
-                  Obx(
-                    () => ListTile(
-                      leading: const Icon(Symbols.person_pin, fill: 1),
-                      trailing: const Icon(Symbols.chevron_right, fill: 1),
-                      selectedTileColor: Theme.of(context).colorScheme.primary,
-                      selectedColor: Colors.white,
-                      selected: controller.selectedUser.value == 'Admin',
-                      title: Text(
-                        'Pemilik Toko',
-                        style: TextStyle(
-                          fontSize: 16,
-                        ),
-                      ),
-                      onTap: () => controller.selectUser('Admin'),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Divider(color: Colors.grey[200]),
-                  const SizedBox(height: 16),
-                  Expanded(
-                    child: SizedBox(
-                      // height: 250,
-                      child: ListView.builder(
-                        itemCount: controller.workers.length,
-                        itemBuilder: (context, index) {
-                          final account = controller.workers[index];
-                          return Obx(
+      body: Obx(
+        () => Center(
+          child: controller.isLoading.value
+              ? const CircularProgressIndicator()
+              : Container(
+                  margin: const EdgeInsets.symmetric(vertical: 30),
+                  width: 400,
+                  height: 550,
+                  child: Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('Pilih Akun',
+                                  style: context.textTheme.titleLarge),
+                              IconButton(
+                                onPressed: () async {
+                                  controller.isConnected.value
+                                      ? AppDialog.show(
+                                          title: 'Keluar',
+                                          content: 'Keluar dari aplikasi?',
+                                          confirmText: "Ya",
+                                          cancelText: "Tidak",
+                                          confirmColor: Colors.grey,
+                                          cancelColor: Get.theme.primaryColor,
+                                          onConfirm: () => controller.signOut(),
+                                          onCancel: () => Get.back(),
+                                        )
+                                      : await Get.defaultDialog(
+                                          title: 'Error',
+                                          middleText:
+                                              'Tidak ada koneksi internet untuk mengeluarkan akun.',
+                                          confirm: TextButton(
+                                            onPressed: () {
+                                              Get.back();
+                                              Get.back();
+                                            },
+                                            child: const Text('OK'),
+                                          ),
+                                        );
+                                },
+                                icon: const Icon(Symbols.logout),
+                              ),
+                            ],
+                          ),
+                          // Obx(() {
+                          //   return Text('${controller.account.value?.id}');
+                          // }),
+                          // const SizedBox(height: 16),
+                          // Divider(color: Colors.grey[200]),
+                          const SizedBox(height: 16),
+                          Obx(
                             () => ListTile(
-                              leading:
-                                  const Icon(Symbols.person_filled, fill: 1),
+                              leading: const Icon(Symbols.person_pin, fill: 1),
                               trailing:
                                   const Icon(Symbols.chevron_right, fill: 1),
                               selectedTileColor:
                                   Theme.of(context).colorScheme.primary,
                               selectedColor: Colors.white,
-                              selected: controller.selectedUser.value ==
-                                  account['name'],
+                              selected:
+                                  controller.selectedUser.value == 'owner',
                               title: Text(
-                                account['name'],
+                                'Pemilik Toko',
                                 style: TextStyle(
                                   fontSize: 16,
                                 ),
                               ),
-                              onTap: () =>
-                                  controller.selectUser(account['name']),
+                              onTap: () => controller.selectUser('owner'),
                             ),
-                          );
-                        },
+                          ),
+                          const SizedBox(height: 16),
+                          Divider(color: Colors.grey[200]),
+                          const SizedBox(height: 16),
+                          Expanded(
+                            child: SizedBox(
+                              // height: 250,
+                              child: ListView.builder(
+                                itemCount:
+                                    controller.account.value!.users.length,
+                                itemBuilder: (context, index) {
+                                  final cashier =
+                                      controller.account.value!.users[index];
+                                  return Obx(
+                                    () => ListTile(
+                                      leading: const Icon(Symbols.person_filled,
+                                          fill: 1),
+                                      trailing: const Icon(
+                                          Symbols.chevron_right,
+                                          fill: 1),
+                                      selectedTileColor:
+                                          Theme.of(context).colorScheme.primary,
+                                      selectedColor: Colors.white,
+                                      selected: controller.selectedUser.value ==
+                                          cashier.name,
+                                      title: Text(
+                                        cashier.name,
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                      onTap: () =>
+                                          controller.selectUser(cashier.name),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 16),
+
+                          // Input untuk password
+                          TextFormField(
+                            controller: controller.passwordController,
+                            obscureText: true,
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(),
+                              labelText: 'Password',
+                            ),
+                          ),
+                          SizedBox(height: 24),
+
+                          // Tombol login
+                          ElevatedButton(
+                            onPressed: () => controller.loginUserHandle(),
+                            child: Text('Pilih Akun'),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                  SizedBox(height: 16),
-
-                  // Input untuk password
-                  TextFormField(
-                    controller: controller.passwordController,
-                    obscureText: true,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Password',
-                    ),
-                  ),
-                  SizedBox(height: 24),
-
-                  // Tombol login
-                  ElevatedButton(
-                    onPressed: () => controller.loginUserHandle(),
-                    child: Text('Pilih Akun'),
-                  ),
-                ],
-              ),
-            ),
-          ),
+                ),
         ),
       ),
     );

@@ -1,3 +1,7 @@
+import 'package:get/get.dart';
+
+import '../../../infrastructure/models/user_model.dart';
+
 class Account {
   String? id;
   String accountId;
@@ -6,6 +10,8 @@ class Account {
   String email;
   String role;
   String? storeId;
+  RxList<Cashier> users;
+  String password;
 
   Account({
     this.id,
@@ -15,5 +21,7 @@ class Account {
     required this.email,
     required this.role,
     this.storeId,
+    required this.users,
+    required this.password,
   });
 }

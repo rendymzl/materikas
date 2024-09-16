@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:materikas/infrastructure/models/user_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../domain/core/interfaces/auth_repository.dart';
@@ -10,7 +11,10 @@ class AuthService extends GetxService implements AuthRepository {
   final supabaseClient = Supabase.instance.client;
   late final account = Rx<AccountModel?>(null);
   late final store = Rx<StoreModel?>(null);
+  late final cashiers = RxList<Cashier>(<Cashier>[]);
+  late final selectedUser = ''.obs;
   var isLogin = false;
+  var isfirstInit = true;
 
   // @override
   // void onInit() async {
@@ -66,5 +70,14 @@ class AuthService extends GetxService implements AuthRepository {
         .get('SELECT * FROM stores WHERE id = ?', [account.value!.storeId!]);
     store.value = StoreModel.fromRow(row);
     return store.value!;
+  }
+
+  @override
+  RxList<Cashier> getCashier() {
+    if (account.value!.users.isNotEmpty) {
+      cashiers.assignAll(
+          account.value!.users..sort((a, b) => a.id!.compareTo(b.id!)));
+    }
+    return cashiers;
   }
 }

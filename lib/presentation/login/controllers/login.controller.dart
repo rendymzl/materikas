@@ -53,7 +53,7 @@ class LoginController extends GetxController {
       isLoading.value = true;
       await _authService.login(emailFieldC.text.trim(), passwordFieldC.text);
       //! await Fetch Data
-      Get.offAllNamed(Routes.SELECT_USER);
+      Get.offAllNamed(Routes.SPLASH);
     }
   }
 

@@ -7,7 +7,9 @@ const schema = Schema([
     Column.text('name'),
     Column.text('email'),
     Column.text('role'),
-    Column.text('created_at')
+    Column.text('created_at'),
+    Column.text('users'),
+    Column.text('password')
   ]),
   Table('stores', [
     Column.text('owner_id'),

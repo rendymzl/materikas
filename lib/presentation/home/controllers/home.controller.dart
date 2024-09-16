@@ -35,6 +35,7 @@ class HomeController extends GetxController {
   @override
   void onInit() async {
     invoice = await createInvoice();
+    print(_authService.selectedUser.value);
     super.onInit();
   }
 
