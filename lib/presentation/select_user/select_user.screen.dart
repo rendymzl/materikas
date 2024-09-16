@@ -131,7 +131,7 @@ class SelectUserScreen extends GetView<SelectUserController> {
                             obscureText: true,
                             decoration: InputDecoration(
                               border: OutlineInputBorder(),
-                              labelText: 'Password',
+                              labelText: 'PIN',
                             ),
                           ),
                           SizedBox(height: 24),

@@ -63,6 +63,7 @@ class AccountModel extends Account {
       'created_at': createdAt.toIso8601String(),
       'name': name,
       'store_id': storeId,
+      'users': users.map((item) => item.toJson()).toList(),
       'password': password
     };
   }

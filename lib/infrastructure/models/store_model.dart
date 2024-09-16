@@ -41,7 +41,9 @@ class StoreModel extends Stores {
   factory StoreModel.fromRow(sqlite.Row row) {
     return StoreModel(
       id: row['id'],
-      createdAt: DateTime.parse(row['created_at']),
+      createdAt: row['created_at'] != null
+          ? DateTime.parse(row['created_at'])
+          : DateTime.now(),
       name: RxString(row['name']),
       address: RxString(row['address']),
       phone: RxString(row['phone']),

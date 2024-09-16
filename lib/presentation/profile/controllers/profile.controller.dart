@@ -12,14 +12,9 @@ class ProfileController extends GetxController {
 
   late final account = _authService.account;
   late final store = _authService.store;
-  late final cashier = _authService.account;
+  late final cashiers = _authService.cashiers;
 
   final formCashierKey = GlobalKey<FormState>();
-
-  final storeNameController = TextEditingController();
-  final storeAddressController = TextEditingController();
-  final storePhoneController = TextEditingController();
-  final storeTelpController = TextEditingController();
 
   final nameController = TextEditingController();
   final passwordController = TextEditingController();
@@ -46,15 +41,18 @@ class ProfileController extends GetxController {
         barrierDismissible: false,
       );
       try {
+        String id = cashiers.isNotEmpty
+            ? (int.parse(cashiers.last.id.toString()) + 1).toString()
+            : '1';
         final Cashier newCashier = Cashier(
-          id: ,
+          id: id,
           createdAt: DateTime.now(),
           name: nameController.text,
           password: passwordController.text,
           accessList: <String>[].obs,
         );
-        var updatedAccount =
-            AccountModel.fromJson(_authService.account.toJson());
+        var updatedAccount = AccountModel.fromJson(account.toJson());
+        print(updatedAccount.users.length);
 
         updatedAccount.users.add(newCashier);
 
@@ -76,6 +74,94 @@ class ProfileController extends GetxController {
           ),
         );
       }
+    }
+  }
+
+//Change PIN
+  final oldPinController = TextEditingController();
+  final newPinController = TextEditingController();
+  final formkey = GlobalKey<FormState>();
+
+  final hideOldPassword = true.obs;
+  final hideNewPassword = true.obs;
+
+  void toggleHidePassword(String section) {
+    section == 'oldPin'
+        ? hideOldPassword.value = !hideOldPassword.value
+        : hideNewPassword.value = !hideNewPassword.value;
+  }
+
+  String? validateOldPin(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Password tidak boleh kosong';
+    }
+    return null;
+  }
+
+  String? validateNewPin(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Password tidak boleh kosong';
+    }
+    return null;
+  }
+
+  Future<void> changePinHandle() async {
+    if (_authService.account.value!.password == oldPinController.text) {
+      if (oldPinController.text != newPinController.text) {
+        if ((formkey.currentState?.validate() ?? false)) {
+          Get.defaultDialog(
+            title: 'Mengubah PIN..',
+            content: const CircularProgressIndicator(),
+            barrierDismissible: false,
+          );
+          try {
+            AccountModel updatedAccount =
+                AccountModel.fromJson(_authService.account.toJson());
+            updatedAccount.password = newPinController.text;
+            await _accountService.update(updatedAccount);
+            await _authService.getAccount();
+
+            oldPinController.text = '';
+            newPinController.text = '';
+            Get.back();
+            Get.back();
+
+            await Get.defaultDialog(
+              title: 'Berhasil',
+              middleText: 'Pin berhasil diubah.',
+            );
+          } catch (e) {
+            Get.back();
+            debugPrint(e.toString());
+            Get.defaultDialog(
+              title: 'Error',
+              middleText: 'Terjadi kesalahan tidak terduga',
+              confirm: TextButton(
+                onPressed: () => Get.back(),
+                child: const Text('OK'),
+              ),
+            );
+          }
+        }
+      } else {
+        Get.defaultDialog(
+          title: 'Error',
+          middleText: 'PIN sama dengan sebelumnya',
+          confirm: TextButton(
+            onPressed: () => Get.back(),
+            child: const Text('OK'),
+          ),
+        );
+      }
+    } else {
+      Get.defaultDialog(
+        title: 'Error',
+        middleText: 'PIN sebelumnya tidak sesuai',
+        confirm: TextButton(
+          onPressed: () => Get.back(),
+          child: const Text('OK'),
+        ),
+      );
     }
   }
 }

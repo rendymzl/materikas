@@ -3,8 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 
+import '../global_widget/app_dialog_widget.dart';
 import '../global_widget/menu_widget/menu_widget.dart';
+import '../global_widget/popup_page_widget.dart';
 import 'controllers/profile.controller.dart';
+import 'detail_profile_store.dart';
+import 'detail_store.controller.dart';
 
 class ProfileScreen extends GetView<ProfileController> {
   const ProfileScreen({super.key});
@@ -158,6 +162,7 @@ class ProfileStoreWidget extends StatelessWidget {
       () => Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ListView(
               shrinkWrap: true,
@@ -168,7 +173,8 @@ class ProfileStoreWidget extends StatelessWidget {
                     children: [
                       const Text('Data Toko'),
                       IconButton(
-                        onPressed: () {},
+                        onPressed: () =>
+                            detailStore(foundStore: controller.store.value),
                         icon: Icon(
                           Symbols.edit_square,
                           color: Theme.of(context).colorScheme.primary,
@@ -236,8 +242,105 @@ class ProfileStoreWidget extends StatelessWidget {
                 ),
               ],
             ),
+            ElevatedButton(
+              onPressed: () => showPopupPageWidget(
+                  title: 'Ubah PIN',
+                  content: const ChangePinWidget(),
+                  buttonList: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Get.back(),
+                        child: const Text('Batal'),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () => controller.changePinHandle(),
+                        child: const Text('Simpan'),
+                      ),
+                    ),
+                  ]),
+              child: const Text('Ubah PIN'),
+            ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class ChangePinWidget extends StatelessWidget {
+  const ChangePinWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    ProfileController controller = Get.put(ProfileController());
+    controller.oldPinController.text = '';
+    controller.newPinController.text = '';
+    const outlineRed =
+        OutlineInputBorder(borderSide: BorderSide(color: Colors.red));
+
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        children: [
+          Form(
+            key: controller.formkey,
+            autovalidateMode: AutovalidateMode.always,
+            child: Column(
+              children: [
+                Obx(
+                  () => TextFormField(
+                    controller: controller.oldPinController,
+                    decoration: InputDecoration(
+                      border: const OutlineInputBorder(),
+                      labelText: 'PIN Sekarang',
+                      prefixIcon: const Icon(Symbols.lock, fill: 1),
+                      suffixIcon: IconButton(
+                        icon: const Icon(Symbols.remove_red_eye, fill: 1),
+                        onPressed: () =>
+                            controller.toggleHidePassword('oldPin'),
+                      ),
+                      labelStyle: const TextStyle(color: Colors.grey),
+                      floatingLabelStyle: TextStyle(
+                          color: Theme.of(Get.context!).colorScheme.primary),
+                      focusedErrorBorder: outlineRed,
+                      errorBorder: outlineRed,
+                    ),
+                    obscureText: controller.hideOldPassword.value,
+                    validator: (value) => controller.validateOldPin(value!),
+                    onFieldSubmitted: (_) => controller.changePinHandle(),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Obx(
+                  () => TextFormField(
+                    controller: controller.newPinController,
+                    decoration: InputDecoration(
+                      border: const OutlineInputBorder(),
+                      labelText: 'PIN Baru',
+                      prefixIcon: const Icon(Symbols.lock, fill: 1),
+                      suffixIcon: IconButton(
+                        icon: const Icon(Symbols.remove_red_eye, fill: 1),
+                        onPressed: () =>
+                            controller.toggleHidePassword('newPin'),
+                      ),
+                      labelStyle: const TextStyle(color: Colors.grey),
+                      floatingLabelStyle: TextStyle(
+                          color: Theme.of(Get.context!).colorScheme.primary),
+                      focusedErrorBorder: outlineRed,
+                      errorBorder: outlineRed,
+                    ),
+                    obscureText: controller.hideNewPassword.value,
+                    validator: (value) => controller.validateNewPin(value!),
+                    onFieldSubmitted: (_) => controller.changePinHandle(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
