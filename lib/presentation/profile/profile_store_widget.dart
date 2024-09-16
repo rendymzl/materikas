@@ -92,7 +92,7 @@ class ProfileStoreWidget extends StatelessWidget {
                 ),
               ],
             ),
-            ElevatedButton(
+            TextButton(
               onPressed: () => showPopupPageWidget(
                   title: 'Ubah PIN',
                   content: const ChangePinWidget(),

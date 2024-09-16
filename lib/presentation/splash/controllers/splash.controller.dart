@@ -12,7 +12,6 @@ import '../../../infrastructure/dal/services/store_service.dart';
 import '../../../infrastructure/models/account_model.dart';
 import '../../../infrastructure/models/store_model.dart';
 import '../../../infrastructure/navigation/routes.dart';
-import '../../global_widget/menu_widget/menu_controller.dart';
 
 class SplashController extends GetxController {
   final AuthService _authService = Get.put(AuthService());
@@ -24,8 +23,6 @@ class SplashController extends GetxController {
       Get.put(InvoiceSalesService());
   final OperatingCostService _operatingCostService =
       Get.put(OperatingCostService());
-  final MenuWidgetController _menuC =
-      Get.put(MenuWidgetController(), permanent: true);
 
   late final AccountModel? account;
   late final StoreModel? store;
@@ -40,7 +37,7 @@ class SplashController extends GetxController {
       Get.put(StoreService());
       Get.put(AccountService());
       print('SelectUserController INIT');
-      isConnected.value = await _menuC.connected.value;
+      isConnected.value = _authService.connected.value;
       print('SelectUserController getAccount');
       account = _authService.account.value;
 

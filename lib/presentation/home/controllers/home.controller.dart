@@ -11,6 +11,7 @@ import '../../../infrastructure/models/invoice_model/invoice_model.dart';
 import '../../../infrastructure/models/product_model.dart';
 import '../../global_widget/date_picker_widget/date_picker_widget_controller.dart';
 import '../../global_widget/field_customer_widget/field_customer_widget_controller.dart';
+import '../../global_widget/menu_widget/menu_controller.dart';
 
 class HomeController extends GetxController {
   late final ProductService _productService = Get.find<ProductService>();
@@ -20,6 +21,7 @@ class HomeController extends GetxController {
       Get.put(DatePickerController());
   late final CustomerInputFieldController _customerInputFieldC =
       Get.put(CustomerInputFieldController());
+  final MenuWidgetController _menuC = Get.find<MenuWidgetController>();
 
   late final products = _productService.products;
   late final foundProducts = _productService.foundProducts;
@@ -34,6 +36,7 @@ class HomeController extends GetxController {
 
   @override
   void onInit() async {
+    _menuC.selectedIndex.value = 0;
     invoice = await createInvoice();
     print(_authService.selectedUser.value);
     super.onInit();

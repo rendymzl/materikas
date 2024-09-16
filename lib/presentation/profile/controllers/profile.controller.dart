@@ -94,48 +94,6 @@ class ProfileController extends GetxController {
       },
       onCancel: () => Get.back(),
     );
-
-    if (formCashierKey.currentState?.validate() ?? false) {
-      Get.defaultDialog(
-        title: 'Menambahkan kasir...',
-        content: const CircularProgressIndicator(),
-        barrierDismissible: false,
-      );
-      try {
-        String id = cashiers.isNotEmpty
-            ? (int.parse(cashiers.last.id.toString()) + 1).toString()
-            : '1';
-        final Cashier newCashier = Cashier(
-          id: id,
-          createdAt: DateTime.now(),
-          name: nameController.text,
-          password: passwordController.text,
-          accessList: <String>[].obs,
-        );
-        var updatedAccount = AccountModel.fromJson(account.toJson());
-        print(updatedAccount.users.length);
-
-        updatedAccount.users.add(newCashier);
-
-        await _accountService.update(updatedAccount);
-        await _authService.getAccount();
-
-        nameController.text = '';
-        passwordController.text = '';
-        Get.back();
-      } catch (e) {
-        Get.back();
-        debugPrint(e.toString());
-        Get.defaultDialog(
-          title: 'Error',
-          middleText: 'Terjadi kesalahan tidak terduga',
-          confirm: TextButton(
-            onPressed: () => Get.back(),
-            child: const Text('OK'),
-          ),
-        );
-      }
-    }
   }
 
 //CheckBoxHandle
@@ -146,6 +104,23 @@ class ProfileController extends GetxController {
       cashier.accessList.add(accessName);
     }
     print(cashier.accessList);
+  }
+
+  Future<void> saveAccess(Cashier cashier) async {
+    AppDialog.show(
+      title: 'Simpan',
+      content: 'Simpan Perubahan?',
+      confirmText: "Ya",
+      cancelText: "Tidak",
+      // confirmColor: Colors.grey,
+      // cancelColor: Get.theme.primaryColor,
+      onConfirm: () async {
+        await _accountService.update(account.value!);
+        await _authService.getAccount();
+        Get.back();
+      },
+      onCancel: () => Get.back(),
+    );
   }
 
 //Change PIN

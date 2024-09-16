@@ -6,11 +6,9 @@ import '../../../infrastructure/dal/services/auth_service.dart';
 import '../../../infrastructure/models/user_model.dart';
 import '../../../infrastructure/navigation/routes.dart';
 import '../../global_widget/app_dialog_widget.dart';
-import '../../global_widget/menu_widget/menu_controller.dart';
 
 class SelectUserController extends GetxController {
   final AuthService _authService = Get.find<AuthService>();
-  final MenuWidgetController _menuC = Get.find<MenuWidgetController>();
 
   late final Box<dynamic> box;
   final isLoading = true.obs;
@@ -31,7 +29,7 @@ class SelectUserController extends GetxController {
   void onInit() async {
     isLoading.value = true;
     box = await Hive.openBox('selectedUser');
-    _menuC.selectedIndex.value = 0;
+
     await _authService.getAccount();
     await _authService.getStore();
     isLoading.value = false;
@@ -40,6 +38,7 @@ class SelectUserController extends GetxController {
     if (user?.isNotEmpty ?? false) {
       selectedUser.value = user!;
       _authService.selectedUser.value = selectedUser.value;
+      await Future.delayed(const Duration(seconds: 1));
       Get.offAllNamed(Routes.HOME);
     }
     super.onInit();
@@ -52,6 +51,7 @@ class SelectUserController extends GetxController {
   void goToHome() {
     _authService.selectedUser.value = selectedUser.value;
     box.put('user', selectedUser.value);
+    _authService.isOwner.value = account.value!.role == selectedUser.value;
     Get.offAllNamed(Routes.HOME);
   }
 

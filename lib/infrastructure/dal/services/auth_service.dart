@@ -1,25 +1,41 @@
+import 'dart:async';
+
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:get/get.dart';
 import 'package:materikas/infrastructure/models/user_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../domain/core/interfaces/auth_repository.dart';
+// import '../../../presentation/global_widget/menu_widget/menu_controller.dart';
 import '../../models/account_model.dart';
 import '../../models/store_model.dart';
 import '../database/powersync.dart';
 
 class AuthService extends GetxService implements AuthRepository {
   final supabaseClient = Supabase.instance.client;
+
+  late StreamSubscription<List<ConnectivityResult>> connectivitySubs;
+  final connected = true.obs;
+
   late final account = Rx<AccountModel?>(null);
   late final store = Rx<StoreModel?>(null);
   late final cashiers = RxList<Cashier>(<Cashier>[]);
   late final selectedUser = ''.obs;
+
   var isLogin = false;
+  var isOwner = false.obs;
   var isfirstInit = true;
 
-  // @override
-  // void onInit() async {
-  //   super.onInit();
-  // }
+  @override
+  void onInit() async {
+    connectivitySubs = Connectivity()
+        .onConnectivityChanged
+        .listen((List<ConnectivityResult> result) {
+      connected.value = !result.contains(ConnectivityResult.none);
+    });
+    // Get.lazyPut(() => MenuWidgetController());
+    super.onInit();
+  }
 
   @override
   Future<bool> isLoggedIn() async {

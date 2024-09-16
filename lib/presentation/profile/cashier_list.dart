@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
@@ -26,76 +27,165 @@ class CashierListWidget extends StatelessWidget {
               return controller.account.value!.users.isEmpty
                   ? const Text('Tidak ada kasir')
                   : Expanded(
-                      child: ListView.builder(
+                      child: ListView.separated(
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(height: 4),
                         shrinkWrap: true,
                         itemCount: controller.account.value!.users.length,
                         itemBuilder: (context, index) {
                           var cashier = controller.account.value!.users[index];
+                          var initCashier = Cashier.fromJson(cashier.toJson());
                           return ListTile(
-                            leading: Text((index + 1).toString()),
+                            tileColor: Colors.grey[100],
                             title: Row(
                               mainAxisAlignment: MainAxisAlignment.start,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Expanded(child: Text(cashier.name)),
-                                Column(
-                                  children: [
-                                    CheckBoxWidget(
-                                      title: 'Menu Invoice',
-                                      cashier: cashier,
-                                      accessName: 'invoiceMenu',
-                                    ),
-                                    CheckBoxWidget(
-                                      title: 'Edit Invoice',
-                                      cashier: cashier,
-                                      accessName: 'editInvoice',
-                                    ),
-                                    CheckBoxWidget(
-                                      title: 'Return Invoice',
-                                      cashier: cashier,
-                                      accessName: 'returnInvoice',
-                                    ),
-                                    CheckBoxWidget(
-                                      title: 'Pembayaran Invoice',
-                                      cashier: cashier,
-                                      accessName: 'paymentInvoice',
-                                    ),
-                                    CheckBoxWidget(
-                                      title: 'Hapus Invoice',
-                                      cashier: cashier,
-                                      accessName: 'destroyInvoice',
-                                    ),
-                                  ],
-                                ),
-                                CheckBoxWidget(
-                                  title: 'Menu Pelanggan',
-                                  cashier: cashier,
-                                  accessName: 'customerMenu',
-                                ),
-                                CheckBoxWidget(
-                                  title: 'Menu Barang',
-                                  cashier: cashier,
-                                  accessName: 'productMenu',
-                                ),
-                                CheckBoxWidget(
-                                  title: 'Menu Sales',
-                                  cashier: cashier,
-                                  accessName: 'salesMenu',
-                                ),
-                                CheckBoxWidget(
-                                  title: 'Menu Laporan',
-                                  cashier: cashier,
-                                  accessName: 'statisticMenu',
+                                SizedBox(
+                                    width: 20,
+                                    child: Text((index + 1).toString())),
+                                Expanded(
+                                    child: Text(cashier.name,
+                                        textAlign: TextAlign.center)),
+                                IconButton(
+                                  onPressed: () =>
+                                      controller.removeCashier(cashier),
+                                  icon: const Icon(
+                                    Symbols.delete,
+                                    color: Colors.red,
+                                  ),
                                 ),
                               ],
                             ),
-                            trailing: IconButton(
-                              onPressed: () =>
-                                  controller.removeCashier(cashier),
-                              icon: const Icon(
-                                Symbols.delete,
-                                color: Colors.red,
-                              ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        CheckBoxWidget(
+                                          title: 'Menu Invoice',
+                                          cashier: cashier,
+                                          accessName: 'invoiceMenu',
+                                        ),
+                                        CheckBoxWidget(
+                                          title: 'Edit Invoice',
+                                          cashier: cashier,
+                                          accessName: 'editInvoice',
+                                        ),
+                                        CheckBoxWidget(
+                                          title: 'Return Invoice',
+                                          cashier: cashier,
+                                          accessName: 'returnInvoice',
+                                        ),
+                                        CheckBoxWidget(
+                                          title: 'Pembayaran Invoice',
+                                          cashier: cashier,
+                                          accessName: 'paymentInvoice',
+                                        ),
+                                        CheckBoxWidget(
+                                          title: 'Hapus Invoice',
+                                          cashier: cashier,
+                                          accessName: 'destroyInvoice',
+                                        ),
+                                      ],
+                                    ),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        CheckBoxWidget(
+                                          title: 'Menu Pelanggan',
+                                          cashier: cashier,
+                                          accessName: 'customerMenu',
+                                        ),
+                                        CheckBoxWidget(
+                                          title: 'Tambah Pelanggan',
+                                          cashier: cashier,
+                                          accessName: 'addCustomer',
+                                        ),
+                                        CheckBoxWidget(
+                                          title: 'Edit Pelanggan',
+                                          cashier: cashier,
+                                          accessName: 'editCustomer',
+                                        ),
+                                        CheckBoxWidget(
+                                          title: 'Hapus Pelanggan',
+                                          cashier: cashier,
+                                          accessName: 'destroyCustomer',
+                                        ),
+                                      ],
+                                    ),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        CheckBoxWidget(
+                                          title: 'Menu Barang',
+                                          cashier: cashier,
+                                          accessName: 'productMenu',
+                                        ),
+                                        CheckBoxWidget(
+                                          title: 'Edit Barang',
+                                          cashier: cashier,
+                                          accessName: 'editProduct',
+                                        ),
+                                        CheckBoxWidget(
+                                          title: 'Hapus Barang',
+                                          cashier: cashier,
+                                          accessName: 'destroyProduct',
+                                        ),
+                                      ],
+                                    ),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        CheckBoxWidget(
+                                          title: 'Menu Sales',
+                                          cashier: cashier,
+                                          accessName: 'salesMenu',
+                                        ),
+                                      ],
+                                    ),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        CheckBoxWidget(
+                                          title: 'Menu Laporan',
+                                          cashier: cashier,
+                                          accessName: 'statisticMenu',
+                                        ),
+                                        CheckBoxWidget(
+                                          title: 'Biaya Operasional',
+                                          cashier: cashier,
+                                          accessName: 'addOperationalCost',
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                Obx(() {
+                                  Function deepEq =
+                                      const DeepCollectionEquality().equals;
+                                  bool equal = deepEq(cashier.accessList,
+                                      initCashier.accessList);
+                                  if (!equal) {
+                                    return ElevatedButton(
+                                      onPressed: () =>
+                                          controller.saveAccess(cashier),
+                                      child: const Text('Simpan Perubahan'),
+                                    );
+                                  }
+                                  return const SizedBox.shrink();
+                                }),
+                              ],
                             ),
                           );
                         },

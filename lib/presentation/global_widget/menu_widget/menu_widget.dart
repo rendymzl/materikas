@@ -13,7 +13,8 @@ class MenuWidget extends GetView<MenuWidgetController> {
 
   @override
   Widget build(BuildContext context) {
-    final data = MenuData();
+    Get.put(MenuWidgetController(), permanent: true);
+
     return Container(
       // padding: const EdgeInsets.all(8),
       margin: const EdgeInsets.all(8),
@@ -25,14 +26,20 @@ class MenuWidget extends GetView<MenuWidgetController> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                ListView.separated(
-                  separatorBuilder: (context, index) => SizedBox(width: 8),
-                  shrinkWrap: true,
-                  scrollDirection: Axis.horizontal,
-                  itemCount: (data.menu.length),
-                  itemBuilder: (context, index) =>
-                      buildMenuEntry(data, index, context),
-                ),
+                Obx(
+                  () {
+                    var data = controller.data.value;
+                    return ListView.separated(
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(width: 8),
+                      shrinkWrap: true,
+                      scrollDirection: Axis.horizontal,
+                      itemCount: (data.menu.length),
+                      itemBuilder: (context, index) =>
+                          buildMenuEntry(data, index, context),
+                    );
+                  },
+                )
               ],
             ),
           ),
