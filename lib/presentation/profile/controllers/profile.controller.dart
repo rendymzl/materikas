@@ -5,6 +5,7 @@ import 'package:materikas/infrastructure/models/account_model.dart';
 import '../../../infrastructure/dal/services/account_service.dart';
 import '../../../infrastructure/dal/services/auth_service.dart';
 import '../../../infrastructure/models/user_model.dart';
+import '../../global_widget/app_dialog_widget.dart';
 
 class ProfileController extends GetxController {
   final AuthService _authService = Get.find<AuthService>();
@@ -75,6 +76,76 @@ class ProfileController extends GetxController {
         );
       }
     }
+  }
+
+  Future<void> removeCashier(Cashier cashier) async {
+    AppDialog.show(
+      title: 'Hapus Kasir',
+      content: 'Hapus Kasir ini?',
+      confirmText: "Ya",
+      cancelText: "Tidak",
+      confirmColor: Colors.grey,
+      cancelColor: Get.theme.primaryColor,
+      onConfirm: () async {
+        account.value!.users.remove(cashier);
+        await _accountService.update(account.value!);
+        await _authService.getAccount();
+        Get.back();
+      },
+      onCancel: () => Get.back(),
+    );
+
+    if (formCashierKey.currentState?.validate() ?? false) {
+      Get.defaultDialog(
+        title: 'Menambahkan kasir...',
+        content: const CircularProgressIndicator(),
+        barrierDismissible: false,
+      );
+      try {
+        String id = cashiers.isNotEmpty
+            ? (int.parse(cashiers.last.id.toString()) + 1).toString()
+            : '1';
+        final Cashier newCashier = Cashier(
+          id: id,
+          createdAt: DateTime.now(),
+          name: nameController.text,
+          password: passwordController.text,
+          accessList: <String>[].obs,
+        );
+        var updatedAccount = AccountModel.fromJson(account.toJson());
+        print(updatedAccount.users.length);
+
+        updatedAccount.users.add(newCashier);
+
+        await _accountService.update(updatedAccount);
+        await _authService.getAccount();
+
+        nameController.text = '';
+        passwordController.text = '';
+        Get.back();
+      } catch (e) {
+        Get.back();
+        debugPrint(e.toString());
+        Get.defaultDialog(
+          title: 'Error',
+          middleText: 'Terjadi kesalahan tidak terduga',
+          confirm: TextButton(
+            onPressed: () => Get.back(),
+            child: const Text('OK'),
+          ),
+        );
+      }
+    }
+  }
+
+//CheckBoxHandle
+  void checkBoxHandle(Cashier cashier, String accessName) {
+    if (cashier.accessList.contains(accessName)) {
+      cashier.accessList.remove(accessName);
+    } else {
+      cashier.accessList.add(accessName);
+    }
+    print(cashier.accessList);
   }
 
 //Change PIN
