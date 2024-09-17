@@ -672,7 +672,8 @@ void printInvoiceDialog(InvoiceModel invoice) {
                                                   'receipt'
                                               ? printerController
                                                   .printTransport(invoice)
-                                              : null;
+                                              : printerController
+                                                  .printTransportInv(invoice);
                                           Get.back();
                                         },
                                         child: const Text('Cetak surat jalan'),

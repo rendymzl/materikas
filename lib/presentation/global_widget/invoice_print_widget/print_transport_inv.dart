@@ -16,7 +16,7 @@ var divider = Uint8List.fromList(
         .codeUnits);
 var space = Uint8List.fromList([27, 74, 24]);
 
-Future<List<int>> generateInvoiceBytes(InvoiceModel invoice) async {
+Future<List<int>> generateTransportInvBytes(InvoiceModel invoice) async {
   final AuthService authService = Get.find<AuthService>();
   final PrinterController printerController = Get.put(PrinterController());
   late final account = authService.account.value;
@@ -27,16 +27,26 @@ Future<List<int>> generateInvoiceBytes(InvoiceModel invoice) async {
   //!widht 80
   bytes += generator.row([
     PrintColumn(
-        text: store!.name.value.toUpperCase(),
-        width: 27,
+        text: (store!.name.value).toUpperCase(),
+        width: 22,
         bold: true,
         size: 'large'),
+    PrintColumn(text: '', width: 14, bold: true, size: 'large', align: 'right'),
+  ]);
+  bytes += generator.row([
+    PrintColumn(text: 'SURAT JALAN', width: 22, bold: true, size: 'large'),
+    PrintColumn(text: '', width: 14, bold: true, size: 'large', align: 'right'),
+  ]);
+  bytes += generator.row([
+    PrintColumn(text: '', width: 3),
+    PrintColumn(text: '', width: 32),
+    PrintColumn(text: '', width: 13, align: 'right'),
+    PrintColumn(text: '', width: 10),
     PrintColumn(
         text: '${DateFormat('dd-MM-y', 'id').format(
           invoice.createdAt.value!,
         )} ${invoice.invoiceId!}',
-        width: 26,
-        // bold: false,
+        width: 22,
         align: 'right'),
   ]);
 
@@ -125,10 +135,10 @@ Future<List<int>> generateInvoiceBytes(InvoiceModel invoice) async {
   bytes += generator.row([
     PrintColumn(text: 'No', width: 3),
     PrintColumn(text: 'Nama Barang', width: 32),
-    PrintColumn(text: 'Harga Satuan    ', width: 13, align: 'right'),
+    PrintColumn(text: '', width: 13, align: 'right'),
     PrintColumn(text: 'Jumlah', width: 10),
-    PrintColumn(text: 'Diskon', width: 9, align: 'right'),
-    PrintColumn(text: 'Total Harga', width: 13, align: 'right'),
+    PrintColumn(text: '', width: 9, align: 'right'),
+    PrintColumn(text: '', width: 13, align: 'right'),
   ]);
   bytes += divider;
 
@@ -139,22 +149,12 @@ Future<List<int>> generateInvoiceBytes(InvoiceModel invoice) async {
       bytes += generator.row([
         PrintColumn(text: '${i + 1}', width: 3),
         PrintColumn(text: item.product.productName, width: 32),
-        PrintColumn(
-            text:
-                '${currency.format(item.product.getPrice(invoice.priceType.value).value)} x ',
-            width: 13,
-            align: 'right'),
+        PrintColumn(text: '', width: 13, align: 'right'),
         PrintColumn(
             text: '${number.format(item.quantity.value)} ${item.product.unit}',
             width: 10),
-        PrintColumn(
-            text: currency.format(item.individualDiscount.value),
-            width: 9,
-            align: 'right'),
-        PrintColumn(
-            text: currency.format(item.getSubBill(invoice.priceType.value)),
-            width: 13,
-            align: 'right'),
+        PrintColumn(text: '', width: 9, align: 'right'),
+        PrintColumn(text: '', width: 13, align: 'right'),
       ]);
     }
   }
@@ -180,108 +180,106 @@ Future<List<int>> generateInvoiceBytes(InvoiceModel invoice) async {
       width: 5,
     ),
     PrintColumn(
-      text: 'Subtotal',
+      text: '',
       width: 15,
     ),
-    PrintColumn(
-      text: ':',
-      width: 2,
-    ),
-    PrintColumn(
-        text: currency.format(invoice.subtotalBill), width: 13, align: 'right'),
-  ]);
-  bytes += generator.row([
     PrintColumn(
       text: '',
-      width: 50,
-    ),
-    PrintColumn(
-      text: 'Diskon',
-      width: 15,
-    ),
-    PrintColumn(
-      text: ':',
       width: 2,
     ),
-    PrintColumn(
-        text: invoice.totalDiscount > 0
-            ? '-${currency.format(invoice.totalDiscount)}'
-            : '0',
-        width: 13,
-        align: 'right'),
+    PrintColumn(text: '', width: 13, align: 'right'),
   ]);
-  bytes += generator.row([
-    PrintColumn(
-      text: '',
-      width: 50,
-    ),
-    PrintColumn(
-      text: 'Biaya Lainnya',
-      width: 15,
-    ),
-    PrintColumn(
-      text: ':',
-      width: 2,
-    ),
-    PrintColumn(
-        text: currency.format(invoice.totalOtherCosts),
-        width: 13,
-        align: 'right'),
-  ]);
-  bytes += generator.row([
-    PrintColumn(
-      text: '',
-      width: 50,
-    ),
-    PrintColumn(
-      text: 'Total',
-      width: 15,
-    ),
-    PrintColumn(
-      text: ':',
-      width: 2,
-    ),
-    PrintColumn(
-        text: currency.format(invoice.totalBill), width: 13, align: 'right'),
-  ]);
+  // bytes += generator.row([
+  //   PrintColumn(
+  //     text: '',
+  //     width: 50,
+  //   ),
+  //   PrintColumn(
+  //     text: 'Diskon',
+  //     width: 15,
+  //   ),
+  //   PrintColumn(
+  //     text: ':',
+  //     width: 2,
+  //   ),
+  //   PrintColumn(
+  //       text: invoice.totalDiscount > 0
+  //           ? '-${currency.format(invoice.totalDiscount)}'
+  //           : '0',
+  //       width: 13,
+  //       align: 'right'),
+  // ]);
+  // bytes += generator.row([
+  //   PrintColumn(
+  //     text: '',
+  //     width: 50,
+  //   ),
+  //   PrintColumn(
+  //     text: 'Biaya Lainnya',
+  //     width: 15,
+  //   ),
+  //   PrintColumn(
+  //     text: ':',
+  //     width: 2,
+  //   ),
+  //   PrintColumn(
+  //       text: currency.format(invoice.totalOtherCosts),
+  //       width: 13,
+  //       align: 'right'),
+  // ]);
+  // bytes += generator.row([
+  //   PrintColumn(
+  //     text: '',
+  //     width: 50,
+  //   ),
+  //   PrintColumn(
+  //     text: 'Total',
+  //     width: 15,
+  //   ),
+  //   PrintColumn(
+  //     text: ':',
+  //     width: 2,
+  //   ),
+  //   PrintColumn(
+  //       text: currency.format(invoice.totalBill), width: 13, align: 'right'),
+  // ]);
 
-  bytes += space;
-  bytes += generator.row([
-    PrintColumn(
-      text: '',
-      width: 50,
-    ),
-    PrintColumn(
-      text: 'Bayar',
-      width: 15,
-    ),
-    PrintColumn(
-      text: ':',
-      width: 2,
-    ),
-    PrintColumn(
-        text: currency.format(invoice.totalPaid), width: 13, align: 'right'),
-  ]);
-  bytes += generator.row([
-    PrintColumn(
-      text: '',
-      width: 50,
-    ),
-    PrintColumn(
-      text: invoice.remainingDebt <= 0 ? 'Kembalian' : 'Kurang Bayar',
-      width: 15,
-    ),
-    PrintColumn(
-      text: ':',
-      width: 2,
-    ),
-    PrintColumn(
-        text: currency.format(invoice.remainingDebt * -1),
-        width: 13,
-        align: 'right'),
-  ]);
+  // bytes += space;
+  // bytes += generator.row([
+  //   PrintColumn(
+  //     text: '',
+  //     width: 50,
+  //   ),
+  //   PrintColumn(
+  //     text: 'Bayar',
+  //     width: 15,
+  //   ),
+  //   PrintColumn(
+  //     text: ':',
+  //     width: 2,
+  //   ),
+  //   PrintColumn(
+  //       text: currency.format(invoice.totalPaid), width: 13, align: 'right'),
+  // ]);
+  // bytes += generator.row([
+  //   PrintColumn(
+  //     text: '',
+  //     width: 50,
+  //   ),
+  //   PrintColumn(
+  //     text: invoice.remainingDebt <= 0 ? 'Kembalian' : 'Kurang Bayar',
+  //     width: 15,
+  //   ),
+  //   PrintColumn(
+  //     text: ':',
+  //     width: 2,
+  //   ),
+  //   PrintColumn(
+  //       text: currency.format(invoice.remainingDebt * -1),
+  //       width: 13,
+  //       align: 'right'),
+  // ]);
 
   bytes += [27, 69, 0];
-  bytes += space;
   return bytes;
 }

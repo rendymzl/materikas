@@ -10,6 +10,7 @@ import '../../../infrastructure/dal/services/store_service.dart';
 import '../../../infrastructure/models/invoice_model/cart_item_model.dart';
 import '../../../infrastructure/models/invoice_model/invoice_model.dart';
 import 'invoice_generator.dart';
+import 'print_transport_inv.dart';
 import 'receipt_generator.dart';
 import 'transport_print_generator.dart';
 
@@ -191,6 +192,17 @@ class PrinterController extends GetxController {
     }
 
     final bytes = await generateTransportBytes(invoice);
+    await sendBytesToPrint(bytes,
+        PrinterType.usb); // Sesuaikan dengan jenis printer yang digunakan
+  }
+
+  Future<void> printTransportInv(InvoiceModel invoice) async {
+    if (!connected.value) {
+      debugPrint("Printer not connected");
+      return;
+    }
+
+    final bytes = await generateTransportInvBytes(invoice);
     await sendBytesToPrint(bytes,
         PrinterType.usb); // Sesuaikan dengan jenis printer yang digunakan
   }

@@ -127,7 +127,7 @@ Future<List<int>> generateReceiptBytes(InvoiceModel invoice) async {
     bytes += generator.row([
       PosColumn(
         text:
-            '    ${currency.format(item.product.getPrice(invoice.priceType.value))} x ',
+            '    ${currency.format(item.product.getPrice(invoice.priceType.value).value)} x ',
         width: 4,
         styles: const PosStyles(align: PosAlign.right),
       ),
@@ -205,7 +205,7 @@ Future<List<int>> generateReceiptBytes(InvoiceModel invoice) async {
       styles: const PosStyles(bold: true),
     ),
     PosColumn(
-      text: currency.format(invoice.purchaseList),
+      text: currency.format(invoice.totalBill),
       width: 4,
       styles: const PosStyles(bold: true, align: PosAlign.right),
     ),
@@ -243,7 +243,7 @@ Future<List<int>> generateReceiptBytes(InvoiceModel invoice) async {
         bytes += generator.row([
           PosColumn(
             text:
-                '    ${currency.format(item.product.getPrice(invoice.priceType.value))} x ',
+                '    ${currency.format(item.product.getPrice(invoice.priceType.value).value)} x ',
             width: 4,
           ),
           PosColumn(
