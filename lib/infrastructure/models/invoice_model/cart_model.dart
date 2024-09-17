@@ -112,6 +112,7 @@ class Cart {
     final existingItem =
         items.firstWhereOrNull((item) => item.product.id == newItem.product.id);
     if (existingItem != null) {
+      existingItem.product.stock.value = newItem.product.stock.value;
       existingItem.quantity.value += newItem.quantity.value;
     } else {
       items.add(newItem);

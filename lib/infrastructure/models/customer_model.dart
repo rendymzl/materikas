@@ -29,12 +29,12 @@ class CustomerModel extends Customer {
   Map<String, dynamic> toJson() {
     final data = <String, dynamic>{};
     if (id != null) data['id'] = id;
-    data['customer_id'] = customerId;
+    if (customerId != null) data['customer_id'] = customerId;
     if (createdAt != null) data['created_at'] = createdAt?.toIso8601String();
     data['name'] = name;
     data['phone'] = phone;
     data['address'] = address;
-    data['store_id'] = storeId;
+    if (storeId != null) data['store_id'] = storeId;
     return data;
   }
 

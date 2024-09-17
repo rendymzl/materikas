@@ -118,7 +118,7 @@ class InvoiceService extends GetxService implements InvoiceRepository {
         invoice.invoiceId,
         invoice.account.value,
         invoice.createdAt.value?.toIso8601String(),
-        invoice.customer.value,
+        invoice.customer.value?.toJson(),
         invoice.purchaseList.value.toJson(),
         invoice.returnList.value?.toJson(),
         invoice.afterReturnList.value?.toJson(),
@@ -136,8 +136,10 @@ class InvoiceService extends GetxService implements InvoiceRepository {
 
   @override
   Future<void> update(InvoiceModel updatedInvoice) async {
-    await db.execute(
-      '''
+    try {
+      print('updateddddddddddddddddddddd');
+      await db.execute(
+        '''
     UPDATE invoices SET
       store_id = ?, 
       invoice_id = ?, 
@@ -157,26 +159,29 @@ class InvoiceService extends GetxService implements InvoiceRepository {
       other_costs = ?
     WHERE id = ?
     ''',
-      [
-        updatedInvoice.storeId,
-        updatedInvoice.invoiceId,
-        updatedInvoice.account.value,
-        updatedInvoice.createdAt.value?.toIso8601String(),
-        updatedInvoice.customer.value,
-        updatedInvoice.purchaseList.value.toJson(),
-        updatedInvoice.returnList.value?.toJson(),
-        updatedInvoice.afterReturnList.value?.toJson(),
-        updatedInvoice.priceType.value,
-        updatedInvoice.discount.value,
-        updatedInvoice.tax.value,
-        updatedInvoice.returnFee.value,
-        updatedInvoice.payments.map((e) => e.toJson()).toList(),
-        updatedInvoice.debtAmount.value,
-        updatedInvoice.isDebtPaid.value ? 1 : 0,
-        updatedInvoice.otherCosts.map((e) => e.toJson()).toList(),
-        updatedInvoice.id,
-      ],
-    );
+        [
+          updatedInvoice.storeId,
+          updatedInvoice.invoiceId,
+          updatedInvoice.account.value,
+          updatedInvoice.createdAt.value?.toIso8601String(),
+          updatedInvoice.customer.value?.toJson(),
+          updatedInvoice.purchaseList.value.toJson(),
+          updatedInvoice.returnList.value?.toJson(),
+          updatedInvoice.afterReturnList.value?.toJson(),
+          updatedInvoice.priceType.value,
+          updatedInvoice.discount.value,
+          updatedInvoice.tax.value,
+          updatedInvoice.returnFee.value,
+          updatedInvoice.payments.map((e) => e.toJson()).toList(),
+          updatedInvoice.debtAmount.value,
+          updatedInvoice.isDebtPaid.value ? 1 : 0,
+          updatedInvoice.otherCosts.map((e) => e.toJson()).toList(),
+          updatedInvoice.id,
+        ],
+      );
+    } catch (e) {
+      e.toString();
+    }
   }
 
   @override

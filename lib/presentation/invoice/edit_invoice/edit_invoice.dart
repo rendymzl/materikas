@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../infrastructure/models/invoice_model/cart_item_model.dart';
+import '../../../infrastructure/models/invoice_model/cart_model.dart';
 import '../../../infrastructure/models/invoice_model/invoice_model.dart';
 import '../../global_widget/app_dialog_widget.dart';
 import '../../global_widget/date_picker_widget/date_picker_widget_controller.dart';
@@ -26,7 +28,7 @@ void editInvoice(InvoiceModel invoice) {
   }
 
   InvoiceModel editInvoice = InvoiceModel.fromJson(invoice.toJson());
-
+  editInvoice.returnList.value ??= Cart(items: <CartItem>[].obs);
   showPopupPageWidget(
     title: 'Edit Invoice ${editInvoice.invoiceId}',
     height: MediaQuery.of(Get.context!).size.height * (6 / 7),
@@ -91,7 +93,8 @@ void editInvoice(InvoiceModel invoice) {
               invoice.id = editInvoice.id;
               invoice.invoiceId = editInvoice.invoiceId;
               invoice.createdAt.value = editInvoice.createdAt.value;
-              invoice.customer.value = editInvoice.customer.value;
+              invoice.customer.value =
+                  customerInputFieldC.selectedCustomer.value;
               invoice.purchaseList.value = editInvoice.purchaseList.value;
               // invoice.returnList.value = editInvoice.returnList.value;
               invoice.priceType.value = editInvoice.priceType.value;
@@ -101,6 +104,7 @@ void editInvoice(InvoiceModel invoice) {
               invoice.debtAmount.value = editInvoice.debtAmount.value;
               invoice.isDebtPaid.value = editInvoice.isDebtPaid.value;
               invoice.otherCosts.value = editInvoice.otherCosts;
+              print('----edit invoice ${invoice.customer.value!.customerId}');
               controller.updateInvoice(invoice);
               Get.back();
             },

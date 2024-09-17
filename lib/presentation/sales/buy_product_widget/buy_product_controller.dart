@@ -80,14 +80,14 @@ class BuyProductController extends GetxController {
     }
     //!---
 
-    //! add product to cart
-    CartItem cartItem = CartItem(product: product, quantity: 1);
-    cart.value.addItem(cartItem);
-    //!---
-
     //! change Stock
     product.stock.value += 1;
     print('stock: ${product.stock.value}');
+    //!---
+
+    //! add product to cart
+    CartItem cartItem = CartItem(product: product, quantity: 1);
+    cart.value.addItem(cartItem);
     //!---
 
     //! auto move
@@ -101,6 +101,30 @@ class BuyProductController extends GetxController {
         curve: Curves.easeInOut,
       );
     });
+    //!---
+  }
+
+  //! ADD TO CART ===
+  void addToCartEdit(ProductModel product, Cart cart) async {
+    //! add product to initCartItem
+    var initCartItem = checkExistence(product, initCartList);
+
+    if (initCartItem == null) {
+      ProductModel initProduct = ProductModel.fromJson(product.toJson());
+      CartItem initItem = CartItem(product: initProduct, quantity: 0);
+      initCartList.add(initItem);
+      initCartItem = initItem;
+    }
+    //!---
+
+    //! change Stock
+    product.stock.value += 1;
+    print('stock: ${product.stock.value}');
+    //!---
+
+    //! add product to cart
+    CartItem cartItem = CartItem(product: product, quantity: 1);
+    cart.addItem(cartItem);
     //!---
   }
 
@@ -209,18 +233,24 @@ class BuyProductController extends GetxController {
     try {
       var productList = <ProductModel>[];
 
-      for (var updatedCart in invoice.purchaseList.value.items) {
+      for (var purchaseCart in invoice.purchaseList.value.items) {
         var initProduct = initCartList.firstWhereOrNull((item) {
-          return item.product.id == updatedCart.product.id;
+          return item.product.id == purchaseCart.product.id;
         });
         if (initProduct != null) {
-          updatedCart.product.costPrice = initProduct.product.costPrice;
-          updatedCart.product.sellPrice1 = initProduct.product.sellPrice1;
-          updatedCart.product.sellPrice2 = initProduct.product.sellPrice2;
-          updatedCart.product.sellPrice3 = initProduct.product.sellPrice3;
-          ProductModel updatedProduct =
-              ProductModel.fromJson(updatedCart.product.toJson());
-          productList.add(updatedProduct);
+          purchaseCart.product.costPrice = initProduct.product.costPrice;
+          purchaseCart.product.sellPrice1 = initProduct.product.sellPrice1;
+          purchaseCart.product.sellPrice2 = initProduct.product.sellPrice2;
+          purchaseCart.product.sellPrice3 = initProduct.product.sellPrice3;
+
+          var updatedProduct = initCartList.firstWhereOrNull(
+            (item) => item.product.id == purchaseCart.product.id,
+          );
+          if (updatedProduct != null) {
+            ProductModel updatedProduct =
+                ProductModel.fromJson(purchaseCart.product.toJson());
+            productList.add(updatedProduct);
+          }
         }
       }
 

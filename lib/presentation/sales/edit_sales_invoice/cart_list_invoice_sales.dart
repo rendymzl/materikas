@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../../infrastructure/models/invoice_sales_model.dart';
 import '../../global_widget/date_picker_widget/date_picker_widget.dart';
 import '../buy_product_widget/cart_sales_widget.dart';
+import 'add_product_sales.dart';
 
 class CardListInvoiceSales extends StatelessWidget {
   const CardListInvoiceSales({super.key, required this.editInvoice});
@@ -40,6 +41,13 @@ class CardListInvoiceSales extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
+        ElevatedButton(
+          onPressed: () =>
+              addProductSalesDialog(editInvoice.purchaseList.value),
+          child: const Text(
+            'Tambah Barang',
+          ),
+        ),
       ],
     );
   }

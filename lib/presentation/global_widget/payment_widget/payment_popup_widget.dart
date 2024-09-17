@@ -21,6 +21,10 @@ void paymentPopup(InvoiceModel invoice,
   controller.additionalDiscountTextC.text = '';
   controller.isAdditionalDiscount.value = false;
 
+  if (invoice.customer.value != null) {
+    customerFieldC.asignCustomer(invoice.customer.value!);
+  }
+
   showPopupPageWidget(
     title: 'Pembayaran',
     height: MediaQuery.of(Get.context!).size.height * (6 / 7),

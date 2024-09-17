@@ -43,22 +43,24 @@ class EditInvoiceController extends GetxController {
     }
     //!---
 
-    //! add product to cart
+    //! change Stock
     CartItem cartItem =
         CartItem(product: product, quantity: 0, quantityReturn: 1);
-    cart.addReturnItem(cartItem);
-    //!---
-
-    //! change Stock
     cartItem.product.stock.value += 1;
     print('stock: ${cartItem.product.stock.value}');
     //!---
+
+    //! add product to cart
+
+    cart.addReturnItem(cartItem);
+    //!---
   }
 
-  void addToCart(ProductModel product, Cart cart, {bool isReturn = false}) {
+  void addToCart(ProductModel product, Cart editedCart,
+      {bool isReturn = false}) {
     //! add product to initCartItem
     var initCartItem = checkExistence(product, initCartList);
-
+    print("initCartItem $initCartItem");
     if (initCartItem == null) {
       ProductModel initProduct = ProductModel.fromJson(product.toJson());
       CartItem initItem = CartItem(product: initProduct, quantity: 0);
@@ -66,15 +68,16 @@ class EditInvoiceController extends GetxController {
       initCartItem = initItem;
     }
     //!---
-
-    //! add product to cart
-    CartItem cartItem = CartItem(product: product, quantity: 1);
-    cart.addItem(cartItem);
-    //!---
+    print("initCartItem $initCartItem");
 
     //! change Stock
+    CartItem cartItem = CartItem(product: product, quantity: 1);
     cartItem.product.stock.value -= 1;
     print('stock addToCart: ${cartItem.product.stock.value}');
+    //!---
+
+    //! add product to cart
+    editedCart.addItem(cartItem);
     //!---
   }
 
@@ -175,38 +178,49 @@ class EditInvoiceController extends GetxController {
     try {
       var productList = <ProductModel>[];
 
-      for (var updatedCart in invoice.purchaseList.value.items) {
-        if (updatedCart.product.sold != null) {
-          updatedCart.product.sold!.value =
-              updatedCart.product.sold!.value + updatedCart.quantity.value;
+      for (var purchaseCart in invoice.purchaseList.value.items) {
+        if (purchaseCart.product.sold != null) {
+          purchaseCart.product.sold!.value =
+              purchaseCart.product.sold!.value + purchaseCart.quantity.value;
         } else {
-          updatedCart.product.sold = updatedCart.quantity;
-        }
-        print('stock updatedCart ${updatedCart.product.stock.value}');
-        ProductModel updatedProduct =
-            ProductModel.fromJson(updatedCart.product.toJson());
-        productList.add(updatedProduct);
-      }
-
-      for (var updatedReturnCart in invoice.returnList.value!.items) {
-        if (updatedReturnCart.product.sold != null) {
-          updatedReturnCart.product.sold!.value =
-              updatedReturnCart.product.sold!.value -
-                  updatedReturnCart.quantityReturn.value;
-        } else {
-          updatedReturnCart.product.sold = updatedReturnCart.quantityReturn;
+          purchaseCart.product.sold = purchaseCart.quantity;
         }
         print(
-            'stock updatedReturnCart ${updatedReturnCart.product.stock.value}');
-        ProductModel updatedProduct =
-            ProductModel.fromJson(updatedReturnCart.product.toJson());
-        var foundUpdatedProduct = productList
-            .firstWhereOrNull((item) => item.id == updatedProduct.id);
-        if (foundUpdatedProduct != null) {
-          foundUpdatedProduct.stock.value =
-              updatedReturnCart.product.stock.value;
-        } else {
-          productList.add(updatedProduct);
+            '---stock purchaseCart ${purchaseCart.product.productName} ${purchaseCart.product.stock.value}');
+        var updatedProduct = initCartList.firstWhereOrNull(
+          (item) => item.product.id == purchaseCart.product.id,
+        );
+        if (updatedProduct != null) {
+          ProductModel product =
+              ProductModel.fromJson(purchaseCart.product.toJson());
+          productList.add(product);
+        }
+      }
+
+      if (invoice.returnList.value != null) {
+        for (var returnCart in invoice.returnList.value!.items) {
+          if (returnCart.product.sold != null) {
+            returnCart.product.sold!.value = returnCart.product.sold!.value -
+                returnCart.quantityReturn.value;
+          } else {
+            returnCart.product.sold = returnCart.quantityReturn;
+          }
+          print('stock returnCart ${returnCart.product.stock.value}');
+
+          var updatedProduct = initAdditionalCartList.firstWhereOrNull(
+            (item) => item.product.id == returnCart.product.id,
+          );
+          if (updatedProduct != null) {
+            ProductModel updatedProduct =
+                ProductModel.fromJson(returnCart.product.toJson());
+            var foundUpdatedProduct = productList
+                .firstWhereOrNull((item) => item.id == updatedProduct.id);
+            if (foundUpdatedProduct != null) {
+              foundUpdatedProduct.stock.value = returnCart.product.stock.value;
+            } else {
+              productList.add(updatedProduct);
+            }
+          }
         }
       }
 
@@ -239,8 +253,8 @@ class EditInvoiceController extends GetxController {
       await _productService.updateList(productList);
 
       await _invoiceService.update(invoice);
+      print('---selesai updated invoice');
       clear();
-
       Get.back();
 
       await Get.defaultDialog(

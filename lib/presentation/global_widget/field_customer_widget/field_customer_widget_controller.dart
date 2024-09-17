@@ -17,9 +17,12 @@ class CustomerInputFieldController extends GetxController {
   Rx<CustomerModel?> selectedCustomer = Rx<CustomerModel?>(null);
 
   void asignCustomer(CustomerModel customer) {
+    customer.customerId =
+        customer.customerId == 'null' ? null : customer.customerId;
     customerNameController.text = customer.name;
     customerPhoneController.text = customer.phone ?? '';
     customerAddressController.text = customer.address ?? '';
+    customer.storeId = customer.storeId == 'null' ? null : customer.storeId;
     selectedCustomer.value = customer;
   }
 
