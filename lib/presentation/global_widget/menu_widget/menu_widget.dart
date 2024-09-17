@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
+import '../../../infrastructure/models/menu_model.dart';
 import '../app_dialog_widget.dart';
 import 'menu_controller.dart';
-import 'menu_data.dart';
 
 class MenuWidget extends GetView<MenuWidgetController> {
   const MenuWidget({super.key, required this.title});
@@ -28,15 +28,15 @@ class MenuWidget extends GetView<MenuWidgetController> {
               children: [
                 Obx(
                   () {
-                    var data = controller.data.value;
+                    var data = controller.menuData;
                     return ListView.separated(
                       separatorBuilder: (context, index) =>
                           const SizedBox(width: 8),
                       shrinkWrap: true,
                       scrollDirection: Axis.horizontal,
-                      itemCount: (data.menu.length),
+                      itemCount: (data.length),
                       itemBuilder: (context, index) =>
-                          buildMenuEntry(data, index, context),
+                          buildMenuEntry(data[index], index, context),
                     );
                   },
                 )
@@ -96,38 +96,35 @@ class MenuWidget extends GetView<MenuWidgetController> {
     );
   }
 
-  Widget buildMenuEntry(MenuData data, int index, BuildContext context) {
+  Widget buildMenuEntry(MenuModel data, int index, BuildContext context) {
     return Obx(
-      () => Container(
-        // padding: const EdgeInsets.all(10),
-        child: ElevatedButton.icon(
-          onPressed: () => controller.handleClick(index),
-          icon: Icon(
-            data.menu[index].icon,
+      () => ElevatedButton.icon(
+        onPressed: () => controller.handleClick(index, data.label),
+        icon: Icon(
+          data.icon,
+          color: controller.selectedIndex.value == index
+              ? Colors.white
+              : Colors.grey[700],
+        ),
+        label: Text(
+          data.label,
+          style: TextStyle(
+            fontSize: 16,
             color: controller.selectedIndex.value == index
                 ? Colors.white
                 : Colors.grey[700],
+            // fontWeight: controller.isExpand.value
+            //     ? FontWeight.w600
+            //     : FontWeight.normal,
           ),
-          label: Text(
-            data.menu[index].label,
-            style: TextStyle(
-              fontSize: 16,
-              color: controller.selectedIndex.value == index
-                  ? Colors.white
-                  : Colors.grey[700],
-              // fontWeight: controller.isExpand.value
-              //     ? FontWeight.w600
-              //     : FontWeight.normal,
-            ),
-          ),
-          style: ButtonStyle(
-            alignment: Alignment.centerLeft,
-            enableFeedback: true,
-            backgroundColor: WidgetStatePropertyAll(
-              controller.selectedIndex.value == index
-                  ? Theme.of(context).colorScheme.primary
-                  : Colors.white,
-            ),
+        ),
+        style: ButtonStyle(
+          alignment: Alignment.centerLeft,
+          enableFeedback: true,
+          backgroundColor: WidgetStatePropertyAll(
+            controller.selectedIndex.value == index
+                ? Theme.of(context).colorScheme.primary
+                : Colors.white,
           ),
         ),
       ),

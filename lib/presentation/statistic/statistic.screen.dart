@@ -45,13 +45,14 @@ class StatisticScreen extends GetView<StatisticController> {
                                   'Biaya Operasional',
                                   style: TextStyle(),
                                 ),
-                                IconButton(
-                                  onPressed: () => detailOperatingCost(),
-                                  icon: Icon(Symbols.open_in_new,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .primary),
-                                )
+                                if (controller.accessOperational.value)
+                                  IconButton(
+                                    onPressed: () => detailOperatingCost(),
+                                    icon: Icon(Symbols.open_in_new,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary),
+                                  )
                               ],
                             ),
                           ),
@@ -84,48 +85,53 @@ class StatisticScreen extends GetView<StatisticController> {
                                           fontStyle: FontStyle.italic,
                                         ),
                                       ),
-                                      leading: IconButton(
-                                        onPressed: () async =>
-                                            await Get.defaultDialog(
-                                          title: 'Hapus',
-                                          middleText: 'Hapus Biaya?',
-                                          confirm: TextButton(
-                                            onPressed: () async {
-                                              controller.deleteOperatingCost(
-                                                  operatingCost);
-                                              Get.back();
-                                            },
-                                            child: const Text('Hapus'),
-                                          ),
-                                          cancel: TextButton(
-                                            onPressed: () {
-                                              Get.back();
-                                            },
-                                            child: Text(
-                                              'Batal',
-                                              style: TextStyle(
-                                                  color: Colors.black
-                                                      .withOpacity(0.5)),
-                                            ),
-                                          ),
-                                        ),
-                                        icon: const Icon(
-                                          Symbols.close,
-                                          color: Colors.red,
-                                        ),
-                                      ),
+                                      leading: controller
+                                              .accessOperational.value
+                                          ? IconButton(
+                                              onPressed: () async =>
+                                                  await Get.defaultDialog(
+                                                title: 'Hapus',
+                                                middleText: 'Hapus Biaya?',
+                                                confirm: TextButton(
+                                                  onPressed: () async {
+                                                    controller
+                                                        .deleteOperatingCost(
+                                                            operatingCost);
+                                                    Get.back();
+                                                  },
+                                                  child: const Text('Hapus'),
+                                                ),
+                                                cancel: TextButton(
+                                                  onPressed: () {
+                                                    Get.back();
+                                                  },
+                                                  child: Text(
+                                                    'Batal',
+                                                    style: TextStyle(
+                                                        color: Colors.black
+                                                            .withOpacity(0.5)),
+                                                  ),
+                                                ),
+                                              ),
+                                              icon: const Icon(
+                                                Symbols.close,
+                                                color: Colors.red,
+                                              ),
+                                            )
+                                          : null,
                                     );
                                   },
                                 );
                               },
                             ),
                           ),
-                          ElevatedButton(
-                            onPressed: () => addOperatingCostDialog(),
-                            child: const Text(
-                              'Tambah Biaya Operasional',
+                          if (controller.accessOperational.value)
+                            ElevatedButton(
+                              onPressed: () => addOperatingCostDialog(),
+                              child: const Text(
+                                'Tambah Biaya Operasional',
+                              ),
                             ),
-                          ),
                         ],
                       ),
                     ),

@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 
 import '../../../infrastructure/dal/services/auth_service.dart';
-import '../../../infrastructure/models/user_model.dart';
 import '../../../infrastructure/navigation/routes.dart';
 import '../../global_widget/app_dialog_widget.dart';
 
@@ -12,11 +11,11 @@ class SelectUserController extends GetxController {
 
   late final Box<dynamic> box;
   final isLoading = true.obs;
-  late final isConnected = false.obs;
+  late final isConnected = _authService.connected;
   late final account = _authService.account;
   late final store = _authService.store;
 
-  final workers = <Cashier>[].obs;
+  // final workers = <Cashier>[].obs;
   var selectedUser = ''.obs;
 
   final TextEditingController passwordController = TextEditingController();
@@ -36,8 +35,9 @@ class SelectUserController extends GetxController {
     // print('SelectUserController : ${account.value}');
     String? user = await isSelectedUser();
     if (user?.isNotEmpty ?? false) {
+      print('usernya $user');
       selectedUser.value = user!;
-      _authService.selectedUser.value = selectedUser.value;
+      _authService.getSelectedCashier(user);
       await Future.delayed(const Duration(seconds: 1));
       Get.offAllNamed(Routes.HOME);
     }
@@ -49,7 +49,7 @@ class SelectUserController extends GetxController {
   }
 
   void goToHome() {
-    _authService.selectedUser.value = selectedUser.value;
+    _authService.getSelectedCashier(selectedUser.value);
     box.put('user', selectedUser.value);
     _authService.isOwner.value = account.value!.role == selectedUser.value;
     Get.offAllNamed(Routes.HOME);

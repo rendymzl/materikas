@@ -222,6 +222,8 @@ class TableContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ProductController controller = Get.find();
+
     return Obx(
       () => Container(
         color: foundProduct.stock.value < foundProduct.stockMin.value
@@ -325,7 +327,9 @@ class TableContent extends StatelessWidget {
               ),
             ],
           ),
-          onTap: () => detailProduct(foundProduct: foundProduct),
+          onTap: () => controller.editProduct.value
+              ? detailProduct(foundProduct: foundProduct)
+              : null,
         ),
       ),
     );

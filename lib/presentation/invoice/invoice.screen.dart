@@ -16,7 +16,7 @@ class InvoiceScreen extends GetView<InvoiceController> {
           MenuWidget(title: 'Invoice'),
           Expanded(
             child: Card(
-              child: Expanded(child: InvoiceList()),
+              child: InvoiceList(),
             ),
           ),
         ],

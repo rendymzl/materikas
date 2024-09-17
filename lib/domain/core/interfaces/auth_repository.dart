@@ -10,4 +10,5 @@ abstract class AuthRepository {
   Future<AccountModel> getAccount();
   Future<StoreModel> getStore();
   RxList<Cashier> getCashier();
+  Cashier? getSelectedCashier(String userName);
 }

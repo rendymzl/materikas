@@ -30,14 +30,18 @@ class CustomerScreen extends GetView<CustomerController> {
                               'Total Pelanggan: ${controller.customers.length.toString()}',
                               style: context.textTheme.bodySmall,
                             )),
-                        Row(
-                          children: [
-                            ElevatedButton(
-                              onPressed: () => detailCustomer(),
-                              child: const Text('Tambah Pelanggan'),
-                            ),
-                          ],
-                        ),
+                        Obx(() {
+                          return controller.addCustomer.value
+                              ? Row(
+                                  children: [
+                                    ElevatedButton(
+                                      onPressed: () => detailCustomer(),
+                                      child: const Text('Tambah Pelanggan'),
+                                    ),
+                                  ],
+                                )
+                              : const SizedBox();
+                        }),
                       ],
                     ),
                   ),

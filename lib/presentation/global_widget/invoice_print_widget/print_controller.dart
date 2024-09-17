@@ -17,6 +17,8 @@ class PrinterController extends GetxController {
   final AuthService _authService = Get.find<AuthService>();
   final StoreService _storeService = Get.find<StoreService>();
   var devices = <PrinterDevice>[].obs;
+  final printMethod = ['receipt', 'invoice'].obs;
+  final selectedPrintMethod = ''.obs;
   var connected = false.obs;
   final textPromo = TextEditingController();
   late ScrollController scrollController = ScrollController();
@@ -33,6 +35,10 @@ class PrinterController extends GetxController {
     });
     super.onInit();
     await scan(PrinterType.usb);
+  }
+
+  void setPrintMethod(String method) async {
+    selectedPrintMethod.value = method;
   }
 
   void setDefaultPrinter() async {

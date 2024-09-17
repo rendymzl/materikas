@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 
+import '../../../infrastructure/dal/services/auth_service.dart';
 import '../../../infrastructure/dal/services/invoice_sales_service.dart';
 import '../../../infrastructure/dal/services/invoice_service.dart';
 import '../../../infrastructure/dal/services/operating_cost_service.dart';
@@ -12,6 +13,7 @@ import '../../../infrastructure/models/invoice_sales_model.dart';
 import '../../../infrastructure/models/operating_cost_model.dart';
 
 class StatisticController extends GetxController {
+  late final AuthService _authService = Get.find();
   final InvoiceService _invoiceService = Get.find();
   final InvoiceSalesService _invoiceSalesService = Get.find();
   final OperatingCostService _operatingCostService = Get.find();
@@ -86,6 +88,8 @@ class StatisticController extends GetxController {
   final touchedGroupIndex = (-1).obs;
   final touchedDataIndex = (-1).obs;
 
+  final accessOperational = true.obs;
+
   @override
   void onInit() async {
     print(operatingCosts.length);
@@ -101,6 +105,8 @@ class StatisticController extends GetxController {
     rangePickerHandle(DateTime.now());
     selectedSection.value = 'daily';
     await fetchData(DateTime.now(), 'weekly');
+    accessOperational.value =
+        await _authService.checkAccess('addOperationalCost');
   }
 
   Future<void> fetchData(DateTime selectedDate, String section) async {

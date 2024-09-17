@@ -20,11 +20,16 @@ class AuthService extends GetxService implements AuthRepository {
   late final account = Rx<AccountModel?>(null);
   late final store = Rx<StoreModel?>(null);
   late final cashiers = RxList<Cashier>(<Cashier>[]);
-  late final selectedUser = ''.obs;
+  late final selectedUser = Rx<Cashier?>(null);
+  // late final selectedUser = ''.obs;
 
   var isLogin = false;
   var isOwner = false.obs;
-  var isfirstInit = true;
+
+  Future<bool> checkAccess(String code) async {
+    final accessList = selectedUser.value?.accessList ?? [];
+    return isOwner.value || accessList.contains(code);
+  }
 
   @override
   void onInit() async {
@@ -33,7 +38,6 @@ class AuthService extends GetxService implements AuthRepository {
         .listen((List<ConnectivityResult> result) {
       connected.value = !result.contains(ConnectivityResult.none);
     });
-    // Get.lazyPut(() => MenuWidgetController());
     super.onInit();
   }
 
@@ -95,5 +99,14 @@ class AuthService extends GetxService implements AuthRepository {
           account.value!.users..sort((a, b) => a.id!.compareTo(b.id!)));
     }
     return cashiers;
+  }
+
+  @override
+  Cashier? getSelectedCashier(userName) {
+    selectedUser.value =
+        account.value!.users.firstWhereOrNull((user) => user.name == userName);
+    isOwner.value = selectedUser.value == null;
+
+    return selectedUser.value;
   }
 }

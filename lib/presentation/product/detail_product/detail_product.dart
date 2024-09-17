@@ -5,10 +5,12 @@ import 'package:material_symbols_icons/material_symbols_icons.dart';
 
 import '../../../infrastructure/models/product_model.dart';
 import '../../global_widget/popup_page_widget.dart';
+import '../controllers/product.controller.dart';
 import 'detail_product_controller.dart';
 
 void detailProduct({ProductModel? foundProduct}) {
   DetailProductController controller = Get.put(DetailProductController());
+  ProductController productC = Get.put(ProductController());
 
   controller.bindingEditData(foundProduct);
 
@@ -26,7 +28,9 @@ void detailProduct({ProductModel? foundProduct}) {
       title: foundProduct != null ? 'Edit Barang' : 'Tambah Barang',
       iconButton: foundProduct != null
           ? IconButton(
-              onPressed: () => controller.destroyHandle(foundProduct),
+              onPressed: () => productC.destroyProduct.value
+                  ? controller.destroyHandle(foundProduct)
+                  : null,
               icon: Icon(
                 Symbols.delete,
                 color: Colors.red,

@@ -154,19 +154,21 @@ class TableContent extends StatelessWidget {
           ),
         ],
       ),
-      trailing: controller.isAdmin
-          ? Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: IconButton(
-                onPressed: () => controller.destroyHandle(foundCustomer),
-                icon: const Icon(
-                  Symbols.delete,
-                  color: Colors.red,
-                ),
-              ),
-            )
+      // trailing: controller.isAdmin
+      //     ? Padding(
+      //         padding: const EdgeInsets.symmetric(horizontal: 4),
+      //         child: IconButton(
+      //           onPressed: () => controller.destroyHandle(foundCustomer),
+      //           icon: const Icon(
+      //             Symbols.delete,
+      //             color: Colors.red,
+      //           ),
+      //         ),
+      //       )
+      //     : null,
+      onTap: () => controller.editCustomer.value
+          ? detailCustomer(foundCustomer: foundCustomer)
           : null,
-      onTap: () => detailCustomer(foundCustomer: foundCustomer),
     );
   }
 }

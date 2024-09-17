@@ -37,6 +37,7 @@ class HomeController extends GetxController {
   @override
   void onInit() async {
     _menuC.selectedIndex.value = 0;
+    _menuC.getMenu();
     invoice = await createInvoice();
     print(_authService.selectedUser.value);
     super.onInit();

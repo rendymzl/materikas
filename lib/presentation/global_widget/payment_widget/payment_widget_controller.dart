@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../core/util/generate_invoice_id.dart';
+import '../../../infrastructure/dal/services/auth_service.dart';
 import '../../../infrastructure/dal/services/invoice_service.dart';
 import '../../../infrastructure/dal/services/product_service.dart';
 import '../../../infrastructure/models/invoice_model/invoice_model.dart';
@@ -13,6 +14,7 @@ import '../field_customer_widget/field_customer_widget_controller.dart';
 import '../invoice_print_widget/invoice_print.dart';
 
 class PaymentController extends GetxController {
+  late final AuthService _authService = Get.find<AuthService>();
   late CustomerInputFieldController customerFieldC = Get.find();
   late final HomeController _homeC = Get.find();
   late final ProductService _productService = Get.find();
@@ -237,6 +239,9 @@ class PaymentController extends GetxController {
       }
 
       if (isNewInvoice) {
+        if (_authService.selectedUser.value != null) {
+          invoice.account.value.name = _authService.selectedUser.value!.name;
+        }
         await _invoiceService.insert(invoice);
         _homeC.resetData();
         Get.back();
@@ -255,7 +260,7 @@ class PaymentController extends GetxController {
         cancelText: "Kembali",
         onConfirm: () async {
           print(printInvoice);
-          Get.back();
+          // Get.back();
           printInvoiceDialog(printInvoice);
         },
       );

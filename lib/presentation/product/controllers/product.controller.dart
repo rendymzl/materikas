@@ -2,10 +2,12 @@ import 'dart:async';
 
 import 'package:get/get.dart';
 
+import '../../../infrastructure/dal/services/auth_service.dart';
 import '../../../infrastructure/dal/services/product_service.dart';
 import '../../../infrastructure/models/product_model.dart';
 
 class ProductController extends GetxController {
+  late final AuthService _authService = Get.find();
   final ProductService _productService = Get.find<ProductService>();
 
   late final products = _productService.products;
@@ -20,8 +22,11 @@ class ProductController extends GetxController {
 
   final int limit = 20; // Batas data per halaman
 
+  final editProduct = true.obs;
+  final destroyProduct = true.obs;
+
   @override
-  void onInit() {
+  void onInit() async {
     super.onInit();
     loadMore(); // Memuat data awal
     ever(foundProducts, (value) {
@@ -30,6 +35,8 @@ class ProductController extends GetxController {
       displayedItems.clear();
       loadMore();
     });
+    editProduct.value = await _authService.checkAccess('editProduct');
+    destroyProduct.value = await _authService.checkAccess('destroyProduct');
   }
 
   void loadMore() {

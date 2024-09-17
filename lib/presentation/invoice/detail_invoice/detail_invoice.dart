@@ -25,25 +25,27 @@ void detailDialog(InvoiceModel invoice) {
 
   showPopupPageWidget(
       title: 'Invoice ${invoice.invoiceId}',
-      iconButton: IconButton(
-          onPressed: () {
-            AppDialog.show(
-              title: 'Hapus Invoice',
-              content: 'Hapus Invoice ini?',
-              confirmText: 'Hapus',
-              cancelText: 'Batal',
-              onConfirm: () async {
-                await controller.destroyHandle(invoice);
-                Get.back();
-                Get.back();
+      iconButton: controller.destroyInvoice.value
+          ? IconButton(
+              onPressed: () {
+                AppDialog.show(
+                  title: 'Hapus Invoice',
+                  content: 'Hapus Invoice ini?',
+                  confirmText: 'Hapus',
+                  cancelText: 'Batal',
+                  onConfirm: () async {
+                    await controller.destroyHandle(invoice);
+                    Get.back();
+                    Get.back();
+                  },
+                  onCancel: () => Get.back(),
+                );
               },
-              onCancel: () => Get.back(),
-            );
-          },
-          icon: const Icon(
-            Symbols.delete,
-            color: Colors.red,
-          )),
+              icon: const Icon(
+                Symbols.delete,
+                color: Colors.red,
+              ))
+          : null,
       height: MediaQuery.of(Get.context!).size.height * (0.9),
       width: MediaQuery.of(Get.context!).size.width * (0.9),
       content: Obx(
@@ -68,7 +70,7 @@ void detailDialog(InvoiceModel invoice) {
                       ),
                       PropertiesRow(
                         title: 'Kasir',
-                        value: ': ${invoice.account.value.role}',
+                        value: ': ${invoice.account.value.name}',
                         titleTextAlign: TextAlign.left,
                         valueTextAlign: TextAlign.left,
                       ),
@@ -359,32 +361,35 @@ void detailDialog(InvoiceModel invoice) {
         ),
       ),
       buttonList: [
-        ElevatedButton(
-          onPressed: () => returnProduct(invoice),
-          child: const Text(
-            'Return Barang',
+        if (controller.returnInvoice.value)
+          ElevatedButton(
+            onPressed: () => returnProduct(invoice),
+            child: const Text(
+              'Return Barang',
+            ),
           ),
-        ),
-        ElevatedButton(
-          onPressed: () => editInvoice(invoice),
-          child: const Text(
-            'Edit Invoice',
+        if (controller.editInvoice.value)
+          ElevatedButton(
+            onPressed: () => editInvoice(invoice),
+            child: const Text(
+              'Edit Invoice',
+            ),
           ),
-        ),
         ElevatedButton(
           onPressed: () => otherCostDialogWidget(invoice),
           child: const Text('Tambahan Biaya'),
         ),
-        if (!invoice.isDebtPaid.value)
-          ElevatedButton(
-            onPressed: () => paymentPopup(
-              invoice,
-              onlyPayment: true,
+        if (controller.paymentInvoice.value)
+          if (!invoice.isDebtPaid.value)
+            ElevatedButton(
+              onPressed: () => paymentPopup(
+                invoice,
+                onlyPayment: true,
+              ),
+              child: Text((invoice.totalPaid > 0)
+                  ? 'Tambah Pembayaran'
+                  : 'Bayar Tagihan'),
             ),
-            child: Text((invoice.totalPaid > 0)
-                ? 'Tambah Pembayaran'
-                : 'Bayar Tagihan'),
-          ),
         ElevatedButton(
           onPressed: () => printInvoiceDialog(invoice),
           child: const Text(

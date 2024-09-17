@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../infrastructure/dal/services/auth_service.dart';
 import '../../../infrastructure/models/account_model.dart';
+import '../../../infrastructure/models/menu_model.dart';
 import '../../../infrastructure/navigation/routes.dart';
 import 'menu_data.dart';
 
@@ -16,47 +17,69 @@ class MenuWidgetController extends GetxController {
   final connected = true.obs;
 
   late final account = Rx<AccountModel?>(null);
-  final isAdmin = false.obs;
+  late final isOwner = _authService.isOwner;
   final selectedIndex = 0.obs;
-  final selectedUser = ''.obs;
-  final data = MenuData().obs;
+  // final selectedUser = ''.obs;
+  final menuData = <MenuModel>[].obs;
 
   @override
   void onInit() async {
     debugPrint('MenuWidgetController INIT');
     account.value = _authService.account.value;
     connected.value = _authService.connected.value;
-    ever(account, (_) {
-      isAdmin.value = account.value?.role == 'owner';
-      print('MenuWidgetController: isAdmin ${isAdmin.value}');
-    });
-    ever(selectedIndex, (_) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        selectedUser.value = _authService.selectedUser.value;
-      });
-    });
+    getMenu();
+    // selectedUser.value = _authService.selectedUser.value;
+
+    // ever(account, (_) {
+    //   isOwner.value = account.value?.role == 'owner';
+
+    //   print('MenuWidgetController: isAdmin ${isOwner.value}');
+    // });
+
     super.onInit();
   }
 
-  void handleClick(int index) {
+  void getMenu() {
+    Future.delayed(Duration.zero, () {
+      menuData.clear();
+
+      menuData.add(transaction);
+      final accessList = _authService.selectedUser.value?.accessList ?? [];
+      final menus = [
+        invoiceMenu,
+        customerMenu,
+        productMenu,
+        salesMenu,
+        statisticMenu,
+      ];
+      for (var menu in menus) {
+        if (isOwner.value || accessList.contains(menu.label)) {
+          menuData.add(menu);
+        }
+      }
+      if (isOwner.value) menuData.add(storeMenu);
+    });
+  }
+
+  void handleClick(int index, String label) {
     selectedIndex.value = index;
-    switch (index) {
-      case 0:
+    switch (label) {
+      case 'Transaksi':
         Get.offNamed(Routes.HOME);
         break;
-      case 1:
+      case 'Invoice':
         Get.offNamed(Routes.INVOICE);
         break;
-      case 2:
+      case 'Pelanggan':
         Get.offNamed(Routes.CUSTOMER);
         break;
-      case 3:
+      case 'Barang':
         Get.offNamed(Routes.PRODUCT);
         break;
-      case 4:
+      case 'Sales':
         Get.offNamed(Routes.SALES);
         break;
-      case 5:
+      case 'Laporan':
         Get.offNamed(Routes.STATISTIC);
         break;
       default:

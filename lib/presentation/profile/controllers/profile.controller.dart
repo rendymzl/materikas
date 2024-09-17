@@ -20,6 +20,22 @@ class ProfileController extends GetxController {
   final nameController = TextEditingController();
   final passwordController = TextEditingController();
 
+  // @override
+  // void onClose() {
+  //   for (var cartItem in initCartList) {
+  //     var product = products.firstWhereOrNull(
+  //       (p) => p.id == cartItem.product.id,
+  //     );
+  //     if (product != null) {
+  //       product.stock.value = cartItem.product.stock.value;
+  //       product.sellPrice1 = cartItem.product.sellPrice1;
+  //       product.sellPrice2 = cartItem.product.sellPrice2;
+  //       product.sellPrice3 = cartItem.product.sellPrice3;
+  //     }
+  //   }
+  //   super.onClose();
+  // }
+
   String? validateCashierName(String? value) {
     if (value == null || value.isEmpty) {
       return 'Nama kasir tidak boleh kosong';
@@ -78,7 +94,7 @@ class ProfileController extends GetxController {
     }
   }
 
-  Future<void> removeCashier(Cashier cashier) async {
+  Future<void> removeCashier(AccountModel foundAccount, Cashier cashier) async {
     AppDialog.show(
       title: 'Hapus Kasir',
       content: 'Hapus Kasir ini?',
@@ -87,8 +103,8 @@ class ProfileController extends GetxController {
       confirmColor: Colors.grey,
       cancelColor: Get.theme.primaryColor,
       onConfirm: () async {
-        account.value!.users.remove(cashier);
-        await _accountService.update(account.value!);
+        foundAccount.users.remove(cashier);
+        await _accountService.update(foundAccount);
         await _authService.getAccount();
         Get.back();
       },
@@ -106,7 +122,7 @@ class ProfileController extends GetxController {
     print(cashier.accessList);
   }
 
-  Future<void> saveAccess(Cashier cashier) async {
+  Future<void> saveAccess(AccountModel editedAccount) async {
     AppDialog.show(
       title: 'Simpan',
       content: 'Simpan Perubahan?',
@@ -115,7 +131,7 @@ class ProfileController extends GetxController {
       // confirmColor: Colors.grey,
       // cancelColor: Get.theme.primaryColor,
       onConfirm: () async {
-        await _accountService.update(account.value!);
+        await _accountService.update(editedAccount);
         await _authService.getAccount();
         Get.back();
       },

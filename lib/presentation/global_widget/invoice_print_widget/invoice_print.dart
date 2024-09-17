@@ -22,14 +22,15 @@ void printInvoiceDialog(InvoiceModel invoice) {
 
   showPopupPageWidget(
     title: 'Print Invoice',
-    height: MediaQuery.of(Get.context!).size.height * (5 / 7),
-    width: MediaQuery.of(Get.context!).size.width * (2 / 3),
+    height: MediaQuery.of(Get.context!).size.height * (0.85),
+    width: MediaQuery.of(Get.context!).size.width * (0.6),
     content: Container(
       margin: const EdgeInsets.all(8),
-      height: MediaQuery.of(Get.context!).size.height * (5 / 7),
-      width: MediaQuery.of(Get.context!).size.width * (2 / 3),
+      height: MediaQuery.of(Get.context!).size.height * (0.7),
+      width: MediaQuery.of(Get.context!).size.width * (0.6),
       child: Obx(() {
         return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
               flex: 2,
@@ -56,7 +57,6 @@ void printInvoiceDialog(InvoiceModel invoice) {
                           ),
                         ],
                       ),
-
                       const SizedBox(height: 12),
                       Obx(
                         () {
@@ -65,54 +65,86 @@ void printInvoiceDialog(InvoiceModel invoice) {
                           WidgetsBinding.instance.addPostFrameCallback((_) {
                             printerController.textPromo.text = promo;
                           });
-                          return Expanded(
-                            child: ListView.separated(
-                              shrinkWrap: true,
-                              separatorBuilder: (context, index) =>
-                                  Divider(color: Colors.grey[200]),
-                              itemCount: printerController.devices.length,
-                              itemBuilder: (context, index) {
-                                final device = printerController.devices[index];
-                                return Obx(
-                                  () => ListTile(
-                                    selectedColor:
-                                        Theme.of(context).colorScheme.primary,
-                                    selected: printerController
-                                            .selectedDeviceIndex.value ==
-                                        index,
-                                    title: Text(device.name),
-                                    subtitle: Text(
-                                        'Vendor ID: ${device.vendorId}, Product ID: ${device.productId}'),
-                                    onTap: () {
-                                      printerController
-                                          .selectedPrinterIndex(index);
-                                      printerController.connect(
-                                          device,
-                                          PrinterType
-                                              .usb); // Sesuaikan dengan jenis printer yang digunakan
-                                    },
+                          return Obx(
+                            () => DropdownButtonFormField<int>(
+                              decoration: const InputDecoration(
+                                labelText: 'Pilih Printer',
+                                border: OutlineInputBorder(),
+                              ),
+                              value:
+                                  printerController.selectedDeviceIndex.value,
+                              items: printerController.devices
+                                  .asMap()
+                                  .entries
+                                  .map((entry) {
+                                return DropdownMenuItem<int>(
+                                  value: entry.key,
+                                  child: Text(
+                                    entry.value.name,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                printerController.selectedPrinterIndex(value!);
+                                printerController.connect(
+                                  printerController.devices[value],
+                                  PrinterType.usb,
                                 );
                               },
                             ),
                           );
                         },
                       ),
-                      // ElevatedButton(
-                      //   onPressed: () =>
-                      //       printerController.scan(PrinterType.usb),
-                      //   child: const Row(
-                      //     mainAxisAlignment: MainAxisAlignment.center,
-                      //     children: [
-                      //       Icon(
-                      //         Symbols.refresh,
-                      //         color: Colors.white,
-                      //       ),
-                      //       SizedBox(width: 12),
-                      //       Text('Perbarui daftar printer'),
-                      //     ],
-                      //   ),
-                      // ),
+                      Divider(color: Colors.grey[200]),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Expanded(
+                            child: ListTile(
+                              tileColor: Colors.grey[100],
+                              title: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Radio<String>(
+                                    value: printerController.printMethod[0],
+                                    groupValue: printerController
+                                        .selectedPrintMethod.value,
+                                    onChanged: (value) {
+                                      printerController.setPrintMethod(value!);
+                                    },
+                                  ),
+                                  const Text('Struk'),
+                                ],
+                              ),
+                              onTap: () => printerController.setPrintMethod(
+                                  printerController.printMethod[0]),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: ListTile(
+                              tileColor: Colors.grey[100],
+                              title: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Radio<String>(
+                                    value: printerController.printMethod[1],
+                                    groupValue: printerController
+                                        .selectedPrintMethod.value,
+                                    onChanged: (value) {
+                                      printerController.setPrintMethod(value!);
+                                    },
+                                  ),
+                                  const Text('Invoice'),
+                                ],
+                              ),
+                              onTap: () => printerController.setPrintMethod(
+                                  printerController.printMethod[1]),
+                            ),
+                          ),
+                        ],
+                      ),
                       Divider(color: Colors.grey[200]),
                       Row(
                         children: [
@@ -129,21 +161,28 @@ void printInvoiceDialog(InvoiceModel invoice) {
                               height: 50,
                               child: TextField(
                                 controller: printerController.textPromo,
-                                decoration: const InputDecoration(
-                                  border: InputBorder.none,
-                                  labelText: "Tambahkan Text Promo",
-                                  labelStyle: TextStyle(color: Colors.grey),
-                                  // suffixIcon: Icon(Symbols.search),
-                                ),
+                                decoration: InputDecoration(
+                                    border: InputBorder.none,
+                                    labelText: "Tambahkan Text Promo",
+                                    labelStyle:
+                                        const TextStyle(color: Colors.grey),
+                                    // suffixIcon: Icon(Symbols.search),
+                                    suffixIcon: IconButton(
+                                        onPressed: () =>
+                                            printerController.savePromoText(),
+                                        icon: const Icon(Symbols.save))),
                                 // onChanged: (value) => controller.filterCustomers(value),
                               ),
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          ElevatedButton(
-                              onPressed: () =>
-                                  printerController.savePromoText(),
-                              child: const Text('Simpan')),
+                          // IconButton(
+                          //     onPressed: () =>
+                          //         printerController.savePromoText(),
+                          //     icon: const Icon(Symbols.save))
+                          // ElevatedButton(
+                          //     onPressed: () =>
+                          //         printerController.savePromoText(),
+                          //     child: const Text('Simpan')),
                         ],
                       ),
                     ],
@@ -395,7 +434,7 @@ void printInvoiceDialog(InvoiceModel invoice) {
                                                                         buildText(
                                                                             '')),
                                                                 buildText(
-                                                                    '${currency.format(item.product.getPrice(invoice.priceType.value))} x ${number.format(item.quantityReturn.value)} ${item.product.unit}'),
+                                                                    '${currency.format(item.product.getPrice(invoice.priceType.value).value)} x ${number.format(item.quantityReturn.value)} ${item.product.unit}'),
                                                               ],
                                                             ),
                                                             buildText(currency.format(
@@ -601,30 +640,39 @@ void printInvoiceDialog(InvoiceModel invoice) {
                                     Expanded(
                                       child: ElevatedButton(
                                         onPressed: () {
-                                          printerController
-                                              .printReceipt(invoice);
+                                          printerController.selectedPrintMethod
+                                                      .value ==
+                                                  'receipt'
+                                              ? printerController
+                                                  .printReceipt(invoice)
+                                              : printerController
+                                                  .printInvoice(invoice);
                                           Get.back();
                                         },
-                                        child: const Text('Cetak struk'),
+                                        child: const Text('Cetak'),
                                       ),
                                     ),
+                                    // const SizedBox(width: 12),
+                                    // Expanded(
+                                    //   child: ElevatedButton(
+                                    //     onPressed: () {
+                                    //       printerController
+                                    //           .printInvoice(invoice);
+                                    //       Get.back();
+                                    //     },
+                                    //     child: const Text('Cetak invoice'),
+                                    //   ),
+                                    // ),
                                     const SizedBox(width: 12),
                                     Expanded(
                                       child: ElevatedButton(
                                         onPressed: () {
-                                          printerController
-                                              .printInvoice(invoice);
-                                          Get.back();
-                                        },
-                                        child: const Text('Cetak invoice'),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: ElevatedButton(
-                                        onPressed: () {
-                                          printerController
-                                              .printTransport(invoice);
+                                          printerController.selectedPrintMethod
+                                                      .value ==
+                                                  'receipt'
+                                              ? printerController
+                                                  .printTransport(invoice)
+                                              : null;
                                           Get.back();
                                         },
                                         child: const Text('Cetak surat jalan'),

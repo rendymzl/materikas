@@ -1,24 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../infrastructure/dal/services/auth_service.dart';
 import '../../../infrastructure/dal/services/customer_service.dart';
 import '../../../infrastructure/models/customer_model.dart';
-import '../../global_widget/menu_widget/menu_controller.dart';
 
 class CustomerController extends GetxController {
   final CustomerService _customerService = Get.find<CustomerService>();
-  final MenuWidgetController _menuC = Get.find<MenuWidgetController>();
+  late final AuthService _authService = Get.find();
 
   late final customers = _customerService.customers;
   late final foundCustomers = _customerService.foundCustomers;
-  late final isAdmin = _menuC.isAdmin.value;
 
   void filterCustomers(String customerName) {
     _customerService.search(customerName);
   }
 
+  final addCustomer = true.obs;
+  final editCustomer = true.obs;
+  final destroyCustomer = true.obs;
+
   @override
-  void onInit() {
+  void onInit() async {
+    addCustomer.value = await _authService.checkAccess('addCustomer');
+    editCustomer.value = await _authService.checkAccess('editCustomer');
+    destroyCustomer.value = await _authService.checkAccess('destroyCustomer');
+
     super.onInit();
   }
 

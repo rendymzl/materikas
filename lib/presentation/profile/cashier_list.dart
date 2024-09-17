@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 
+import '../../infrastructure/models/account_model.dart';
 import '../../infrastructure/models/user_model.dart';
 import 'controllers/profile.controller.dart';
 
@@ -24,16 +25,18 @@ class CashierListWidget extends StatelessWidget {
           Divider(color: Colors.grey[200]),
           Obx(
             () {
-              return controller.account.value!.users.isEmpty
+              AccountModel editAccount =
+                  AccountModel.fromJson(controller.account.value!.toJson());
+              return editAccount.users.isEmpty
                   ? const Text('Tidak ada kasir')
                   : Expanded(
                       child: ListView.separated(
                         separatorBuilder: (context, index) =>
                             const SizedBox(height: 4),
                         shrinkWrap: true,
-                        itemCount: controller.account.value!.users.length,
+                        itemCount: editAccount.users.length,
                         itemBuilder: (context, index) {
-                          var cashier = controller.account.value!.users[index];
+                          var cashier = editAccount.users[index];
                           var initCashier = Cashier.fromJson(cashier.toJson());
                           return ListTile(
                             tileColor: Colors.grey[100],
@@ -48,8 +51,8 @@ class CashierListWidget extends StatelessWidget {
                                     child: Text(cashier.name,
                                         textAlign: TextAlign.center)),
                                 IconButton(
-                                  onPressed: () =>
-                                      controller.removeCashier(cashier),
+                                  onPressed: () => controller.removeCashier(
+                                      editAccount, cashier),
                                   icon: const Icon(
                                     Symbols.delete,
                                     color: Colors.red,
@@ -71,7 +74,7 @@ class CashierListWidget extends StatelessWidget {
                                         CheckBoxWidget(
                                           title: 'Menu Invoice',
                                           cashier: cashier,
-                                          accessName: 'invoiceMenu',
+                                          accessName: 'Invoice',
                                         ),
                                         CheckBoxWidget(
                                           title: 'Edit Invoice',
@@ -102,7 +105,7 @@ class CashierListWidget extends StatelessWidget {
                                         CheckBoxWidget(
                                           title: 'Menu Pelanggan',
                                           cashier: cashier,
-                                          accessName: 'customerMenu',
+                                          accessName: 'Pelanggan',
                                         ),
                                         CheckBoxWidget(
                                           title: 'Tambah Pelanggan',
@@ -128,7 +131,7 @@ class CashierListWidget extends StatelessWidget {
                                         CheckBoxWidget(
                                           title: 'Menu Barang',
                                           cashier: cashier,
-                                          accessName: 'productMenu',
+                                          accessName: 'Barang',
                                         ),
                                         CheckBoxWidget(
                                           title: 'Edit Barang',
@@ -149,7 +152,7 @@ class CashierListWidget extends StatelessWidget {
                                         CheckBoxWidget(
                                           title: 'Menu Sales',
                                           cashier: cashier,
-                                          accessName: 'salesMenu',
+                                          accessName: 'Sales',
                                         ),
                                       ],
                                     ),
@@ -160,7 +163,7 @@ class CashierListWidget extends StatelessWidget {
                                         CheckBoxWidget(
                                           title: 'Menu Laporan',
                                           cashier: cashier,
-                                          accessName: 'statisticMenu',
+                                          accessName: 'Laporan',
                                         ),
                                         CheckBoxWidget(
                                           title: 'Biaya Operasional',
@@ -179,7 +182,7 @@ class CashierListWidget extends StatelessWidget {
                                   if (!equal) {
                                     return ElevatedButton(
                                       onPressed: () =>
-                                          controller.saveAccess(cashier),
+                                          controller.saveAccess(editAccount),
                                       child: const Text('Simpan Perubahan'),
                                     );
                                   }

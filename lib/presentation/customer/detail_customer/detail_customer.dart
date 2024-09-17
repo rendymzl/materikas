@@ -5,10 +5,12 @@ import 'package:material_symbols_icons/material_symbols_icons.dart';
 
 import '../../../infrastructure/models/customer_model.dart';
 import '../../global_widget/popup_page_widget.dart';
+import '../controllers/customer.controller.dart';
 import 'detail_customer_controller.dart';
 
 void detailCustomer({CustomerModel? foundCustomer}) {
   DetailCustomerController controller = Get.put(DetailCustomerController());
+  CustomerController customerC = Get.find();
 
   controller.bindingEditData(foundCustomer);
 
@@ -21,9 +23,11 @@ void detailCustomer({CustomerModel? foundCustomer}) {
 
   showPopupPageWidget(
       title: foundCustomer != null ? 'Edit Pelanggan' : 'Tambah Pelanggan',
-      iconButton: foundCustomer != null
+      iconButton: (foundCustomer != null)
           ? IconButton(
-              onPressed: () => controller.destroyHandle(foundCustomer),
+              onPressed: () => customerC.destroyCustomer.value
+                  ? controller.destroyHandle(foundCustomer)
+                  : null,
               icon: const Icon(
                 Symbols.delete,
                 color: Colors.red,

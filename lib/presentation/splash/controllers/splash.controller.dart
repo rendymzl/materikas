@@ -34,6 +34,7 @@ class SplashController extends GetxController {
     if (isLoggedIn) {
       await _authService.getAccount();
       await _authService.getStore();
+      await _authService.getCashier();
       Get.put(StoreService());
       Get.put(AccountService());
       print('SelectUserController INIT');

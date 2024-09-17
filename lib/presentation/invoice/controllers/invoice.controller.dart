@@ -5,10 +5,12 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 
+import '../../../infrastructure/dal/services/auth_service.dart';
 import '../../../infrastructure/dal/services/invoice_service.dart';
 import '../../../infrastructure/models/invoice_model/invoice_model.dart';
 
 class InvoiceController extends GetxController {
+  late final AuthService _authService = Get.find();
   late final InvoiceService _invoiceService = Get.find();
   late final invoices = _invoiceService.invoices;
   late final foundInvoices = _invoiceService.foundInvoices;
@@ -24,16 +26,25 @@ class InvoiceController extends GetxController {
 
   final int limit = 20; // Batas data per halaman
 
+  final editInvoice = true.obs;
+  final returnInvoice = true.obs;
+  final paymentInvoice = true.obs;
+  final destroyInvoice = true.obs;
+
   @override
-  void onInit() {
+  void onInit() async {
     super.onInit();
-    loadMore(); // Memuat data awal
+    loadMore();
     ever(paidInv, (value) {
       hasMore.value = true;
       page = 1;
       displayedItems.clear();
       loadMore();
     });
+    editInvoice.value = await _authService.checkAccess('editInvoice');
+    returnInvoice.value = await _authService.checkAccess('returnInvoice');
+    paymentInvoice.value = await _authService.checkAccess('paymentInvoice');
+    destroyInvoice.value = await _authService.checkAccess('destroyInvoice');
   }
 
   void loadMore() {
