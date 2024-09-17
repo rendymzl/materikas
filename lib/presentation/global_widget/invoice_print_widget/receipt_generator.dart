@@ -205,7 +205,7 @@ Future<List<int>> generateReceiptBytes(InvoiceModel invoice) async {
       styles: const PosStyles(bold: true),
     ),
     PosColumn(
-      text: currency.format(invoice.totalBill),
+      text: currency.format(invoice.totalPurchase),
       width: 4,
       styles: const PosStyles(bold: true, align: PosAlign.right),
     ),

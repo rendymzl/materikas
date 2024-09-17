@@ -92,7 +92,7 @@ class StatisticController extends GetxController {
 
   @override
   void onInit() async {
-    print(operatingCosts.length);
+    print('--salesInvoices.length ${salesInvoices.length}');
     super.onInit();
     everAll([operatingCosts, invoices, salesInvoices], (_) {
       rangePickerHandle(DateTime.now());
@@ -392,13 +392,14 @@ class StatisticController extends GetxController {
         totalTransfer += transferPay;
         totalCostPrice += costPrice;
       }
-
+      // print('-----salesInvoicesGroup lenght ${salesInvoicesGroup.length}');
       for (var inv in salesInvoicesGroup) {
         double salesCashPay = inv.getTotalByMethod("cash");
         double salesTransferPay = inv.getTotalByMethod("transfer");
 
         totalSalesCash += salesCashPay;
         totalSalesTransfer += salesTransferPay;
+        // print('-----in sales pay transfer $totalSalesTransfer');
       }
 
       for (var op in operatingCostsGroup) {
@@ -406,7 +407,7 @@ class StatisticController extends GetxController {
 
         totalOperatingCost += operatingCost;
       }
-
+      // print('-----out sales pay transfer $totalSalesTransfer');
       final chartData = Chart(
         date: date,
         dateString: dateString,
@@ -511,7 +512,7 @@ class StatisticController extends GetxController {
 
     Future<Chart> reduceInvoiceList(
         List<Chart> dataInvoiceList, DateTime date) async {
-      return dataInvoiceList.reduce((value, element) {
+      var chart = dataInvoiceList.reduce((value, element) {
         return Chart(
           date: date,
           dateString: selectedSection.value != 'weekly'
@@ -531,6 +532,29 @@ class StatisticController extends GetxController {
           totalInvoice: value.totalInvoice + element.totalInvoice,
         );
       });
+
+      var cash = 0.0;
+      var transfer = 0.0;
+      var salesCash = 0.0;
+      var salesTransfer = 0.0;
+      for (var invoice in invoices) {
+        cash += invoice.getTotalByMethod('cash', selectedDate: date);
+        transfer += invoice.getTotalByMethod('transfer', selectedDate: date);
+      }
+      for (var invoice in salesInvoices) {
+        salesCash += invoice.getTotalByMethod('cash', selectedDate: date);
+        salesTransfer +=
+            invoice.getTotalByMethod('transfer', selectedDate: date);
+      }
+      chart.cash = cash;
+      chart.transfer = transfer;
+      chart.salesCash = salesCash;
+      chart.salesTransfer = salesTransfer;
+      print('---- cash $cash');
+      print('---- transfer $transfer');
+      print('---- salesCash $salesCash');
+      print('---- salesTransfer $salesTransfer');
+      return chart;
     }
 
     final dataInvoiceList = invoiceChart

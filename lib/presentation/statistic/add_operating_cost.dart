@@ -12,8 +12,7 @@ import 'controllers/statistic.controller.dart';
 void addOperatingCostDialog() {
   late StatisticController controller = Get.find();
   final AuthService authService = Get.find();
-  late OperatingCostService operatingCostServices =
-      Get.put(OperatingCostService());
+  late OperatingCostService operatingCostServices = Get.find();
 
   final operatingCostNameTextC = TextEditingController();
   final operatingCostAmountTextC = TextEditingController();

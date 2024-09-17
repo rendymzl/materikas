@@ -163,6 +163,7 @@ class ReportWidget extends StatelessWidget {
       child: Obx(
         () {
           final data = controller.selectedChart.value!;
+
           return ListView(
             shrinkWrap: true,
             children: [

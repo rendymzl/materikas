@@ -189,20 +189,42 @@ class InvoiceSalesModel {
     isDebtPaid.value = remainingDebt <= 0;
   }
 
-  Map<String, double> totalPaymentsByMethod() {
+  // Map<String, double> totalPaymentsByMethod() {
+  //   Map<String, double> totals = {};
+  //   for (var payment in payments) {
+  //     if (payment.method != null) {
+  //       if (!totals.containsKey(payment.method)) {
+  //         totals[payment.method!] = 0;
+  //       }
+  //       totals[payment.method!] = totals[payment.method!]! + payment.amountPaid;
+  //     }
+  //   }
+  //   return totals;
+  // }
+
+  // double getTotalByMethod(String method) {
+  //   return totalPaymentsByMethod()[method] ?? 0;
+  // }
+
+  Map<String, double> totalPaymentsByMethod({DateTime? selectedDate}) {
     Map<String, double> totals = {};
     for (var payment in payments) {
-      if (payment.method != null) {
+      if (payment.method != null &&
+          (selectedDate == null ||
+              (payment.date?.year == selectedDate.year &&
+                  payment.date?.month == selectedDate.month &&
+                  payment.date?.day == selectedDate.day))) {
         if (!totals.containsKey(payment.method)) {
           totals[payment.method!] = 0;
         }
-        totals[payment.method!] = totals[payment.method!]! + payment.amountPaid;
+        double result = totals[payment.method!]! + payment.amountPaid;
+        totals[payment.method!] = result <= totalCost ? result : totalCost;
       }
     }
     return totals;
   }
 
-  double getTotalByMethod(String method) {
-    return totalPaymentsByMethod()[method] ?? 0;
+  double getTotalByMethod(String method, {DateTime? selectedDate}) {
+    return totalPaymentsByMethod(selectedDate: selectedDate)[method] ?? 0;
   }
 }
