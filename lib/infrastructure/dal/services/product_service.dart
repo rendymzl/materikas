@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:csv/csv.dart';
 import 'package:materikas/infrastructure/models/product_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -73,15 +76,16 @@ class ProductService extends GetxService implements ProductRepository {
     await db.execute(
       '''
     INSERT INTO products(
-      id, store_id, product_id, created_at, featured, product_name, 
+      id, store_id, product_id, created_at, barcode, featured, product_name, 
       unit, cost_price, sell_price1, sell_price2, sell_price3, 
       stock, stock_min, sold
-    ) VALUES(uuid(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES(uuid(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''',
       [
         product.storeId,
         product.productId,
         product.createdAt?.toIso8601String(),
+        product.barcode,
         product.featured == true ? 1 : 0,
         product.productName,
         product.unit,
@@ -103,6 +107,7 @@ class ProductService extends GetxService implements ProductRepository {
         product.storeId,
         product.productId,
         product.createdAt?.toIso8601String(),
+        product.barcode,
         product.featured == true ? 1 : 0,
         product.productName,
         product.unit,
@@ -119,10 +124,10 @@ class ProductService extends GetxService implements ProductRepository {
     await db.executeBatch(
       '''
     INSERT INTO products(
-      id, store_id, product_id, created_at, featured, product_name, 
+      id, store_id, product_id, created_at, barcode, featured, product_name, 
       unit, cost_price, sell_price1, sell_price2, sell_price3, 
       stock, stock_min, sold
-    ) VALUES(uuid(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES(uuid(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''',
       parameterSets,
     );
@@ -136,6 +141,7 @@ class ProductService extends GetxService implements ProductRepository {
         store_id = ?, 
         product_id = ?, 
         created_at = ?, 
+        barcode = ?, 
         featured = ?, 
         product_name = ?, 
         unit = ?, 
@@ -152,6 +158,7 @@ class ProductService extends GetxService implements ProductRepository {
         updatedProduct.storeId,
         updatedProduct.productId,
         updatedProduct.createdAt?.toIso8601String(),
+        updatedProduct.barcode,
         updatedProduct.featured == true ? 1 : 0,
         updatedProduct.productName,
         updatedProduct.unit,
@@ -174,6 +181,7 @@ class ProductService extends GetxService implements ProductRepository {
         product.storeId,
         product.productId,
         product.createdAt?.toIso8601String(),
+        product.barcode,
         product.featured == true ? 1 : 0,
         product.productName,
         product.unit,
@@ -194,6 +202,7 @@ class ProductService extends GetxService implements ProductRepository {
       store_id = ?, 
       product_id = ?, 
       created_at = ?, 
+      barcode = ?, 
       featured = ?, 
       product_name = ?, 
       unit = ?, 
@@ -213,5 +222,20 @@ class ProductService extends GetxService implements ProductRepository {
   @override
   Future<void> delete(String id) async {
     await db.execute('DELETE FROM products WHERE id = ?', [id]);
+  }
+
+  @override
+  Future<void> backup(String storeId) async {
+    final product =
+        await db.getAll('SELECT * FROM products WHERE store_id = ?', [storeId]);
+    List<String> headers = product.isNotEmpty ? product.columnNames : [];
+    // Konversi data ke format CSV
+    List<List<dynamic>> csvData = [headers];
+    for (var row in product) {
+      csvData.add(row.values.toList());
+    }
+    String csv = const ListToCsvConverter().convert(csvData);
+    File file = File('./product.csv'); // Ganti path sesuai kebutuhan
+    await file.writeAsString(csv);
   }
 }

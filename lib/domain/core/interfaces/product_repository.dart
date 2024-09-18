@@ -6,5 +6,6 @@ abstract class ProductRepository {
   Future<void> insertList(List<ProductModel> productList);
   Future<void> update(ProductModel updatedProduct);
   Future<void> updateList(List<ProductModel> updatedProductList);
+  Future<void> backup(String storeId);
   Future<void> delete(String id);
 }

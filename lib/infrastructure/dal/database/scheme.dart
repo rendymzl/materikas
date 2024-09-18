@@ -70,6 +70,7 @@ const schema = Schema([
     Column.text('product_id'),
     Column.text('store_id'),
     Column.text('created_at'),
+    Column.text('barcode'),
     Column.integer('featured'),
     Column.text('product_name'),
     Column.text('unit'),

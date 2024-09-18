@@ -34,6 +34,8 @@ class HomeController extends GetxController {
 
   late ScrollController scrollController = ScrollController();
 
+  final FocusNode focusNode = FocusNode();
+
   @override
   void onInit() async {
     _menuC.selectedIndex.value = 0;
@@ -61,6 +63,7 @@ class HomeController extends GetxController {
 
   void priceTypeHandleCheckBox(int type) async {
     priceType.value == type ? priceType.value = 1 : priceType.value = type;
+    invoice.priceType.value = priceType.value;
   }
 
   CartItem? checkExistence(

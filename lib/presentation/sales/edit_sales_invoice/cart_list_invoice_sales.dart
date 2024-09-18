@@ -42,8 +42,8 @@ class CardListInvoiceSales extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         ElevatedButton(
-          onPressed: () =>
-              addProductSalesDialog(editInvoice.purchaseList.value),
+          onPressed: () => addProductSalesDialog(
+              isPopUp: true, editInvoice.purchaseList.value),
           child: const Text(
             'Tambah Barang',
           ),

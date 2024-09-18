@@ -48,6 +48,11 @@ class ProductScreen extends GetView<ProductController> {
                               onPressed: () => detailProduct(),
                               child: const Text('Tambah Barang'),
                             ),
+                            const SizedBox(width: 8),
+                            ElevatedButton(
+                              onPressed: () => controller.exportHandle(),
+                              child: const Text('Export Data barang'),
+                            ),
                           ],
                         ),
                       ],

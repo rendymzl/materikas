@@ -10,6 +10,7 @@ class ProductModel extends Product {
     required super.storeId,
     required super.productId,
     super.createdAt,
+    super.barcode,
     super.featured,
     required super.productName,
     required super.unit,
@@ -30,6 +31,7 @@ class ProductModel extends Product {
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at']).toLocal()
           : null,
+      barcode: json['barcode'],
       featured: json['featured'] != null ? json['featured'] == 1 : null,
       productName: json['product_name'],
       unit: json['unit'],
@@ -69,6 +71,7 @@ class ProductModel extends Product {
         'product_id': productId,
         'created_at': createdAt?.toIso8601String(),
         if (id != null) 'featured': featured! ? 1 : 0,
+        'barcode': barcode,
         'product_name': productName,
         'unit': unit,
         'cost_price': costPrice.value,
@@ -88,6 +91,7 @@ class ProductModel extends Product {
       createdAt: row['created_at'] != null
           ? DateTime.parse(row['created_at']).toLocal()
           : null,
+      barcode: row['barcode'],
       featured: row['featured'] != null ? row['featured'] == 1 : null,
       productName: row['product_name'],
       unit: row['unit'],
@@ -123,11 +127,11 @@ class ProductModel extends Product {
       case 1:
         return sellPrice1;
       case 2:
-        return (sellPrice2 != null && sellPrice2 != 0)
+        return (sellPrice2 != null && sellPrice2 != 0.0.obs)
             ? sellPrice2!
             : sellPrice1;
       case 3:
-        return (sellPrice3 != null && sellPrice3 != 0)
+        return (sellPrice3 != null && sellPrice3 != 0.0.obs)
             ? sellPrice3!
             : sellPrice1;
       default:

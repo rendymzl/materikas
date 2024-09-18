@@ -44,6 +44,7 @@ void buyProductDialog() async {
             flex: 3,
             child: ProductListWidget(
               onClick: (product) => controller.addToCart(product),
+              isPopUp: true,
               isSales: true,
             ),
           ),

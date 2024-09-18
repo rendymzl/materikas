@@ -23,6 +23,7 @@ dependencies:
   supabase_flutter: ^2.6.0
   syncfusion_flutter_datepicker: ^26.2.13
   thermal_printer: ^1.0.5
+  csv: ^6.0.0
 
 dev_dependencies:
   flutter_test:

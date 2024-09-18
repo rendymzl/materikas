@@ -9,7 +9,6 @@ import '../../../infrastructure/models/invoice_model/invoice_model.dart';
 import '../../../infrastructure/models/product_model.dart';
 import '../../../infrastructure/utils/display_format.dart';
 import '../../home/controllers/home.controller.dart';
-import '../app_dialog_widget.dart';
 import '../field_customer_widget/field_customer_widget_controller.dart';
 import '../invoice_print_widget/invoice_print.dart';
 
@@ -193,6 +192,10 @@ class PaymentController extends GetxController {
 
   Future saveToDatabase(InvoiceModel invoice,
       {bool onlyPayment = false}) async {
+    if (!_authService.isOwner.value) {
+      invoice.account.value.name = _authService.selectedUser.value!.name;
+    }
+
     final isNewInvoice = invoice.invoiceId == null;
     await customerFieldC.addCustomer(invoice);
     if (isNewInvoice) {
@@ -253,45 +256,59 @@ class PaymentController extends GetxController {
 
       Get.back();
 
-      AppDialog.show(
-        title: 'Berhasil',
-        content: 'Invoice berhasil disimpan.',
-        confirmText: "Cetak Invoice",
-        cancelText: "Kembali",
-        onConfirm: () async {
-          print(printInvoice);
-          // Get.back();
-          printInvoiceDialog(printInvoice);
-        },
-      );
+      // await AppDialog.show(
+      //   title: 'Berhasil',
+      //   content: 'Invoice berhasil disimpan.',
+      //   confirmText: "Cetak Invoice",
+      //   cancelText: "Kembali",
+      //   onConfirm: () async {
+      //     print(printInvoice);
+      //     // Get.back();
+      //     printInvoiceDialog(printInvoice);
+      //   },
+      // );
 
       // await Get.defaultDialog(
       //   title: 'Berhasil',
       //   middleText: 'Invoice berhasil disimpan.',
       // );
-      // Get.back();
-      // await Get.defaultDialog(
-      //   title: 'Print',
-      //   middleText: 'Cetak invoice?',
-      //   confirm: TextButton(
-      //     onPressed: () async {
-      //       printInvoiceDialog(
-      //         context,
-      //         printInvoice,
-      //       );
-      //     },
-      //     child: const Text('Cetak'),
-      //   ),
-      //   cancel: TextButton(
-      //     onPressed: () {
-      //       Get.back();
-      //     },
-      //     child: Text(
-      //       'Tidak',
-      //       style: TextStyle(color: Colors.black.withOpacity(0.5)),
-      //     ),
-      //   ),
-      // );
+      Get.back();
+      await Get.defaultDialog(
+        title: 'Berhasil',
+        middleText: 'Invoice berhasil disimpan',
+        confirm: SizedBox(
+          width: 120,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+                    backgroundColor: Get.theme.primaryColor)
+                .copyWith(
+                    textStyle: WidgetStateProperty.all(
+                        const TextStyle(fontWeight: FontWeight.normal)),
+                    padding: WidgetStateProperty.all(
+                        const EdgeInsets.symmetric(vertical: 12.0))),
+            onPressed: () async {
+              Get.back();
+              printInvoiceDialog(printInvoice);
+            },
+            child: const Text('Cetak Invoice'),
+          ),
+        ),
+        cancel: SizedBox(
+          width: 120,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.grey)
+                .copyWith(
+                    textStyle: WidgetStateProperty.all(
+                        const TextStyle(fontWeight: FontWeight.normal)),
+                    padding: WidgetStateProperty.all(
+                        const EdgeInsets.symmetric(vertical: 12.0))),
+            onPressed: () async {
+              Get.back();
+            },
+            child: const Text('Kembali'),
+          ),
+        ),
+      );
     } catch (e) {
       await Get.defaultDialog(
         title: 'Gagal Menyimpan Invoice!',

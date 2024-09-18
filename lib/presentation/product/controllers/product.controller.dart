@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import '../../../infrastructure/dal/services/auth_service.dart';
 import '../../../infrastructure/dal/services/product_service.dart';
 import '../../../infrastructure/models/product_model.dart';
+import '../../global_widget/app_dialog_widget.dart';
 
 class ProductController extends GetxController {
   late final AuthService _authService = Get.find();
@@ -79,5 +80,26 @@ class ProductController extends GetxController {
   final isLowStock = false.obs;
   void toggleLowStock() {
     isLowStock.value = !isLowStock.value;
+  }
+
+  exportHandle() async {
+    try {
+      AppDialog.show(
+        title: 'Export Barang',
+        content: 'Export daftar barang?',
+        confirmText: "Ya",
+        cancelText: "Tidak",
+        onConfirm: () async {
+          _productService.backup(_authService.store.value!.id);
+          Get.back();
+        },
+        onCancel: () => Get.back(),
+      );
+    } catch (e) {
+      Get.defaultDialog(
+        title: 'Error',
+        middleText: e.toString(),
+      );
+    }
   }
 }

@@ -17,6 +17,7 @@ class DetailProductController extends GetxController {
   final formkey = GlobalKey<FormState>();
 
   final TextEditingController codeTextC = TextEditingController();
+  final TextEditingController barcodeTextC = TextEditingController();
   final TextEditingController productNameTextC = TextEditingController();
   final TextEditingController unitTextC = TextEditingController();
   final TextEditingController salesTextC = TextEditingController();
@@ -35,6 +36,7 @@ class DetailProductController extends GetxController {
     super.onInit();
     textControllers = {
       'code': codeTextC,
+      'barcode': codeTextC,
       'productName': productNameTextC,
       'unit': unitTextC,
       'sales': salesTextC,
@@ -115,12 +117,13 @@ class DetailProductController extends GetxController {
         );
 
     codeTextC.text = product.productId;
+    barcodeTextC.text = product.barcode ?? '';
     productNameTextC.text = product.productName;
     unitTextC.text = product.unit;
     costPriceTextC.text = product.costPrice.value == 0
         ? ''
         : currency.format(product.costPrice.value);
-    sellPriceTextC1.text = product.sellPrice1 == 0
+    sellPriceTextC1.text = product.sellPrice1 == 0.0.obs
         ? ''
         : currency.format(product.sellPrice1.value);
     sellPriceTextC2.text =
@@ -142,7 +145,7 @@ class DetailProductController extends GetxController {
   }
 
 //! create
-  Future addProduct(ProductModel product) async {
+  Future addProduct(ProductModel product, bool isPopUp) async {
     bool isProductExist =
         products.any((item) => item.productId == product.productId);
     if (isProductExist) {
@@ -167,7 +170,7 @@ class DetailProductController extends GetxController {
           child: const Text('OK'),
         ),
       );
-      Get.back();
+      if (!isPopUp) Get.back();
     }
   }
 
@@ -215,7 +218,8 @@ class DetailProductController extends GetxController {
   }
 
   //! handle save
-  Future handleSave(ProductModel? currentProduct) async {
+  Future handleSave(ProductModel? currentProduct,
+      {bool isPopUp = false}) async {
     clickedField.assignAll({
       'code': true,
       'productName': true,
@@ -237,6 +241,7 @@ class DetailProductController extends GetxController {
         productId: codeTextC.text.toUpperCase(),
         createdAt: DateTime.now(),
         storeId: _authService.account.value!.storeId!,
+        barcode: barcodeTextC.text,
         featured: false,
         productName: productNameTextC.text,
         unit: unitTextC.text,
@@ -261,8 +266,22 @@ class DetailProductController extends GetxController {
       );
 
       currentProduct == null
-          ? addProduct(newProduct)
+          ? addProduct(newProduct, isPopUp)
           : updateProduct(newProduct, currentProduct);
     }
+  }
+
+  var scannedData = ''.obs; // Observable untuk menyimpan hasil scan
+
+  // Fungsi untuk memproses input dari scanner
+  void processBarcode(String barcode) {
+    print('Memproses barcode: $barcode');
+    // Tambahkan logika pemrosesan barcode, misalnya mencari produk dari barcode
+    scannedData.value = barcode; // Update UI dengan hasil scan
+  }
+
+  // Reset data setelah diproses
+  void resetScannedData() {
+    scannedData.value = '';
   }
 }

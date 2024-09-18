@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class AppDialog {
-  static void show({
+  static Future<void> show({
     required String title,
     required String content,
     String confirmText = "Confirm",
@@ -12,8 +12,8 @@ class AppDialog {
     Color? confirmColor,
     Color? cancelColor,
     double buttonWidth = 120, // Default width of buttons
-  }) {
-    Get.defaultDialog(
+  }) async {
+    await Get.defaultDialog(
       title: title,
       content: Text(content),
       confirm: SizedBox(
@@ -23,9 +23,9 @@ class AppDialog {
                   backgroundColor: confirmColor ?? Get.theme.primaryColor)
               .copyWith(
                   textStyle: WidgetStateProperty.all(
-                      TextStyle(fontWeight: FontWeight.normal)),
+                      const TextStyle(fontWeight: FontWeight.normal)),
                   padding: WidgetStateProperty.all(
-                      EdgeInsets.symmetric(vertical: 12.0))),
+                      const EdgeInsets.symmetric(vertical: 12.0))),
           onPressed: () {
             if (onConfirm != null) {
               onConfirm();
@@ -42,9 +42,9 @@ class AppDialog {
                   backgroundColor: cancelColor ?? Colors.grey)
               .copyWith(
                   textStyle: WidgetStateProperty.all(
-                      TextStyle(fontWeight: FontWeight.normal)),
+                      const TextStyle(fontWeight: FontWeight.normal)),
                   padding: WidgetStateProperty.all(
-                      EdgeInsets.symmetric(vertical: 12.0))),
+                      const EdgeInsets.symmetric(vertical: 12.0))),
           onPressed: () {
             if (onCancel != null) {
               onCancel();

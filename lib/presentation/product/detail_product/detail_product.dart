@@ -8,9 +8,27 @@ import '../../global_widget/popup_page_widget.dart';
 import '../controllers/product.controller.dart';
 import 'detail_product_controller.dart';
 
-void detailProduct({ProductModel? foundProduct}) {
+void detailProduct({ProductModel? foundProduct, bool isPopUp = false}) {
   DetailProductController controller = Get.put(DetailProductController());
   ProductController productC = Get.put(ProductController());
+
+  final FocusNode focusNode = FocusNode();
+
+  void _handleKeyPress(KeyEvent event) {
+    // Cek apakah key event merupakan input karakter
+    if (event is KeyDownEvent) {
+      final String key = event.logicalKey.keyLabel;
+
+      // Jika key adalah Enter, kita anggap selesai menerima input barcode
+      if (event.logicalKey == LogicalKeyboardKey.enter) {
+        controller.processBarcode(controller.scannedData.value);
+        controller.resetScannedData();
+      } else {
+        // Jika bukan Enter, tambahkan ke scannedData
+        controller.scannedData.value += key;
+      }
+    }
+  }
 
   controller.bindingEditData(foundProduct);
 
@@ -25,6 +43,7 @@ void detailProduct({ProductModel? foundProduct}) {
   controller.clickedField['cost'] = false;
 
   showPopupPageWidget(
+      focusNode: focusNode,
       title: foundProduct != null ? 'Edit Barang' : 'Tambah Barang',
       iconButton: foundProduct != null
           ? IconButton(
@@ -38,132 +57,160 @@ void detailProduct({ProductModel? foundProduct}) {
           : null,
       height: MediaQuery.of(Get.context!).size.height * (3 / 4),
       width: MediaQuery.of(Get.context!).size.width * (5 / 16),
-      content: ListView(
-        shrinkWrap: true,
-        padding: const EdgeInsets.all(16),
-        children: [
-          Form(
-            key: controller.formkey,
-            autovalidateMode: AutovalidateMode.always,
-            child: Column(
-              children: [
-                buildTextFormField(
-                  controller: controller.codeTextC,
-                  labelText: 'Kode Barang',
-                  onChanged: (value) => controller.onTextChange(value, 'code'),
-                  validator: (value) => controller.fieldValidator(
-                      value!, 'code', 'Kode tidak boleh kosong'),
-                  onFieldSubmitted: (_) => controller.handleSave(foundProduct),
-                ),
-                buildTextFormField(
-                  controller: controller.productNameTextC,
-                  labelText: 'Nama Barang',
-                  onChanged: (value) =>
-                      controller.onTextChange(value, 'productName'),
-                  validator: (value) => controller.fieldValidator(
-                      value!, 'productName', 'Nama barang tidak boleh kosong'),
-                  onFieldSubmitted: (_) => controller.handleSave(foundProduct),
-                ),
-                buildTextFormField(
-                  controller: controller.costPriceTextC,
-                  labelText: 'Harga Sales',
-                  prefixText: 'Rp. ',
-                  onChanged: (value) =>
-                      controller.onCurrencyChanged(value, 'cost'),
-                  validator: (value) => controller.fieldValidator(
-                      value!, 'cost', 'Harga sales tidak boleh kosong'),
-                  onFieldSubmitted: (_) => controller.handleSave(foundProduct),
-                  isCurrency: true,
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: buildTextFormField(
-                        controller: controller.sellPriceTextC1,
-                        labelText: 'Harga Jual 1',
-                        prefixText: 'Rp. ',
-                        onChanged: (value) =>
-                            controller.onCurrencyChanged(value, 'sell1'),
-                        validator: (value) => controller.fieldValidator(
-                            value!, 'sell1', 'Harga jual 1 tidak boleh kosong'),
-                        onFieldSubmitted: (_) =>
-                            controller.handleSave(foundProduct),
-                        isCurrency: true,
+      content: KeyboardListener(
+        focusNode: focusNode,
+        autofocus: true,
+        onKeyEvent: _handleKeyPress,
+        child: ListView(
+          shrinkWrap: true,
+          padding: const EdgeInsets.all(16),
+          children: [
+            Form(
+              key: controller.formkey,
+              autovalidateMode: AutovalidateMode.always,
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: buildTextFormField(
+                          controller: controller.codeTextC,
+                          labelText: 'Kode Barang',
+                          onChanged: (value) =>
+                              controller.onTextChange(value, 'code'),
+                          validator: (value) => controller.fieldValidator(
+                              value!, 'code', 'Kode tidak boleh kosong'),
+                          onFieldSubmitted: (_) =>
+                              controller.handleSave(foundProduct),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: buildTextFormField(
-                        controller: controller.sellPriceTextC2,
-                        labelText: 'Harga Jual 2',
-                        prefixText: 'Rp. ',
-                        onChanged: (value) =>
-                            controller.onCurrencyChanged(value, 'sell2'),
-                        onFieldSubmitted: (_) =>
-                            controller.handleSave(foundProduct),
-                        isCurrency: true,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        flex: 3,
+                        child: buildTextFormField(
+                          controller: controller.barcodeTextC,
+                          labelText: 'Barcode (Opsional)',
+                          onChanged: (value) =>
+                              controller.onTextChange(value, 'barcode'),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: buildTextFormField(
-                        controller: controller.sellPriceTextC3,
-                        labelText: 'Harga Jual 3',
-                        prefixText: 'Rp. ',
-                        onChanged: (value) =>
-                            controller.onCurrencyChanged(value, 'sell3'),
-                        onFieldSubmitted: (_) =>
-                            controller.handleSave(foundProduct),
-                        isCurrency: true,
+                    ],
+                  ),
+                  buildTextFormField(
+                    controller: controller.productNameTextC,
+                    labelText: 'Nama Barang',
+                    onChanged: (value) =>
+                        controller.onTextChange(value, 'productName'),
+                    validator: (value) => controller.fieldValidator(value!,
+                        'productName', 'Nama barang tidak boleh kosong'),
+                    onFieldSubmitted: (_) =>
+                        controller.handleSave(foundProduct),
+                  ),
+                  buildTextFormField(
+                    controller: controller.costPriceTextC,
+                    labelText: 'Harga Sales',
+                    prefixText: 'Rp. ',
+                    onChanged: (value) =>
+                        controller.onCurrencyChanged(value, 'cost'),
+                    validator: (value) => controller.fieldValidator(
+                        value!, 'cost', 'Harga sales tidak boleh kosong'),
+                    onFieldSubmitted: (_) =>
+                        controller.handleSave(foundProduct),
+                    isCurrency: true,
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: buildTextFormField(
+                          controller: controller.sellPriceTextC1,
+                          labelText: 'Harga Jual 1',
+                          prefixText: 'Rp. ',
+                          onChanged: (value) =>
+                              controller.onCurrencyChanged(value, 'sell1'),
+                          validator: (value) => controller.fieldValidator(
+                              value!,
+                              'sell1',
+                              'Harga jual 1 tidak boleh kosong'),
+                          onFieldSubmitted: (_) =>
+                              controller.handleSave(foundProduct),
+                          isCurrency: true,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: buildTextFormField(
-                        controller: controller.unitTextC,
-                        labelText: 'Satuan',
-                        onChanged: (value) =>
-                            controller.onTextChange(value, 'unit'),
-                        validator: (value) => controller.fieldValidator(
-                            value!, 'unit', 'Satuan tidak boleh kosong'),
-                        onFieldSubmitted: (_) =>
-                            controller.handleSave(foundProduct),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: buildTextFormField(
+                          controller: controller.sellPriceTextC2,
+                          labelText: 'Harga Jual 2',
+                          prefixText: 'Rp. ',
+                          onChanged: (value) =>
+                              controller.onCurrencyChanged(value, 'sell2'),
+                          onFieldSubmitted: (_) =>
+                              controller.handleSave(foundProduct),
+                          isCurrency: true,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: buildTextFormField(
-                        controller: controller.stockTextC,
-                        labelText: 'Stok',
-                        onChanged: (value) =>
-                            controller.onTextChange(value, 'stock'),
-                        onFieldSubmitted: (_) =>
-                            controller.handleSave(foundProduct),
-                        isNumeric: true,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: buildTextFormField(
+                          controller: controller.sellPriceTextC3,
+                          labelText: 'Harga Jual 3',
+                          prefixText: 'Rp. ',
+                          onChanged: (value) =>
+                              controller.onCurrencyChanged(value, 'sell3'),
+                          onFieldSubmitted: (_) =>
+                              controller.handleSave(foundProduct),
+                          isCurrency: true,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: buildTextFormField(
-                        controller: controller.minStockTextC,
-                        labelText: 'Minimal Stok',
-                        onChanged: (value) =>
-                            controller.onTextChange(value, 'min_stock'),
-                        onFieldSubmitted: (_) =>
-                            controller.handleSave(foundProduct),
-                        isNumeric: true,
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: buildTextFormField(
+                          controller: controller.unitTextC,
+                          labelText: 'Satuan',
+                          onChanged: (value) =>
+                              controller.onTextChange(value, 'unit'),
+                          validator: (value) => controller.fieldValidator(
+                              value!, 'unit', 'Satuan tidak boleh kosong'),
+                          onFieldSubmitted: (_) =>
+                              controller.handleSave(foundProduct),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-              ],
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: buildTextFormField(
+                          controller: controller.stockTextC,
+                          labelText: 'Stok',
+                          onChanged: (value) =>
+                              controller.onTextChange(value, 'stock'),
+                          onFieldSubmitted: (_) =>
+                              controller.handleSave(foundProduct),
+                          isNumeric: true,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: buildTextFormField(
+                          controller: controller.minStockTextC,
+                          labelText: 'Minimal Stok',
+                          onChanged: (value) =>
+                              controller.onTextChange(value, 'min_stock'),
+                          onFieldSubmitted: (_) =>
+                              controller.handleSave(foundProduct),
+                          isNumeric: true,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       buttonList: [
         Expanded(
@@ -175,7 +222,8 @@ void detailProduct({ProductModel? foundProduct}) {
         SizedBox(width: 8),
         Expanded(
           child: ElevatedButton(
-            onPressed: () async => await controller.handleSave(foundProduct),
+            onPressed: () async =>
+                await controller.handleSave(foundProduct, isPopUp: isPopUp),
             child: const Text('Simpan'),
           ),
         ),
@@ -187,7 +235,7 @@ Widget buildTextFormField({
   required String labelText,
   required Function(String) onChanged,
   String? Function(String?)? validator,
-  required Function(String) onFieldSubmitted,
+  Function(String)? onFieldSubmitted,
   String prefixText = '',
   bool isCurrency = false,
   bool isNumeric = false,

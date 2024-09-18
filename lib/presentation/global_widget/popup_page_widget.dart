@@ -8,6 +8,7 @@ class PopupPageWidget extends StatelessWidget {
   final List<Widget>? buttonList;
   final double width;
   final double height;
+  final FocusNode? focusNode;
   final VoidCallback? onClose;
 
   const PopupPageWidget({
@@ -18,47 +19,51 @@ class PopupPageWidget extends StatelessWidget {
     this.buttonList,
     this.width = 300,
     this.height = 400,
+    this.focusNode,
     this.onClose,
   });
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: true,
-      onPopInvokedWithResult: (didPop, _) async {
-        onClose?.call();
-      },
-      child: Dialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: SizedBox(
-          width: width,
-          height: height,
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              children: [
-                ListTile(
-                  title: Text(
-                    title,
-                    style: context.textTheme.titleLarge,
-                    textAlign: iconButton != null ? null : TextAlign.center,
-                  ),
-                  trailing: iconButton,
-                ),
-                // const SizedBox(height: 20),
-                Expanded(child: ListView(children: [content])),
-                if (buttonList != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: buttonList!,
+    return GestureDetector(
+      onTap: () => focusNode?.requestFocus(),
+      child: PopScope(
+        canPop: true,
+        onPopInvokedWithResult: (didPop, _) async {
+          onClose?.call();
+        },
+        child: Dialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: SizedBox(
+            width: width,
+            height: height,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                children: [
+                  ListTile(
+                    title: Text(
+                      title,
+                      style: context.textTheme.titleLarge,
+                      textAlign: iconButton != null ? null : TextAlign.center,
                     ),
+                    trailing: iconButton,
                   ),
-              ],
+                  // const SizedBox(height: 20),
+                  Expanded(child: ListView(children: [content])),
+                  if (buttonList != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: buttonList!,
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
         ),
@@ -74,6 +79,7 @@ void showPopupPageWidget({
   List<Widget>? buttonList,
   double width = 300,
   double height = 400,
+  FocusNode? focusNode,
   VoidCallback? onClose,
 }) {
   Get.dialog(
@@ -84,6 +90,7 @@ void showPopupPageWidget({
       buttonList: buttonList,
       width: width,
       height: height,
+      focusNode: focusNode,
       onClose: onClose,
     ),
   );

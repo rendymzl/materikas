@@ -1,12 +1,18 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../infrastructure/dal/services/product_service.dart';
 import '../../../infrastructure/models/product_model.dart';
+import '../../home/controllers/home.controller.dart';
 
 class ProductListWidgetController extends GetxController {
   final ProductService _productService = Get.find<ProductService>();
+  final HomeController _homeC = Get.find<HomeController>();
+
+  FocusNode focusNode = FocusNode();
+  TextEditingController serchController = TextEditingController();
 
   late final product = _productService.products;
   late final foundProducts = _productService.foundProducts;
@@ -68,5 +74,35 @@ class ProductListWidgetController extends GetxController {
       displayedItems.assignAll(foundProducts);
       print(displayedItems.length);
     });
+  }
+
+  // void scanBarcode(String scanCode) {
+  //   var scannedProduct = foundProducts.where((product) {
+  //     return product.barcode != null &&
+  //         product.barcode!.toLowerCase().contains(scanCode.toLowerCase());
+  //   }).toList();
+  //   if (scannedProduct.length == 1) {
+  //     _homeC.addToCart(scannedProduct[0]);
+  //   }
+  //   serchController.clear();
+  //   focusNode.requestFocus();
+  // }
+
+  var scannedData = ''.obs; // Observable untuk menyimpan hasil scan
+
+  // Fungsi untuk memproses input dari scanner
+  void processBarcode(String barcode) {
+    print('Memproses barcode: $barcode');
+    scannedData.value = barcode; // Update UI dengan hasil scan
+    var product =
+        foundProducts.firstWhereOrNull((product) => product.barcode == barcode);
+    if (product != null) {
+      _homeC.addToCart(product);
+    }
+  }
+
+  // Reset data setelah diproses
+  void resetScannedData() {
+    scannedData.value = '';
   }
 }

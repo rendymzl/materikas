@@ -77,7 +77,7 @@ class CardListWidget extends StatelessWidget {
                             children: [
                               Expanded(
                                 child: Text(
-                                  'Return Tambahan: ${editInvoice.returnList.value!.items.length}',
+                                  'Return Tambahan: ',
                                   textAlign: TextAlign.right,
                                   style: Theme.of(Get.context!)
                                       .textTheme
@@ -175,6 +175,7 @@ class CardListWidget extends StatelessWidget {
                             flex: 2,
                             child: ElevatedButton(
                               onPressed: () => addProductDialog(
+                                isPopUp: true,
                                 isReturnPage
                                     ? editInvoice.returnList.value!
                                     : editInvoice.purchaseList.value,

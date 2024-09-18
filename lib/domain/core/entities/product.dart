@@ -5,6 +5,7 @@ class Product {
   String storeId;
   String productId;
   DateTime? createdAt;
+  String? barcode;
   bool? featured;
   String productName;
   String unit;
@@ -21,6 +22,7 @@ class Product {
     required this.storeId,
     required this.productId,
     required this.createdAt,
+    this.barcode,
     this.featured,
     required this.productName,
     required this.unit,

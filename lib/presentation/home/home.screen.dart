@@ -13,26 +13,30 @@ class HomeScreen extends GetView<HomeController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          const MenuWidget(title: 'Transaksi'),
-          Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: Card(
-                    child: ProductListWidget(onClick: (product) {
-                      controller.addToCart(product);
-                    }),
+      body: GestureDetector(
+        onTap: () => controller.focusNode.requestFocus(),
+        child: Column(
+          children: [
+            const MenuWidget(title: 'Transaksi'),
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: Card(
+                      child: ProductListWidget(onClick: (product) {
+                        controller.addToCart(product);
+                      }),
+                    ),
                   ),
-                ),
-                const Expanded(flex: 4, child: Card(child: SelectedProduct())),
-              ],
+                  const Expanded(
+                      flex: 4, child: Card(child: SelectedProduct())),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
