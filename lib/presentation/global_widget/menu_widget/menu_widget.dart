@@ -109,7 +109,7 @@ class MenuWidget extends GetView<MenuWidgetController> {
         label: Text(
           data.label,
           style: TextStyle(
-            fontSize: 16,
+            fontSize: 14,
             color: controller.selectedIndex.value == index
                 ? Colors.white
                 : Colors.grey[700],

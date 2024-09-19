@@ -16,7 +16,6 @@ class DatePickerCard extends StatelessWidget {
         return Card(
           child: Column(
             children: [
-              const Text('Pilih Data:'),
               if (controller.selectedSection.value == 'daily')
                 const Expanded(child: DatePickerDaily()),
               if (controller.selectedSection.value == 'weekly')

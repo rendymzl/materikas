@@ -6,7 +6,7 @@ import 'package:material_symbols_icons/material_symbols_icons.dart';
 import '../../infrastructure/utils/display_format.dart';
 import '../global_widget/menu_widget/menu_widget.dart';
 import '../sales/selected_product_sales_widget/calculate_sales.dart';
-import 'add_operating_cost.dart';
+import '../operating_cost/add_operating_cost.dart';
 import 'controllers/statistic.controller.dart';
 import 'date_picker_cart.dart';
 import 'detail_operating_cost.dart';

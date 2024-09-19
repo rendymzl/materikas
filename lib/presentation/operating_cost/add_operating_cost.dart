@@ -7,10 +7,10 @@ import '../../infrastructure/dal/services/auth_service.dart';
 import '../../infrastructure/dal/services/operating_cost_service.dart';
 import '../../infrastructure/models/operating_cost_model.dart';
 import '../../infrastructure/utils/display_format.dart';
-import 'controllers/statistic.controller.dart';
+import 'controllers/operating_cost.controller.dart';
 
 void addOperatingCostDialog() {
-  late StatisticController controller = Get.find();
+  late OperatingCostController controller = Get.find();
   final AuthService authService = Get.find();
   late OperatingCostService operatingCostServices = Get.find();
 
@@ -38,8 +38,7 @@ void addOperatingCostDialog() {
         middleText: 'Biaya operasional berhasil ditambahkan',
         confirm: TextButton(
           onPressed: () {
-            controller.rangePickerHandle(controller.args.value);
-            controller.selectedSection.value = 'daily';
+            controller.rangePickerHandle(controller.selectedDate.value);
             Get.back();
             Get.back();
           },
