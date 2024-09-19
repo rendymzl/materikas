@@ -50,6 +50,7 @@ class MenuWidgetController extends GetxController {
         customerMenu,
         productMenu,
         salesMenu,
+        operationalMenu,
         statisticMenu,
       ];
       for (var menu in menus) {
@@ -81,6 +82,9 @@ class MenuWidgetController extends GetxController {
         break;
       case 'Laporan':
         Get.offNamed(Routes.STATISTIC);
+        break;
+      case 'Operasional':
+        Get.offNamed(Routes.OPERATING_COST);
         break;
       default:
         Get.offNamed(Routes.PROFILE);

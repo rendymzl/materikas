@@ -13,6 +13,8 @@ const MenuModel customerMenu =
 const MenuModel productMenu =
     MenuModel(icon: Symbols.handyman, label: 'Barang');
 const MenuModel salesMenu = MenuModel(icon: Symbols.people, label: 'Sales');
+const MenuModel operationalMenu =
+    MenuModel(icon: Symbols.format_list_bulleted, label: 'Operasional');
 const MenuModel statisticMenu =
     MenuModel(icon: Symbols.monitoring, label: 'Laporan');
 const MenuModel storeMenu = MenuModel(icon: Symbols.store, label: 'Toko');

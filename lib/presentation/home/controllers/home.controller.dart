@@ -199,19 +199,19 @@ class HomeController extends GetxController {
   Rx<CustomerModel?> selectedCustomer = Rx<CustomerModel?>(null);
   late final invoices = _invoiceService.invoices;
 
-  final selectedTime = TimeOfDay.now().obs;
-  final selectedDate = DateTime.now().obs;
+  // final selectedTime = TimeOfDay.now().obs;
+  // final selectedDate = DateTime.now().obs;
 
   //! CREATE INVOICE ===
   Future<InvoiceModel> createInvoice() async {
     late final CustomerModel customer;
-    selectedTime.value = TimeOfDay.now();
+    // selectedTime.value = TimeOfDay.now();
     DateTime dateTime = DateTime(
       _datePickerC.selectedDate.value.year,
       _datePickerC.selectedDate.value.month,
       _datePickerC.selectedDate.value.day,
-      selectedTime.value.hour,
-      selectedTime.value.minute,
+      _datePickerC.selectedTime.value.hour,
+      _datePickerC.selectedTime.value.minute,
     );
 
     if (selectedCustomer.value != null) {
@@ -246,9 +246,12 @@ class HomeController extends GetxController {
     return invoice;
   }
 
-  void resetData() {
+  void resetData() async {
     cart.value.items.clear();
-    selectedDate.value = DateTime.now();
-    selectedTime.value = TimeOfDay.now();
+    _datePickerC.selectedDate.value = DateTime.now();
+    _datePickerC.selectedTime.value = TimeOfDay.now();
+    _customerInputFieldC.clear();
+    priceType.value = 1;
+    invoice = await createInvoice();
   }
 }
