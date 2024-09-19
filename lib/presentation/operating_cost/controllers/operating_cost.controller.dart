@@ -6,25 +6,32 @@ import '../../../infrastructure/models/operating_cost_model.dart';
 
 class OperatingCostController extends GetxController {
   final OperatingCostService _operatingCostService = Get.find();
-  late final operatingCosts = _operatingCostService.operatingCosts;
+  late final operatingCosts = _operatingCostService.foundOperatingCost;
 
   final initDate = DateTime.now().obs;
   final selectedDate = DateTime.now().obs;
   final dailyRangeController = DateRangePickerController().obs;
   late final dailyOperatingCosts = <OperatingCostModel>[].obs;
 
-  void rangePickerHandle(DateTime pickedDate) async {
-    selectedDate.value = pickedDate;
+  @override
+  void onInit() async {
+    everAll([selectedDate, operatingCosts],
+        (_) => rangePickerHandle(selectedDate.value));
+    super.onInit();
+  }
 
-    dailyOperatingCosts.value = operatingCosts.where((cost) {
+  Future rangePickerHandle(DateTime pickedDate) async {
+    selectedDate.value = pickedDate;
+    var items = operatingCosts.where((cost) {
       return cost.createdAt!.day == selectedDate.value.day &&
           cost.createdAt!.month == selectedDate.value.month &&
           cost.createdAt!.year == selectedDate.value.year;
     }).toList();
+    dailyOperatingCosts.assignAll(items);
   }
 
   void deleteOperatingCost(OperatingCostModel operatingCost) async {
     await _operatingCostService.delete(operatingCost.id!);
-    rangePickerHandle(DateTime.now());
+    await rangePickerHandle(selectedDate.value);
   }
 }

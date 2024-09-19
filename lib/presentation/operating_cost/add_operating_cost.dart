@@ -26,25 +26,20 @@ void addOperatingCostDialog() {
     );
     try {
       OperatingCostModel operatingCost = OperatingCostModel(
-          createdAt: DateTime.now(),
+          createdAt: controller.selectedDate.value,
           storeId: authService.account.value!.storeId,
           name: operatingCostNameTextC.text,
           amount: int.parse(operatingCostAmountTextC.text.replaceAll('.', '')),
           note: operatingCostNoteTextC.text);
       await operatingCostServices.insert(operatingCost);
       Get.back();
-      return Get.defaultDialog(
+      await Get.defaultDialog(
         title: 'Berhasil',
         middleText: 'Biaya operasional berhasil ditambahkan',
-        confirm: TextButton(
-          onPressed: () {
-            controller.rangePickerHandle(controller.selectedDate.value);
-            Get.back();
-            Get.back();
-          },
-          child: const Text('OK'),
-        ),
       );
+      controller.rangePickerHandle(controller.selectedDate.value);
+      Get.back();
+      Get.back();
     } catch (e) {
       Get.back();
       Get.defaultDialog(

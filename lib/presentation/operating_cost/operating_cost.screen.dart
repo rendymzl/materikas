@@ -56,7 +56,9 @@ class OperatingCostScreen extends GetView<OperatingCostController> {
                             child: Obx(
                               () {
                                 print(controller.dailyOperatingCosts.length);
-                                return ListView.builder(
+                                return ListView.separated(
+                                  separatorBuilder: (context, index) =>
+                                      Divider(color: Colors.grey[200]),
                                   itemCount:
                                       controller.dailyOperatingCosts.length,
                                   shrinkWrap: true,
@@ -64,56 +66,9 @@ class OperatingCostScreen extends GetView<OperatingCostController> {
                                     var operatingCost =
                                         controller.dailyOperatingCosts[index];
                                     return TableContent(
-                                        index: index,
-                                        operatingCost: operatingCost);
-                                    // ListTile(
-                                    //   title: Row(
-                                    //     mainAxisAlignment:
-                                    //         MainAxisAlignment.spaceBetween,
-                                    //     children: [
-                                    //       Text(operatingCost.name!),
-                                    //       Text(
-                                    //           'Rp${currency.format(operatingCost.amount!)}')
-                                    //     ],
-                                    //   ),
-                                    //   subtitle: Text(
-                                    //     operatingCost.note!,
-                                    //     style: TextStyle(
-                                    //       color: Colors.grey[400],
-                                    //       fontStyle: FontStyle.italic,
-                                    //     ),
-                                    //   ),
-                                    //   leading: IconButton(
-                                    //     onPressed: () async =>
-                                    //         await Get.defaultDialog(
-                                    //       title: 'Hapus',
-                                    //       middleText: 'Hapus Biaya?',
-                                    //       confirm: TextButton(
-                                    //         onPressed: () async {
-                                    //           controller.deleteOperatingCost(
-                                    //               operatingCost);
-                                    //           Get.back();
-                                    //         },
-                                    //         child: const Text('Hapus'),
-                                    //       ),
-                                    //       cancel: TextButton(
-                                    //         onPressed: () {
-                                    //           Get.back();
-                                    //         },
-                                    //         child: Text(
-                                    //           'Batal',
-                                    //           style: TextStyle(
-                                    //               color: Colors.black
-                                    //                   .withOpacity(0.5)),
-                                    //         ),
-                                    //       ),
-                                    //     ),
-                                    //     icon: const Icon(
-                                    //       Symbols.close,
-                                    //       color: Colors.red,
-                                    //     ),
-                                    //   ),
-                                    // );
+                                      index: index,
+                                      operatingCost: operatingCost,
+                                    );
                                   },
                                 );
                               },
@@ -145,6 +100,7 @@ class TableHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
+      dense: true,
       leading: SizedBox(
         width: 50,
         child: Text(
@@ -182,11 +138,8 @@ class TableHeader extends StatelessWidget {
               ),
             ),
           ),
+          const Expanded(child: SizedBox(child: Text(''))),
         ],
-      ),
-      trailing: Text(
-        '',
-        style: context.textTheme.headlineSmall,
       ),
     );
   }
@@ -204,6 +157,7 @@ class TableContent extends StatelessWidget {
     OperatingCostController controller = Get.find();
 
     return ListTile(
+      dense: true,
       leading: SizedBox(
         width: 50,
         child: Text(
@@ -243,35 +197,36 @@ class TableContent extends StatelessWidget {
               ),
             ),
           ),
+          const Expanded(child: SizedBox(child: Text(''))),
+          IconButton(
+            onPressed: () async => await Get.defaultDialog(
+              title: 'Hapus',
+              middleText: 'Hapus Biaya?',
+              confirm: TextButton(
+                onPressed: () async {
+                  controller.deleteOperatingCost(operatingCost);
+                  Get.back();
+                },
+                child: const Text('Hapus'),
+              ),
+              cancel: TextButton(
+                onPressed: () {
+                  Get.back();
+                },
+                child: Text(
+                  'Batal',
+                  style: TextStyle(color: Colors.black.withOpacity(0.5)),
+                ),
+              ),
+            ),
+            icon: const Icon(
+              Symbols.delete_forever,
+              color: Colors.red,
+            ),
+          ),
         ],
       ),
       subtitle: operatingCost.note != null ? Text(operatingCost.note!) : null,
-      trailing: IconButton(
-        onPressed: () async => await Get.defaultDialog(
-          title: 'Hapus',
-          middleText: 'Hapus Biaya?',
-          confirm: TextButton(
-            onPressed: () async {
-              controller.deleteOperatingCost(operatingCost);
-              Get.back();
-            },
-            child: const Text('Hapus'),
-          ),
-          cancel: TextButton(
-            onPressed: () {
-              Get.back();
-            },
-            child: Text(
-              'Batal',
-              style: TextStyle(color: Colors.black.withOpacity(0.5)),
-            ),
-          ),
-        ),
-        icon: const Icon(
-          Symbols.delete_forever,
-          color: Colors.red,
-        ),
-      ),
     );
   }
 }
