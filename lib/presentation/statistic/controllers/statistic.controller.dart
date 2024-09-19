@@ -323,18 +323,18 @@ class StatisticController extends GetxController {
                   localDate.day == currentDate.day;
             }).toList();
 
-      final salesInvoicesGroup = groupDate.value == 'yearly'
-          ? currentAndPrevFilteredSalesInvoices.where((invoice) {
-              DateTime localDate = invoice.createdAt.value!;
-              return localDate.year == currentDate.year &&
-                  localDate.month == currentDate.month;
-            }).toList()
-          : currentAndPrevFilteredSalesInvoices.where((invoice) {
-              DateTime localDate = invoice.createdAt.value!;
-              return localDate.year == currentDate.year &&
-                  localDate.month == currentDate.month &&
-                  localDate.day == currentDate.day;
-            }).toList();
+      // final salesInvoicesGroup = groupDate.value == 'yearly'
+      //     ? currentAndPrevFilteredSalesInvoices.where((invoice) {
+      //         DateTime localDate = invoice.createdAt.value!;
+      //         return localDate.year == currentDate.year &&
+      //             localDate.month == currentDate.month;
+      //       }).toList()
+      //     : currentAndPrevFilteredSalesInvoices.where((invoice) {
+      //         DateTime localDate = invoice.createdAt.value!;
+      //         return localDate.year == currentDate.year &&
+      //             localDate.month == currentDate.month &&
+      //             localDate.day == currentDate.day;
+      //       }).toList();
 
       final operatingCostsGroup = groupDate.value == 'yearly'
           ? currentAndPrevFilteredOperatingCosts.where((invoice) {
@@ -357,11 +357,11 @@ class StatisticController extends GetxController {
       double totalChargeReturn = 0;
       double totalDiscount = 0;
 
-      double totalCash = 0;
-      double totalTransfer = 0;
+      // double totalCash = 0;
+      // double totalTransfer = 0;
 
-      double totalSalesCash = 0;
-      double totalSalesTransfer = 0;
+      // double totalSalesCash = 0;
+      // double totalSalesTransfer = 0;
 
       double totalCostPrice = 0;
 
@@ -373,11 +373,11 @@ class StatisticController extends GetxController {
       for (var inv in invoicesGroup) {
         double sellPrice = inv.subtotalBill;
         double returnPrice = inv.subtotalReturn + inv.subtotalAdditionalReturn;
-        double reurnFee = inv.returnFee.value;
+        double returnFee = inv.returnFee.value;
         double discount = inv.totalDiscount;
 
-        double cashPay = inv.getTotalByMethod("cash");
-        double transferPay = inv.getTotalByMethod("transfer");
+        // double cashPay = inv.getTotalByMethod("cash");
+        // double transferPay = inv.getTotalByMethod("transfer");
 
         // int salesCash = invoice.getTotalByMethod("cash");
         // int salesTransfer = invoice.getTotalByMethod("transfer");
@@ -386,21 +386,43 @@ class StatisticController extends GetxController {
 
         totalSellPrice += sellPrice;
         totalReturn += returnPrice;
-        totalChargeReturn += reurnFee;
+        totalChargeReturn += returnFee;
         totalDiscount += discount;
-        totalCash += cashPay;
-        totalTransfer += transferPay;
+        // totalCash += cashPay;
+        // totalTransfer += transferPay;
         totalCostPrice += costPrice;
       }
-      // print('-----salesInvoicesGroup lenght ${salesInvoicesGroup.length}');
-      for (var inv in salesInvoicesGroup) {
-        double salesCashPay = inv.getTotalByMethod("cash");
-        double salesTransferPay = inv.getTotalByMethod("transfer");
 
-        totalSalesCash += salesCashPay;
-        totalSalesTransfer += salesTransferPay;
-        // print('-----in sales pay transfer $totalSalesTransfer');
+      var cash = 0.0;
+      var transfer = 0.0;
+      var salesCash = 0.0;
+      var salesTransfer = 0.0;
+      for (var invoice in invoices) {
+        cash += invoice.getTotalByMethod('cash', selectedDate: date);
+        transfer += invoice.getTotalByMethod('transfer', selectedDate: date);
       }
+      for (var invoice in salesInvoices) {
+        salesCash += invoice.getTotalByMethod('cash', selectedDate: date);
+        salesTransfer +=
+            invoice.getTotalByMethod('transfer', selectedDate: date);
+      }
+      // chart.cash = cash;
+      // chart.transfer = transfer;
+      // chart.salesCash = salesCash;
+      // chart.salesTransfer = salesTransfer;
+      // print('---- cash $cash');
+      // print('---- transfer $transfer');
+      // print('---- salesCash $salesCash');
+      // print('---- salesTransfer $salesTransfer');
+      // print('-----salesInvoicesGroup lenght ${salesInvoicesGroup.length}');
+      // for (var inv in salesInvoicesGroup) {
+      //   double salesCashPay = inv.getTotalByMethod("cash");
+      //   double salesTransferPay = inv.getTotalByMethod("transfer");
+
+      //   totalSalesCash += salesCashPay;
+      //   totalSalesTransfer += salesTransferPay;
+      //   // print('-----in sales pay transfer $totalSalesTransfer');
+      // }
 
       for (var op in operatingCostsGroup) {
         int operatingCost = op.amount!;
@@ -415,10 +437,10 @@ class StatisticController extends GetxController {
         totalReturn: totalReturn,
         totalChargeReturn: totalChargeReturn,
         totalDiscount: totalDiscount,
-        cash: totalCash,
-        transfer: totalTransfer,
-        salesCash: totalSalesCash,
-        salesTransfer: totalSalesTransfer,
+        cash: cash,
+        transfer: transfer,
+        salesCash: salesCash,
+        salesTransfer: salesTransfer,
         totalCostPrice: totalCostPrice,
         operatingCost: totalOperatingCost,
         totalInvoice: totalInvoice,
@@ -524,8 +546,8 @@ class StatisticController extends GetxController {
           totalChargeReturn:
               value.totalChargeReturn + element.totalChargeReturn,
           totalDiscount: value.totalDiscount + element.totalDiscount,
-          cash: value.totalCash + element.totalCash,
-          transfer: value.totalTransfer + element.totalTransfer,
+          cash: value.cash + element.cash,
+          transfer: value.transfer + element.transfer,
           salesCash: value.salesCash + element.salesCash,
           salesTransfer: value.salesTransfer + element.salesTransfer,
           operatingCost: value.operatingCost + element.operatingCost,
@@ -533,27 +555,6 @@ class StatisticController extends GetxController {
         );
       });
 
-      var cash = 0.0;
-      var transfer = 0.0;
-      var salesCash = 0.0;
-      var salesTransfer = 0.0;
-      for (var invoice in invoices) {
-        cash += invoice.getTotalByMethod('cash', selectedDate: date);
-        transfer += invoice.getTotalByMethod('transfer', selectedDate: date);
-      }
-      for (var invoice in salesInvoices) {
-        salesCash += invoice.getTotalByMethod('cash', selectedDate: date);
-        salesTransfer +=
-            invoice.getTotalByMethod('transfer', selectedDate: date);
-      }
-      chart.cash = cash;
-      chart.transfer = transfer;
-      chart.salesCash = salesCash;
-      chart.salesTransfer = salesTransfer;
-      print('---- cash $cash');
-      print('---- transfer $transfer');
-      print('---- salesCash $salesCash');
-      print('---- salesTransfer $salesTransfer');
       return chart;
     }
 

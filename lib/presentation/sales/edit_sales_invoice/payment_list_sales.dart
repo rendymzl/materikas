@@ -63,7 +63,7 @@ class PaymentListSalesWidget extends StatelessWidget {
                       flex: 5,
                       child: Text(
                           DateFormat('dd MMM y', 'id')
-                              .format(editInvoice.createdAt.value!),
+                              .format(editInvoice.payments[index].date!),
                           style: Theme.of(Get.context!)
                               .textTheme
                               .titleSmall!

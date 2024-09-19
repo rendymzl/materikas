@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 
 import '../../../infrastructure/models/product_model.dart';
 import '../../../infrastructure/utils/display_format.dart';
-import '../../home/controllers/home.controller.dart';
 import '../../product/detail_product/detail_product.dart';
 import 'product_list_widget_controller.dart';
 
@@ -24,25 +22,8 @@ class ProductListWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(ProductListWidgetController());
-    final HomeController _homeC = Get.find<HomeController>();
 
     ScrollController scrollC = ScrollController();
-
-    void _handleKeyPress(KeyEvent event) {
-      // Cek apakah key event merupakan input karakter
-      if (event is KeyDownEvent) {
-        final String key = event.logicalKey.keyLabel;
-
-        // Jika key adalah Enter, kita anggap selesai menerima input barcode
-        if (event.logicalKey == LogicalKeyboardKey.enter) {
-          controller.processBarcode(controller.scannedData.value);
-          controller.resetScannedData();
-        } else {
-          // Jika bukan Enter, tambahkan ke scannedData
-          controller.scannedData.value += key;
-        }
-      }
-    }
 
     void onScroll() {
       double maxScroll = scrollC.position.maxScrollExtent;
@@ -55,134 +36,125 @@ class ProductListWidget extends StatelessWidget {
 
     scrollC.addListener(onScroll);
 
-    return KeyboardListener(
-      focusNode: _homeC.focusNode,
-      autofocus: true,
-      onKeyEvent: _handleKeyPress,
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: const BorderRadius.all(
-                          Radius.circular(12),
-                        ),
-                      ),
-                      height: 50,
-                      child: TextField(
-                        // focusNode: controller.focusNode,
-                        // controller: controller.serchController,
-                        // autofocus: true,
-                        decoration: const InputDecoration(
-                          labelText: "Cari Barang",
-                          labelStyle: TextStyle(color: Colors.grey),
-                          prefixIcon: Icon(Symbols.search),
-                          border: InputBorder.none,
-                        ),
-                        onChanged: (value) => controller.filterProducts(value),
-                        // onSubmitted: (value) {
-                        //   controller.scanBarcode(value);
-                        // },
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 20),
-                  Container(
-                    height: 48,
-                    width: 48,
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Container(
                     decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary,
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(5))),
-                    child: IconButton(
-                      onPressed: () => detailProduct(isPopUp: isPopUp),
-                      icon: const Icon(
-                        Symbols.add,
-                        color: Colors.white,
+                      color: Colors.grey[200],
+                      borderRadius: const BorderRadius.all(
+                        Radius.circular(12),
                       ),
                     ),
+                    height: 50,
+                    child: TextField(
+                      // focusNode: controller.focusNode,
+                      // controller: controller.serchController,
+                      // autofocus: true,
+                      decoration: const InputDecoration(
+                        labelText: "Cari Barang",
+                        labelStyle: TextStyle(color: Colors.grey),
+                        prefixIcon: Icon(Symbols.search),
+                        border: InputBorder.none,
+                      ),
+                      onChanged: (value) => controller.filterProducts(value),
+                      // onSubmitted: (value) {
+                      //   controller.scanBarcode(value);
+                      // },
+                    ),
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(width: 20),
+                Container(
+                  height: 48,
+                  width: 48,
+                  decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primary,
+                      borderRadius: const BorderRadius.all(Radius.circular(5))),
+                  child: IconButton(
+                    onPressed: () => detailProduct(isPopUp: isPopUp),
+                    icon: const Icon(
+                      Symbols.add,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
             ),
-            Expanded(
-              child: Obx(
-                () {
-                  if (controller.displayedItems.isEmpty &&
-                      controller.isLoading.value) {
-                    return const Center(
-                        child:
-                            CircularProgressIndicator()); // Tampilkan loading jika pertama kali
-                  }
+          ),
+          Expanded(
+            child: Obx(
+              () {
+                if (controller.displayedItems.isEmpty &&
+                    controller.isLoading.value) {
+                  return const Center(
+                      child:
+                          CircularProgressIndicator()); // Tampilkan loading jika pertama kali
+                }
 
-                  return ListView.builder(
-                    controller: scrollC,
-                    itemCount: controller.displayedItems.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      if (index == controller.displayedItems.length) {
-                        // Indikator loading di bagian bawah
-                        if (controller.isLoading.value) {
-                          return const Center(
-                              child: CircularProgressIndicator());
-                        } else if (!controller.hasMore.value) {
-                          return const Center(
-                              child: Text("Tidak ada data lagi"));
-                        } else {
-                          return const SizedBox.shrink();
-                        }
+                return ListView.builder(
+                  controller: scrollC,
+                  itemCount: controller.displayedItems.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    if (index == controller.displayedItems.length) {
+                      // Indikator loading di bagian bawah
+                      if (controller.isLoading.value) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (!controller.hasMore.value) {
+                        return const Center(child: Text("Tidak ada data lagi"));
+                      } else {
+                        return const SizedBox.shrink();
                       }
+                    }
 
-                      final foundProduct = controller.displayedItems[index];
-                      double getPrice = foundProduct
-                          .getPrice(controller.priceType.value)
-                          .value;
-                      double sellPrice = getPrice.toInt() != 0
-                          ? getPrice
-                          : foundProduct.sellPrice1.value;
-                      double costPrice = foundProduct.costPrice.value;
-                      return Container(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        decoration: BoxDecoration(
-                          border: Border.symmetric(
-                            horizontal: BorderSide(color: Colors.grey[200]!),
-                          ),
+                    final foundProduct = controller.displayedItems[index];
+                    double getPrice =
+                        foundProduct.getPrice(controller.priceType.value).value;
+                    double sellPrice = getPrice.toInt() != 0
+                        ? getPrice
+                        : foundProduct.sellPrice1.value;
+                    double costPrice = foundProduct.costPrice.value;
+                    return Container(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      decoration: BoxDecoration(
+                        border: Border.symmetric(
+                          horizontal: BorderSide(color: Colors.grey[200]!),
                         ),
-                        child: ListTile(
-                            leading: SizedBox(
-                              width: 80,
-                              child: Obx(
-                                () => Text(
-                                  '${number.format(foundProduct.stock.value)} ${foundProduct.unit}',
-                                  style: context.textTheme.bodySmall,
-                                ),
+                      ),
+                      child: ListTile(
+                          leading: SizedBox(
+                            width: 80,
+                            child: Obx(
+                              () => Text(
+                                '${number.format(foundProduct.stock.value)} ${foundProduct.unit}',
+                                style: context.textTheme.bodySmall,
                               ),
                             ),
-                            title: Text(
-                              foundProduct.productName,
-                              style: context.textTheme.titleLarge,
-                            ),
-                            trailing: Text(
-                              'Rp ${currency.format(isSales ? costPrice : sellPrice)}',
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                            onTap: () => onClick(foundProduct)),
-                      );
-                    },
-                  );
-                },
-              ),
+                          ),
+                          title: Text(
+                            foundProduct.productName,
+                            style: context.textTheme.titleLarge,
+                          ),
+                          trailing: Text(
+                            'Rp ${currency.format(isSales ? costPrice : sellPrice)}',
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                          onTap: () => onClick(foundProduct)),
+                    );
+                  },
+                );
+              },
             ),
-            const SizedBox(height: 12),
-          ],
-        ),
+          ),
+          const SizedBox(height: 12),
+        ],
       ),
     );
   }

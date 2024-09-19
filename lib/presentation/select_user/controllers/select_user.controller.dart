@@ -38,9 +38,11 @@ class SelectUserController extends GetxController {
       print('usernya $user');
       selectedUser.value = user!;
       _authService.getSelectedCashier(user);
-      await Future.delayed(const Duration(seconds: 1));
+
       Get.offAllNamed(Routes.HOME);
     }
+    await Future.delayed(const Duration(seconds: 2));
+    isLoading.value = false;
     super.onInit();
   }
 

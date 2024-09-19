@@ -32,6 +32,17 @@ class HomeScreen extends GetView<HomeController> {
                   ),
                   const Expanded(
                       flex: 4, child: Card(child: SelectedProduct())),
+                  //! SCAN DETECTOR
+                  SizedBox(
+                    height: 1,
+                    width: 1,
+                    child: KeyboardListener(
+                      focusNode: controller.focusNode,
+                      autofocus: true,
+                      onKeyEvent: controller.handleKeyPress,
+                      child: const SizedBox(),
+                    ),
+                  )
                 ],
               ),
             ),

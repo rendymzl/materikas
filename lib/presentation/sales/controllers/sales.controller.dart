@@ -38,6 +38,12 @@ class SalesController extends GetxController {
         .sort((a, b) => b.createdAt.value!.compareTo(a.createdAt.value!));
   }
 
+  final selectedFilterCheckBox = ''.obs;
+  void checkBoxHandle(String value) {
+    selectedFilterCheckBox.value =
+        selectedFilterCheckBox.value == value ? '' : value;
+  }
+
   //! delete
   destroyHandle(SalesModel sales) async {
     AppDialog.show(

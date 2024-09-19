@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:material_symbols_icons/material_symbols_icons.dart';
 
 import '../../infrastructure/models/invoice_sales_model.dart';
 import '../../infrastructure/utils/display_format.dart';
@@ -44,19 +43,76 @@ class SelectedSalesCard extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Obx(() => Text(controller.selectedSales.value != null
-                  ? 'Total Invoice ${controller.selectedSales.value!.getInvoiceListBySalesId(controller.salesInvoices).length}'
-                  : '')),
               Text(
                 controller.selectedSales.value!.name!,
                 style: context.textTheme.titleLarge!.copyWith(fontSize: 24),
               ),
-              IconButton(
-                onPressed: () =>
-                    controller.destroyHandle(controller.selectedSales.value!),
-                icon: const Icon(
-                  Symbols.delete,
-                  color: Colors.red,
+              Obx(
+                () => Row(
+                  children: [
+                    InkWell(
+                      onTap: () => controller.checkBoxHandle('paid'),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 4, horizontal: 8),
+                        child: Row(
+                          children: [
+                            Checkbox(
+                              value: controller.selectedFilterCheckBox.value ==
+                                  'paid',
+                              onChanged: (value) =>
+                                  controller.checkBoxHandle('paid'),
+                            ),
+                            Text(
+                              'Lunas',
+                              style: controller.selectedFilterCheckBox.value ==
+                                      'paid'
+                                  ? Get.context!.textTheme.bodySmall!.copyWith(
+                                      color:
+                                          Theme.of(context).colorScheme.primary)
+                                  : context.textTheme.bodySmall,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 20),
+                    InkWell(
+                      onTap: () => controller.checkBoxHandle('debt'),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 4, horizontal: 8),
+                        child: Row(
+                          children: [
+                            Checkbox(
+                              value: controller.selectedFilterCheckBox.value ==
+                                  'debt',
+                              onChanged: (value) =>
+                                  controller.checkBoxHandle('debt'),
+                            ),
+                            Text(
+                              'Piutang',
+                              style: controller.selectedFilterCheckBox.value ==
+                                      'debt'
+                                  ? context.textTheme.bodySmall!.copyWith(
+                                      color:
+                                          Theme.of(context).colorScheme.primary)
+                                  : context.textTheme.bodySmall,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 20),
+                    // IconButton(
+                    //   onPressed: () => controller
+                    //       .destroyHandle(controller.selectedSales.value!),
+                    //   icon: const Icon(
+                    //     Symbols.delete,
+                    //     color: Colors.red,
+                    //   ),
+                    // ),
+                  ],
                 ),
               ),
             ],
@@ -70,18 +126,26 @@ class SelectedSalesCard extends StatelessWidget {
         Container(
           color: Colors.white,
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const SizedBox(width: 12),
-              ElevatedButton(
-                onPressed: () => buyProductDialog(),
-                child: const Text('Beli Barang'),
+              Obx(
+                () => Text(controller.selectedSales.value != null
+                    ? 'Total Invoice ${controller.selectedSales.value!.getInvoiceListBySalesId(controller.salesInvoices).length}'
+                    : ''),
               ),
-              const SizedBox(width: 12),
-              ElevatedButton(
-                onPressed: () =>
-                    detailSales(selectedSales: controller.selectedSales.value),
-                child: const Text('Edit Sales'),
+              Row(
+                children: [
+                  ElevatedButton(
+                    onPressed: () => buyProductDialog(),
+                    child: const Text('Beli Barang'),
+                  ),
+                  const SizedBox(width: 12),
+                  ElevatedButton(
+                    onPressed: () => detailSales(
+                        selectedSales: controller.selectedSales.value),
+                    child: const Text('Edit Sales'),
+                  ),
+                ],
               ),
             ],
           ),
@@ -125,14 +189,24 @@ class BuildListTile extends StatelessWidget {
     return Obx(
       () {
         List<InvoiceSalesModel> invoiceById = controller.invoiceById;
+        var invoiceList = invoiceById;
+
+        if (controller.selectedFilterCheckBox.value == 'paid') {
+          invoiceList =
+              invoiceById.where((invoice) => invoice.isDebtPaid.value).toList();
+        } else if (controller.selectedFilterCheckBox.value == 'debt') {
+          invoiceList = invoiceById
+              .where((invoice) => !invoice.isDebtPaid.value)
+              .toList();
+        }
 
         return ListView.builder(
           // separatorBuilder: (context, index) =>
           //     Divider(color: Colors.grey[200]),
           shrinkWrap: true,
-          itemCount: invoiceById.length,
+          itemCount: invoiceList.length,
           itemBuilder: (BuildContext context, int index) {
-            final invoice = invoiceById[index];
+            final invoice = invoiceList[index];
             print('invoice.isDebtPaid.value ${invoice.isDebtPaid.value}');
             return SizedBox(
               // height: 70,

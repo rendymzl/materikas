@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import '../../../infrastructure/dal/services/auth_service.dart';
@@ -21,7 +22,7 @@ class HomeController extends GetxController {
       Get.put(DatePickerController());
   late final CustomerInputFieldController _customerInputFieldC =
       Get.put(CustomerInputFieldController());
-  final MenuWidgetController _menuC = Get.find<MenuWidgetController>();
+  final MenuWidgetController _menuC = Get.put(MenuWidgetController());
 
   late final products = _productService.products;
   late final foundProducts = _productService.foundProducts;
@@ -73,6 +74,41 @@ class HomeController extends GetxController {
     return productList.firstWhereOrNull(
       (item) => item.product.id == product.id,
     );
+  }
+
+  //! SCAN HANDLE ===
+  var scannedData = ''.obs; // Observable untuk menyimpan hasil scan
+
+  // Fungsi untuk memproses input dari scanner
+  void processBarcode(String barcode) {
+    print('Memproses barcode: $barcode');
+    scannedData.value = barcode; // Update UI dengan hasil scan
+    var product =
+        foundProducts.firstWhereOrNull((product) => product.barcode == barcode);
+    if (product != null) {
+      addToCart(product);
+    }
+  }
+
+  // Reset data setelah diproses
+  void resetScannedData() {
+    scannedData.value = '';
+  }
+
+  void handleKeyPress(KeyEvent event) {
+    // Cek apakah key event merupakan input karakter
+    if (event is KeyDownEvent) {
+      final String key = event.logicalKey.keyLabel;
+
+      // Jika key adalah Enter, kita anggap selesai menerima input barcode
+      if (event.logicalKey == LogicalKeyboardKey.enter) {
+        processBarcode(scannedData.value);
+        resetScannedData();
+      } else {
+        // Jika bukan Enter, tambahkan ke scannedData
+        scannedData.value += key;
+      }
+    }
   }
 
   //! ADD TO CART ===
