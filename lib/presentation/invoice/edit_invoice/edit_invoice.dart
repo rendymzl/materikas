@@ -92,7 +92,7 @@ void editInvoice(InvoiceModel invoice) {
             onConfirm: () {
               invoice.id = editInvoice.id;
               invoice.invoiceId = editInvoice.invoiceId;
-              invoice.createdAt.value = editInvoice.createdAt.value;
+              invoice.createdAt.value = datePickerC.selectedDate.value;
               invoice.customer.value =
                   customerInputFieldC.selectedCustomer.value;
               invoice.purchaseList.value = editInvoice.purchaseList.value;
