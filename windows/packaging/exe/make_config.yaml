@@ -1,0 +1,12 @@
+# The value of AppId uniquely identifies this application.
+# Do not use the same AppId value in installers for other applications.
+app_id: M4T2R1K45-0000-0000-0014-W4RD4N4
+publisher: Rendev
+publisher_url:
+display_name: Materikas
+create_desktop_icon: true
+# See: https://jrsoftware.org/ishelp/index.php?topic=setup_defaultdirname
+# install_dir_name: "D:\\HELLO-WORLD"
+locales:
+  - en
+  - id

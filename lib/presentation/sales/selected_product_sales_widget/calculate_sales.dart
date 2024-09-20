@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 
 import '../../../infrastructure/models/invoice_sales_model.dart';
 import '../../../infrastructure/utils/display_format.dart';
-import '../detail_sales/payment_sales/payment_sales_popup.dart';
 
 class CalculateSalesPrice extends StatelessWidget {
   const CalculateSalesPrice({
@@ -143,7 +142,11 @@ class PropertiesRowWidget extends StatelessWidget {
             ),
           ),
           Text(
-            value == '0' || value == '-0' ? '-' : 'Rp$value',
+            value == '0' || value == '-0'
+                ? '-'
+                : value == 'title'
+                    ? ''
+                    : 'Rp$value',
             style: primary != null && primary == true
                 ? context.textTheme.titleLarge!
                     .copyWith(fontWeight: FontWeight.bold, color: color)

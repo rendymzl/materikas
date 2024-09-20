@@ -49,7 +49,7 @@ class AddCashierWidget extends StatelessWidget {
                   child: TextFormField(
                     controller: controller.passwordController,
                     decoration: const InputDecoration(
-                        border: InputBorder.none, labelText: 'Password'),
+                        border: InputBorder.none, labelText: 'PIN'),
                     obscureText: true,
                     validator: (value) => controller.validatePassword(value),
                   ),

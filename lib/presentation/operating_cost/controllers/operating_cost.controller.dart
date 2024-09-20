@@ -15,6 +15,7 @@ class OperatingCostController extends GetxController {
 
   @override
   void onInit() async {
+    rangePickerHandle(DateTime.now());
     everAll([selectedDate, operatingCosts],
         (_) => rangePickerHandle(selectedDate.value));
     super.onInit();

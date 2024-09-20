@@ -24,6 +24,8 @@ dependencies:
   syncfusion_flutter_datepicker: ^26.2.13
   thermal_printer: ^1.0.5
   csv: ^6.0.0
+  auto_updater: ^0.2.1
+  window_manager: ^0.4.2
 
 dev_dependencies:
   flutter_test:

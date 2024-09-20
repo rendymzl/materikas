@@ -195,7 +195,7 @@ class LoginScreen extends GetView<LoginController> {
                                     color: Colors.red,
                                   ),
                                 ),
-                                onTap: () => controller.toggleLoginPage(),
+                                // onTap: () => controller.toggleLoginPage(),
                               ),
                             ),
                           ],

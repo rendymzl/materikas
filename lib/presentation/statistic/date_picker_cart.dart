@@ -14,17 +14,20 @@ class DatePickerCard extends StatelessWidget {
     return Obx(
       () {
         return Card(
-          child: Column(
-            children: [
-              if (controller.selectedSection.value == 'daily')
-                const Expanded(child: DatePickerDaily()),
-              if (controller.selectedSection.value == 'weekly')
-                Expanded(child: DatePickerWeekly(controller: controller)),
-              if (controller.selectedSection.value == 'monthly')
-                Expanded(child: DatePickerMonthly(controller: controller)),
-              if (controller.selectedSection.value == 'yearly')
-                Expanded(child: DatePickerYearly(controller: controller)),
-            ],
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              children: [
+                if (controller.selectedSection.value == 'daily')
+                  const Expanded(child: DatePickerDaily()),
+                if (controller.selectedSection.value == 'weekly')
+                  Expanded(child: DatePickerWeekly(controller: controller)),
+                if (controller.selectedSection.value == 'monthly')
+                  Expanded(child: DatePickerMonthly(controller: controller)),
+                if (controller.selectedSection.value == 'yearly')
+                  Expanded(child: DatePickerYearly(controller: controller)),
+              ],
+            ),
           ),
         );
       },

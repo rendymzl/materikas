@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 
 import '../../../domain/core/interfaces/invoice_repository.dart';
@@ -12,6 +11,7 @@ class InvoiceService extends GetxService implements InvoiceRepository {
   var foundInvoices = <InvoiceModel>[].obs;
   var paidInv = <InvoiceModel>[].obs;
   var debtInv = <InvoiceModel>[].obs;
+  late Stream<List<InvoiceModel>> stream;
 
   void searchInvoicesByName(String invoiceName) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -85,22 +85,31 @@ class InvoiceService extends GetxService implements InvoiceRepository {
 
   @override
   Future<void> subscribe(String storeId) async {
-    try {
-      var stream = db.watch('SELECT * FROM invoices WHERE store_id = ?',
-          parameters: [
-            storeId
-          ]).map(
-          (data) => data.map((json) => InvoiceModel.fromJson(json)).toList());
-
-      stream.listen((update) {
-        invoices.assignAll(update);
-        searchInvoicesByName('');
-      });
-    } on PostgrestException catch (e) {
-      print(e.message);
-      rethrow;
-    }
+    stream = db
+        .watch('SELECT * FROM invoices WHERE store_id = ?',
+            parameters: [storeId])
+        .map((data) => data.map((json) => InvoiceModel.fromJson(json)).toList())
+        .asBroadcastStream();
   }
+
+  // @override
+  // Future<void> subscribe(String storeId) async {
+  //   try {
+  //     var stream = db.watch('SELECT * FROM invoices WHERE store_id = ?',
+  //         parameters: [
+  //           storeId
+  //         ]).map(
+  //         (data) => data.map((json) => InvoiceModel.fromJson(json)).toList());
+
+  //     stream.listen((update) {
+  //       invoices.assignAll(update);
+  //       searchInvoicesByName('');
+  //     });
+  //   } on PostgrestException catch (e) {
+  //     print(e.message);
+  //     rethrow;
+  //   }
+  // }
 
   @override
   Future<void> insert(InvoiceModel invoice) async {

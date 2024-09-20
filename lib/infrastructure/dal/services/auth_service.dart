@@ -95,6 +95,7 @@ class AuthService extends GetxService implements AuthRepository {
   @override
   RxList<Cashier> getCashier() {
     if (account.value!.users.isNotEmpty) {
+      print('account.value!.users ${account.value!.users.length}');
       cashiers.assignAll(
           account.value!.users..sort((a, b) => a.id!.compareTo(b.id!)));
     }

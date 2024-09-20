@@ -10,6 +10,9 @@ class Chart {
   double cash;
   double transfer;
 
+  double debtCash;
+  double debtTransfer;
+
   double salesCash;
   double salesTransfer;
 
@@ -27,6 +30,8 @@ class Chart {
     required this.totalDiscount,
     required this.cash,
     required this.transfer,
+    required this.debtCash,
+    required this.debtTransfer,
     required this.salesCash,
     required this.salesTransfer,
     required this.totalCostPrice,
@@ -34,11 +39,13 @@ class Chart {
     required this.totalInvoice,
   });
 
-  double get totalCash => cash + salesCash;
+  // double get totalCash => cash + debtCash + salesCash;
 
-  double get totalTransfer => transfer + salesTransfer;
+  // double get totalTransfer => transfer + debtTransfer + salesTransfer;
 
   double get totalPay => cash + transfer;
+
+  double get totalDebtPay => debtCash + debtTransfer;
 
   double get totalSalesPay => salesCash + salesTransfer;
 
@@ -47,10 +54,5 @@ class Chart {
   double get cleanProfit =>
       grossProfit - totalDiscount - operatingCost + totalChargeReturn;
 
-  double get totalDebt =>
-      totalSellPrice -
-      // totalReturn +
-      // totalChargeReturn -
-      // totalDiscount -
-      totalPay;
+  double get totalDebt => totalSellPrice - totalPay;
 }

@@ -438,26 +438,41 @@ class InvoiceModel {
   //   return totals;
   // }
 
-  Map<String, double> totalPaymentsByMethod({DateTime? selectedDate}) {
-    Map<String, double> totals = {};
+  Map<String, Map<String, double>> totalPaymentsByMethodAndDebtStatus(
+      {DateTime? selectedDate}) {
+    Map<String, Map<String, double>> totals = {};
     for (var payment in payments) {
-      if (payment.method != null &&
-          (selectedDate == null ||
-              (payment.date?.year == selectedDate.year &&
-                  payment.date?.month == selectedDate.month &&
-                  payment.date?.day == selectedDate.day))) {
+      if (payment.method != null) {
+        bool isDebt = payment.date!
+            .isAfter(createdAt.value!.add(const Duration(days: 1)));
+        String debtStatus = isDebt ? "debt" : "pay";
         if (!totals.containsKey(payment.method)) {
-          totals[payment.method!] = 0;
+          totals[payment.method!] = {"debt": 0, "pay": 0};
         }
-        double result = totals[payment.method!]! + payment.amountPaid;
-        totals[payment.method!] = result <= totalBill ? result : totalBill;
+        if (selectedDate == null ||
+            (payment.date?.year == selectedDate.year &&
+                payment.date?.month == selectedDate.month &&
+                payment.date?.day == selectedDate.day)) {
+          double result =
+              totals[payment.method!]![debtStatus]! + payment.amountPaid;
+          totals[payment.method!]![debtStatus] =
+              result <= totalBill ? result : totalBill;
+        }
       }
     }
     return totals;
   }
 
-  double getTotalByMethod(String method, {DateTime? selectedDate}) {
-    return totalPaymentsByMethod(selectedDate: selectedDate)[method] ?? 0;
+  double getTotalPayByMethod(String method, {DateTime? selectedDate}) {
+    Map<String, Map<String, double>> totals =
+        totalPaymentsByMethodAndDebtStatus(selectedDate: selectedDate);
+    return totals[method]?["pay"] ?? 0;
+  }
+
+  double getTotalDebtByMethod(String method, {DateTime? selectedDate}) {
+    Map<String, Map<String, double>> totals =
+        totalPaymentsByMethodAndDebtStatus(selectedDate: selectedDate);
+    return totals[method]?["debt"] ?? 0;
   }
 
   double get totalProfit {

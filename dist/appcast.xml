@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+    <channel>
+        <title>materikas_update</title>
+        <description>Most recent updates to materikas_update</description>
+        <language>en</language>
+        <item>
+            <title>Version 1.0.0</title>
+            <sparkle:releaseNotesLink>
+                https://rendywardana.site/releases/release_notes.html
+            </sparkle:releaseNotesLink>
+            <pubDate>Wed, 20 sep 2024 00:00:00 +0800</pubDate>
+            <enclosure
+                url="https://rendywardana.site/releases/0.1.0/materikas-0.1.0+0.1.0-windows-setup.exe"
+                sparkle:dsaSignature="MD0CHQCCKxrrhNG1CIfLk51A+Z7dhXLiChZJlmBaoSG/AhxachUaBN0J0fMcyhywI/wwsyEUJQNF5OrVOnEy"
+                sparkle:version="0.1.0"
+                sparkle:os="windows"
+                length="0"
+                type="application/octet-stream" />
+        </item>
+    </channel>
+</rss>

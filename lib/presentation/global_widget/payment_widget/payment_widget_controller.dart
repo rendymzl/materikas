@@ -287,7 +287,7 @@ class PaymentController extends GetxController {
                     padding: WidgetStateProperty.all(
                         const EdgeInsets.symmetric(vertical: 12.0))),
             onPressed: () async {
-              Get.back();
+              // Get.back();
               printInvoiceDialog(printInvoice);
             },
             child: const Text('Cetak Invoice'),

@@ -78,6 +78,38 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.11.0"
+  auto_updater:
+    dependency: "direct main"
+    description:
+      name: auto_updater
+      sha256: "1b80abee7273dc080ce8a9b90916e97b6971b55888410fea906b4568dd34225a"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.1"
+  auto_updater_macos:
+    dependency: transitive
+    description:
+      name: auto_updater_macos
+      sha256: "8344699fd674f1916825fd21dd6daf93fe3673a76485c132c99a23bdb634b91e"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.0"
+  auto_updater_platform_interface:
+    dependency: transitive
+    description:
+      name: auto_updater_platform_interface
+      sha256: "4d9ae42185731a94c062b949e396ced3f7f475f3ea8a2588657fcbec9f02a579"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.0"
+  auto_updater_windows:
+    dependency: transitive
+    description:
+      name: auto_updater_windows
+      sha256: "42be98d67630a8353309069768390b9e2a44c985baabf49a76dfc9cf310912c0"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.1"
   boolean_selector:
     dependency: transitive
     description:
@@ -794,6 +826,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.27.7"
+  screen_retriever:
+    dependency: transitive
+    description:
+      name: screen_retriever
+      sha256: "6ee02c8a1158e6dae7ca430da79436e3b1c9563c8cf02f524af997c201ac2b90"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.9"
   shared_preferences:
     dependency: transitive
     description:
@@ -1123,10 +1163,10 @@ packages:
     dependency: transitive
     description:
       name: vm_service
-      sha256: "5c5f338a667b4c644744b661f309fb8080bb94b18a7e91ef1dbd343bed00ed6d"
+      sha256: f652077d0bdf60abe4c1f6377448e8655008eef28f128bc023f7b5e8dfeb48fc
       url: "https://pub.dev"
     source: hosted
-    version: "14.2.5"
+    version: "14.2.4"
   watcher:
     dependency: transitive
     description:
@@ -1167,6 +1207,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.5.4"
+  window_manager:
+    dependency: "direct main"
+    description:
+      name: window_manager
+      sha256: ab8b2a7f97543d3db2b506c9d875e637149d48ee0c6a5cb5f5fd6e0dac463792
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.4.2"
   xdg_directories:
     dependency: transitive
     description:

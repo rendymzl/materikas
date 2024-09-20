@@ -18,8 +18,8 @@ class StatisticController extends GetxController {
   final InvoiceSalesService _invoiceSalesService = Get.find();
   final OperatingCostService _operatingCostService = Get.find();
 
-  late final invoices = _invoiceService.invoices;
-  late final salesInvoices = _invoiceSalesService.invoices;
+  // late final invoices = _invoiceService.invoices;
+  // late final salesInvoices = _invoiceSalesService.invoices;
   late final operatingCosts = _operatingCostService.operatingCosts;
   late final foundOperatingCosts = _operatingCostService.foundOperatingCost;
   late final dailyOperatingCosts = <OperatingCostModel>[].obs;
@@ -49,6 +49,8 @@ class StatisticController extends GetxController {
       totalDiscount: 0,
       cash: 0,
       transfer: 0,
+      debtCash: 0,
+      debtTransfer: 0,
       salesCash: 0,
       salesTransfer: 0,
       totalCostPrice: 0,
@@ -66,6 +68,8 @@ class StatisticController extends GetxController {
       totalDiscount: 0,
       cash: 0,
       transfer: 0,
+      debtCash: 0,
+      debtTransfer: 0,
       salesCash: 0,
       salesTransfer: 0,
       totalCostPrice: 0,
@@ -92,9 +96,13 @@ class StatisticController extends GetxController {
 
   @override
   void onInit() async {
-    print('--salesInvoices.length ${salesInvoices.length}');
+    print('--salesInvoices.length ${_invoiceSalesService.invoices.length}');
     super.onInit();
-    everAll([operatingCosts, invoices, salesInvoices], (_) {
+    everAll([
+      operatingCosts,
+      _invoiceService.invoices,
+      _invoiceSalesService.invoices
+    ], (_) {
       rangePickerHandle(DateTime.now());
       selectedSection.value = 'daily';
       // Future.delayed(const Duration(milliseconds: 500), () {
@@ -169,11 +177,12 @@ class StatisticController extends GetxController {
     DateTime currentStartOfWeek = await getStartofWeek(selectedDate);
     DateTime prevStartOfWeek = await getStartofWeek(prevWeekPickedDay);
 
-    currentAndPrevFilteredInvoices = invoices.where((invoice) {
+    currentAndPrevFilteredInvoices = _invoiceService.invoices.where((invoice) {
       return invoice.createdAt.value!.isAfter(prevStartOfWeek);
     }).toList();
 
-    currentAndPrevFilteredSalesInvoices = salesInvoices.where((invoice) {
+    currentAndPrevFilteredSalesInvoices =
+        _invoiceSalesService.invoices.where((invoice) {
       return invoice.createdAt.value!.isAfter(prevStartOfWeek);
     }).toList();
 
@@ -219,14 +228,15 @@ class StatisticController extends GetxController {
     final startOfPrevMonth = DateTime(currentYear, prevMonth, 1);
     final endOfMonth = DateTime(currentYear, currentMonth + 1, 0);
 
-    currentAndPrevFilteredInvoices = invoices.where((invoice) {
+    currentAndPrevFilteredInvoices = _invoiceService.invoices.where((invoice) {
       return invoice.createdAt.value!
               .isAfter(startOfPrevMonth.subtract(const Duration(days: 1))) &&
           invoice.createdAt.value!
               .isBefore(endOfMonth.add(const Duration(days: 1)));
     }).toList();
 
-    currentAndPrevFilteredSalesInvoices = salesInvoices.where((invoice) {
+    currentAndPrevFilteredSalesInvoices =
+        _invoiceSalesService.invoices.where((invoice) {
       return invoice.createdAt.value!
               .isAfter(startOfPrevMonth.subtract(const Duration(days: 1))) &&
           invoice.createdAt.value!
@@ -266,14 +276,15 @@ class StatisticController extends GetxController {
     final startOfPrevYear = DateTime(prevYear, 1);
     final endOfYear = DateTime(currentYear, 12);
 
-    currentAndPrevFilteredInvoices = invoices.where((invoice) {
+    currentAndPrevFilteredInvoices = _invoiceService.invoices.where((invoice) {
       return invoice.createdAt.value!
               .isAfter(startOfPrevYear.subtract(const Duration(days: 1))) &&
           invoice.createdAt.value!
               .isBefore(endOfYear.add(const Duration(days: 1)));
     }).toList();
 
-    currentAndPrevFilteredSalesInvoices = salesInvoices.where((invoice) {
+    currentAndPrevFilteredSalesInvoices =
+        _invoiceSalesService.invoices.where((invoice) {
       return invoice.createdAt.value!
               .isAfter(startOfPrevYear.subtract(const Duration(days: 1))) &&
           invoice.createdAt.value!
@@ -395,13 +406,19 @@ class StatisticController extends GetxController {
 
       var cash = 0.0;
       var transfer = 0.0;
+      var debtCash = 0.0;
+      var debtTransfer = 0.0;
       var salesCash = 0.0;
       var salesTransfer = 0.0;
-      for (var invoice in invoices) {
-        cash += invoice.getTotalByMethod('cash', selectedDate: date);
-        transfer += invoice.getTotalByMethod('transfer', selectedDate: date);
+      for (var invoice in _invoiceService.invoices) {
+        cash += invoice.getTotalPayByMethod('cash', selectedDate: date);
+        transfer += invoice.getTotalPayByMethod('transfer', selectedDate: date);
+
+        debtCash += invoice.getTotalDebtByMethod('cash', selectedDate: date);
+        debtTransfer +=
+            invoice.getTotalDebtByMethod('transfer', selectedDate: date);
       }
-      for (var invoice in salesInvoices) {
+      for (var invoice in _invoiceSalesService.invoices) {
         salesCash += invoice.getTotalByMethod('cash', selectedDate: date);
         salesTransfer +=
             invoice.getTotalByMethod('transfer', selectedDate: date);
@@ -439,6 +456,8 @@ class StatisticController extends GetxController {
         totalDiscount: totalDiscount,
         cash: cash,
         transfer: transfer,
+        debtCash: debtCash,
+        debtTransfer: debtTransfer,
         salesCash: salesCash,
         salesTransfer: salesTransfer,
         totalCostPrice: totalCostPrice,
@@ -548,6 +567,8 @@ class StatisticController extends GetxController {
           totalDiscount: value.totalDiscount + element.totalDiscount,
           cash: value.cash + element.cash,
           transfer: value.transfer + element.transfer,
+          debtCash: value.debtCash + element.debtCash,
+          debtTransfer: value.debtTransfer + element.debtTransfer,
           salesCash: value.salesCash + element.salesCash,
           salesTransfer: value.salesTransfer + element.salesTransfer,
           operatingCost: value.operatingCost + element.operatingCost,

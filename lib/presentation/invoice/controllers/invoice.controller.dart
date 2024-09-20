@@ -12,14 +12,21 @@ import '../../../infrastructure/models/invoice_model/invoice_model.dart';
 class InvoiceController extends GetxController {
   late final AuthService _authService = Get.find();
   late final InvoiceService _invoiceService = Get.find();
-  late final invoices = _invoiceService.invoices;
-  late final foundInvoices = _invoiceService.foundInvoices;
-  late final paidInv = _invoiceService.paidInv;
+
+  // late final foundInvoices = _invoiceService.foundInvoices;
+
   late final debtInv = _invoiceService.debtInv;
   late InvoiceModel initInvoice;
 
-  // var searchQuery = ''.obs;
+  // Observable untuk pencarian dan filter
+  var searchQuery = ''.obs;
+  var dateRangePicked = PickerDateRange(
+          DateTime.now(), DateTime.now().add(const Duration(days: 1)))
+      .obs;
+  late final invoices = <InvoiceModel>[].obs;
+  late final filteredInvoices = <InvoiceModel>[].obs;
   var displayedItems = <InvoiceModel>[].obs; // Data yang ditampilkan saat ini
+
   var isLoading = false.obs; // Untuk memantau status loading
   var hasMore = true.obs; // Memantau apakah masih ada data lagi
   var page = 1; // Halaman data saat ini
@@ -34,17 +41,77 @@ class InvoiceController extends GetxController {
   @override
   void onInit() async {
     super.onInit();
-    loadMore();
-    ever(paidInv, (value) {
-      hasMore.value = true;
-      page = 1;
-      displayedItems.clear();
-      loadMore();
+    // Listen ke stream dan update produk
+    _invoiceService.stream.listen((inv) {
+      invoices.clear();
+      invoices.value = inv.where((i) {
+        return i.totalPaid >= i.totalBill;
+      }).map((purchased) {
+        InvoiceModel invPurchase = InvoiceModel.fromJson(purchased.toJson());
+        return invPurchase;
+      }).toList();
+      applyFilters();
+      print('invoices.length: ${invoices.length}');
     });
+    // Listen perubahan searchQuery atau selectedCategory
+    ever(searchQuery, (_) => applyFilters());
+    ever(dateRangePicked, (_) => applyFilters());
+
     editInvoice.value = await _authService.checkAccess('editInvoice');
     returnInvoice.value = await _authService.checkAccess('returnInvoice');
     paymentInvoice.value = await _authService.checkAccess('paymentInvoice');
     destroyInvoice.value = await _authService.checkAccess('destroyInvoice');
+  }
+
+  // @override
+  // void onClose() {
+  //   // Berhenti mendengarkan stream saat controller dihapus dari memori
+  //   _invoiceService.stream.cancel();
+  //   super.onClose();
+  // }
+
+  // Fungsi untuk menerapkan filter dan pencarian
+  void applyFilters() {
+    var result = invoices;
+
+    // Filter berdasarkan kategori jika ada yang dipilih
+
+    // result = result
+    //     .where((inv) {
+    //       if (inv.createdAt.value != null) {
+    //         DateTime invoiceDate = inv.createdAt.value!;
+    //         return invoiceDate.isAfter(dateRangePicked.value.startDate!) &&
+    //             invoiceDate.isBefore(dateRangePicked.value.endDate!);
+    //       }
+    //       return false;
+    //     })
+    //     .toList()
+    //     .obs;
+
+    // Filter berdasarkan pencarian (misal mencari berdasarkan nama produk)
+    if (searchQuery.value.isNotEmpty) {
+      result = result
+          .where((inv) {
+            return inv.customer.value!.name
+                    .toString()
+                    .toLowerCase()
+                    .contains(searchQuery.value.toLowerCase()) ||
+                inv.invoiceId
+                    .toString()
+                    .toLowerCase()
+                    .contains(searchQuery.value.toLowerCase());
+          })
+          .toList()
+          .obs;
+    }
+
+    // Update produk yang sudah difilter
+    filteredInvoices.value = result;
+    print('filteredInvoices.length ${filteredInvoices.length}');
+    hasMore.value = true;
+    page = 1;
+    displayedItems.clear();
+    loadMore();
   }
 
   void loadMore() {
@@ -57,9 +124,12 @@ class InvoiceController extends GetxController {
     int endIndex = startIndex + limit;
 
     List<InvoiceModel> newData = [];
-    if (startIndex < paidInv.length) {
-      newData = paidInv.sublist(
-          startIndex, endIndex > paidInv.length ? paidInv.length : endIndex);
+    if (startIndex < filteredInvoices.length) {
+      newData = filteredInvoices.sublist(
+          startIndex,
+          endIndex > filteredInvoices.length
+              ? filteredInvoices.length
+              : endIndex);
     }
 
     if (newData.isEmpty) {
@@ -78,11 +148,19 @@ class InvoiceController extends GetxController {
     if (searchValue is String) {
       if (debounceTimer?.isActive ?? false) debounceTimer?.cancel();
       debounceTimer = Timer(const Duration(milliseconds: 500), () {
-        _invoiceService.searchInvoicesByName(searchValue);
+        searchQuery.value = searchValue;
       });
     } else if (searchValue is PickerDateRange) {
       _invoiceService.searchInvoicesByPickerDateRange(searchValue);
     }
+    // if (searchValue is String) {
+    //   if (debounceTimer?.isActive ?? false) debounceTimer?.cancel();
+    //   debounceTimer = Timer(const Duration(milliseconds: 500), () {
+    //     _invoiceService.searchInvoicesByName(searchValue);
+    //   });
+    // } else if (searchValue is PickerDateRange) {
+    //   _invoiceService.searchInvoicesByPickerDateRange(searchValue);
+    // }
   }
 
   final startFilteredDate = ''.obs;
@@ -166,6 +244,21 @@ class InvoiceController extends GetxController {
                     Get.back();
                   }
                 }
+                // if (value is PickerDateRange) {
+                //   if (value.endDate != null) {
+                //     final newSelectedPickerRange = PickerDateRange(
+                //         value.startDate,
+                //         value.endDate!.add(const Duration(days: 1)));
+
+                //     selectedFilteredDate.value =
+                //         newSelectedPickerRange.startDate!;
+                //     displayFilteredDate.value =
+                //         '$startFilteredDate sampai $endFilteredDate';
+                //     filterInvoices(newSelectedPickerRange);
+                //     dateIsSelected.value = true;
+                //     Get.back();
+                //   }
+                // }
               },
             ),
           ),

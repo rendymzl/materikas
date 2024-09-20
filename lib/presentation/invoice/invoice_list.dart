@@ -15,125 +15,133 @@ class InvoiceList extends StatelessWidget {
   Widget build(BuildContext context) {
     final InvoiceController controller = Get.find();
 
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Column(
-        children: [
-          Obx(
-            () => Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            Obx(
+              () => Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: const BorderRadius.all(
+                          Radius.circular(12),
+                        ),
+                      ),
+                      height: 50,
+                      child: TextField(
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          labelText: "Cari Invoice",
+                          labelStyle: TextStyle(color: Colors.grey),
+                          prefixIcon: Icon(Symbols.search),
+                        ),
+                        onChanged: (value) => controller.filterInvoices(value),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 80),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      const Text('Tampilkan berdasarkan tanggal:'),
+                      const SizedBox(width: 12),
+                      InkWell(
+                        onTap: () async =>
+                            controller.handleFilteredDate(context),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 4, horizontal: 8),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primary,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            controller.displayFilteredDate.value == ''
+                                ? 'Pilih Tanggal'
+                                : controller.displayFilteredDate.value,
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      if (controller.dateIsSelected.value)
+                        TextButton(
+                          onPressed: () => controller.clearHandle(),
+                          child: const Text('Clear'),
+                        ),
+                      const SizedBox(width: 80),
+                    ],
+                  ),
+                  Text(
+                      'Total invoice: ${controller.invoices.length.toString()}')
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
               children: [
                 Expanded(
                   child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: const BorderRadius.all(
-                        Radius.circular(12),
-                      ),
-                    ),
-                    height: 50,
-                    child: TextField(
-                      decoration: const InputDecoration(
-                        border: InputBorder.none,
-                        labelText: "Cari Invoice",
-                        labelStyle: TextStyle(color: Colors.grey),
-                        prefixIcon: Icon(Symbols.search),
-                      ),
-                      onChanged: (value) => controller.filterInvoices(value),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 80),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    const Text('Tampilkan berdasarkan tanggal:'),
-                    const SizedBox(width: 12),
-                    InkWell(
-                      onTap: () async => controller.handleFilteredDate(context),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 4, horizontal: 8),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary,
-                          borderRadius: BorderRadius.circular(4),
+                      padding: const EdgeInsets.all(8),
+                      color: Colors.green[100],
+                      child: Text(
+                        'INVOICE LUNAS',
+                        textAlign: TextAlign.center,
+                        style: context.textTheme.titleLarge!.copyWith(
+                          color: Colors.green[800],
+                          fontWeight: FontWeight.bold,
                         ),
-                        child: Text(
-                          controller.displayFilteredDate.value == ''
-                              ? 'Pilih Tanggal'
-                              : controller.displayFilteredDate.value,
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    if (controller.dateIsSelected.value)
-                      TextButton(
-                        onPressed: () => controller.clearHandle(),
-                        child: const Text('Clear'),
-                      ),
-                    const SizedBox(width: 80),
-                  ],
+                      )),
                 ),
-                Text('Total invoice: ${controller.invoices.length.toString()}')
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                    padding: const EdgeInsets.all(8),
-                    color: Colors.green[100],
-                    child: Text(
-                      'INVOICE LUNAS',
-                      textAlign: TextAlign.center,
-                      style: context.textTheme.titleLarge!.copyWith(
-                        color: Colors.green[800],
-                        fontWeight: FontWeight.bold,
-                      ),
-                    )),
-              ),
-              VerticalDivider(thickness: 1, color: Colors.grey[200]),
-              Expanded(
-                child: Container(
-                    padding: const EdgeInsets.all(8),
-                    color: Colors.red[100],
-                    child: Text(
-                      'INVOICE BELUM LUNAS',
-                      textAlign: TextAlign.center,
-                      style: context.textTheme.titleLarge!.copyWith(
-                        color: Colors.red[800],
-                        fontWeight: FontWeight.bold,
-                      ),
-                    )),
-              ),
-            ],
-          ),
-          Row(
-            children: [
-              const Expanded(
-                child: HeaderWidget(),
-              ),
-              VerticalDivider(thickness: 1, color: Colors.grey[200]),
-              const Expanded(
-                child: HeaderWidget(),
-              ),
-            ],
-          ),
-          Expanded(
-            flex: 10,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Expanded(child: BuildListTile(isDebt: false)),
                 VerticalDivider(thickness: 1, color: Colors.grey[200]),
-                const Expanded(child: BuildListTile(isDebt: true)),
+                Expanded(
+                  child: Container(
+                      padding: const EdgeInsets.all(8),
+                      color: Colors.red[100],
+                      child: Text(
+                        'INVOICE BELUM LUNAS',
+                        textAlign: TextAlign.center,
+                        style: context.textTheme.titleLarge!.copyWith(
+                          color: Colors.red[800],
+                          fontWeight: FontWeight.bold,
+                        ),
+                      )),
+                ),
               ],
             ),
-          ),
-        ],
+            Row(
+              children: [
+                const Expanded(
+                  child: HeaderWidget(),
+                ),
+                VerticalDivider(thickness: 1, color: Colors.grey[200]),
+                const Expanded(
+                  child: HeaderWidget(),
+                ),
+              ],
+            ),
+            Expanded(
+              flex: 10,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Expanded(child: BuildListTile(isDebt: false)),
+                  VerticalDivider(thickness: 1, color: Colors.grey[200]),
+                  const Expanded(child: BuildListTile(isDebt: true)),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -215,11 +223,10 @@ class BuildListTile extends StatelessWidget {
               }
             }
             final invoice = inv[index];
-            return SizedBox(
-              // height: 70,
+            return Container(
+              color: index % 2 == 0 ? Colors.white : Colors.grey[100],
               child: ListTile(
                 dense: true,
-                tileColor: index % 2 == 0 ? Colors.white : Colors.grey[100],
                 title: Row(
                   children: [
                     Expanded(child: Text('${index + 1}.')),

@@ -22,7 +22,8 @@ class OperatingCostScreen extends GetView<OperatingCostController> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Expanded(
+                const SizedBox(
+                  width: 300,
                   child: Card(
                     child: Column(
                       children: [

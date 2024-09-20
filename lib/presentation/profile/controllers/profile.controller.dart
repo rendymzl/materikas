@@ -36,6 +36,13 @@ class ProfileController extends GetxController {
   //   super.onClose();
   // }
 
+  @override
+  void onInit() async {
+    _authService.getCashier();
+    print('cashiers.length ${cashiers}');
+    super.onInit();
+  }
+
   String? validateCashierName(String? value) {
     if (value == null || value.isEmpty) {
       return 'Nama kasir tidak boleh kosong';
@@ -45,7 +52,7 @@ class ProfileController extends GetxController {
 
   String? validatePassword(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Password tidak boleh kosong';
+      return 'PIN tidak boleh kosong';
     }
     return null;
   }
@@ -75,6 +82,7 @@ class ProfileController extends GetxController {
 
         await _accountService.update(updatedAccount);
         await _authService.getAccount();
+        _authService.getCashier();
 
         nameController.text = '';
         passwordController.text = '';

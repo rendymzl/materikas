@@ -93,6 +93,7 @@ class MenuWidgetController extends GetxController {
   }
 
   Future<void> changeUser() async {
+    menuData.clear();
     var box = await Hive.openBox('selectedUser');
     box.put('user', '');
     Get.offAllNamed(Routes.SELECT_USER);

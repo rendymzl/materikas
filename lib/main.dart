@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:auto_updater/auto_updater.dart';
+import 'package:window_manager/window_manager.dart';
 
 import 'infrastructure/dal/database/powersync.dart';
 import 'infrastructure/navigation/navigation.dart';
@@ -12,6 +14,17 @@ import 'infrastructure/theme/app_theme.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   var initialRoute = await Routes.initialRoute;
+
+  String feedURL = 'https://api.menantikan.com/releases/appcast.xml';
+  await autoUpdater.setFeedURL(feedURL);
+  await autoUpdater.checkForUpdates();
+  await autoUpdater.setScheduledCheckInterval(3600);
+
+  windowManager.waitUntilReadyToShow(null, () async {
+    await windowManager.show();
+    await windowManager.focus();
+  });
+
   await openDatabase();
   await Hive.initFlutter();
 
