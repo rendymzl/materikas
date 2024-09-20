@@ -82,7 +82,7 @@ class InvoiceList extends StatelessWidget {
                     ],
                   ),
                   Text(
-                      'Total invoice: ${controller.invoices.length.toString()}')
+                      'Total invoice: ${controller.invoiceService.invoices.length.toString()}')
                 ],
               ),
             ),

@@ -8,74 +8,79 @@ import '../database/powersync.dart';
 
 class InvoiceService extends GetxService implements InvoiceRepository {
   var invoices = <InvoiceModel>[].obs;
-  var foundInvoices = <InvoiceModel>[].obs;
   var paidInv = <InvoiceModel>[].obs;
+  var filteredInvoices = <InvoiceModel>[].obs;
+  var displayedInvoices = <InvoiceModel>[].obs;
+
+  var searchQuery = ''.obs;
+
+  var foundInvoices = <InvoiceModel>[].obs;
   var debtInv = <InvoiceModel>[].obs;
   late Stream<List<InvoiceModel>> stream;
 
-  void searchInvoicesByName(String invoiceName) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (invoiceName == '') {
-        DateTime sevenDaysAgo =
-            DateTime.now().subtract(const Duration(days: 60));
+  // void searchInvoicesByName(String invoiceName) {
+  //   WidgetsBinding.instance.addPostFrameCallback((_) {
+  //     if (invoiceName == '') {
+  //       DateTime sevenDaysAgo =
+  //           DateTime.now().subtract(const Duration(days: 60));
 
-        List<InvoiceModel> subList = invoices.where((invoice) {
-          return invoice.createdAt.value!.isAfter(sevenDaysAgo);
-        }).toList();
-        List<InvoiceModel> sortInvoice = sortByDate(subList);
-        foundInvoices.clear();
-        foundInvoices.addAll(sortInvoice);
-      } else {
-        List<InvoiceModel> sortList = invoices.where((invoice) {
-          return invoice.invoiceId!
-                  .toLowerCase()
-                  .contains(invoiceName.toLowerCase()) ||
-              invoice.customer.value!.name
-                  .toLowerCase()
-                  .contains(invoiceName.toLowerCase());
-        }).toList();
-        List<InvoiceModel> sortInvoice = sortByDate(sortList);
-        foundInvoices.clear();
-        foundInvoices.addAll(sortInvoice);
-      }
-      asignPaidDebtInv();
-    });
-  }
+  //       List<InvoiceModel> subList = invoices.where((invoice) {
+  //         return invoice.createdAt.value!.isAfter(sevenDaysAgo);
+  //       }).toList();
+  //       List<InvoiceModel> sortInvoice = sortByDate(subList);
+  //       foundInvoices.clear();
+  //       foundInvoices.addAll(sortInvoice);
+  //     } else {
+  //       List<InvoiceModel> sortList = invoices.where((invoice) {
+  //         return invoice.invoiceId!
+  //                 .toLowerCase()
+  //                 .contains(invoiceName.toLowerCase()) ||
+  //             invoice.customer.value!.name
+  //                 .toLowerCase()
+  //                 .contains(invoiceName.toLowerCase());
+  //       }).toList();
+  //       List<InvoiceModel> sortInvoice = sortByDate(sortList);
+  //       foundInvoices.clear();
+  //       foundInvoices.addAll(sortInvoice);
+  //     }
+  //     asignPaidDebtInv();
+  //   });
+  // }
 
-  void searchInvoicesByPickerDateRange(PickerDateRange? invoiceCreatedAt) {
-    if (invoiceCreatedAt != null) {
-      foundInvoices.clear();
-      foundInvoices.value = invoices.where((invoice) {
-        if (invoice.createdAt.value != null) {
-          DateTime invoiceDate = invoice.createdAt.value!;
-          return invoiceDate.isAfter(invoiceCreatedAt.startDate!) &&
-              invoiceDate.isBefore(invoiceCreatedAt.endDate!);
-        }
-        return false;
-      }).toList();
-      asignPaidDebtInv();
-    } else {
-      searchInvoicesByName('');
-    }
+  // void searchInvoicesByPickerDateRange(PickerDateRange? invoiceCreatedAt) {
+  //   if (invoiceCreatedAt != null) {
+  //     foundInvoices.clear();
+  //     foundInvoices.value = invoices.where((invoice) {
+  //       if (invoice.createdAt.value != null) {
+  //         DateTime invoiceDate = invoice.createdAt.value!;
+  //         return invoiceDate.isAfter(invoiceCreatedAt.startDate!) &&
+  //             invoiceDate.isBefore(invoiceCreatedAt.endDate!);
+  //       }
+  //       return false;
+  //     }).toList();
+  //     asignPaidDebtInv();
+  //   } else {
+  //     searchInvoicesByName('');
+  //   }
 
-    // });
-  }
+  //   // });
+  // }
 
-  void asignPaidDebtInv() {
-    paidInv.value = foundInvoices.where((i) {
-      return i.totalPaid >= i.totalBill;
-    }).map((purchased) {
-      InvoiceModel invPurchase = InvoiceModel.fromJson(purchased.toJson());
-      return invPurchase;
-    }).toList();
+  // void asignPaidDebtInv() {
+  //   paidInv.value = foundInvoices.where((i) {
+  //     return i.totalPaid >= i.totalBill;
+  //   }).map((purchased) {
+  //     InvoiceModel invPurchase = InvoiceModel.fromJson(purchased.toJson());
+  //     return invPurchase;
+  //   }).toList();
 
-    debtInv.value = foundInvoices.where((i) {
-      return i.totalPaid < i.totalBill;
-    }).map((purchased) {
-      InvoiceModel invPurchase = InvoiceModel.fromJson(purchased.toJson());
-      return invPurchase;
-    }).toList();
-  }
+  //   debtInv.value = foundInvoices.where((i) {
+  //     return i.totalPaid < i.totalBill;
+  //   }).map((purchased) {
+  //     InvoiceModel invPurchase = InvoiceModel.fromJson(purchased.toJson());
+  //     return invPurchase;
+  //   }).toList();
+  // }
 
   List<InvoiceModel> sortByDate(List<InvoiceModel> invoicesList) {
     invoicesList
@@ -83,33 +88,67 @@ class InvoiceService extends GetxService implements InvoiceRepository {
     return invoicesList;
   }
 
-  @override
-  Future<void> subscribe(String storeId) async {
-    stream = db
-        .watch('SELECT * FROM invoices WHERE store_id = ?',
-            parameters: [storeId])
-        .map((data) => data.map((json) => InvoiceModel.fromJson(json)).toList())
-        .asBroadcastStream();
-  }
-
   // @override
   // Future<void> subscribe(String storeId) async {
-  //   try {
-  //     var stream = db.watch('SELECT * FROM invoices WHERE store_id = ?',
-  //         parameters: [
-  //           storeId
-  //         ]).map(
-  //         (data) => data.map((json) => InvoiceModel.fromJson(json)).toList());
-
-  //     stream.listen((update) {
-  //       invoices.assignAll(update);
-  //       searchInvoicesByName('');
-  //     });
-  //   } on PostgrestException catch (e) {
-  //     print(e.message);
-  //     rethrow;
-  //   }
+  //   stream = db
+  //       .watch('SELECT * FROM invoices WHERE store_id = ?',
+  //           parameters: [storeId])
+  //       .map((data) => data.map((json) => InvoiceModel.fromJson(json)).toList())
+  //       .asBroadcastStream();
   // }
+
+  @override
+  Future<void> subscribe(String storeId) async {
+    var stream = db
+        .watch('SELECT * FROM invoices WHERE store_id = ?', parameters: [
+      storeId
+    ]).map((data) => data.map((json) => InvoiceModel.fromJson(json)).toList());
+
+    stream.listen((data) {
+      invoices.value = data;
+      applyFilters();
+
+      // searchInvoicesByName('');
+    });
+  }
+
+  // Fungsi untuk menerapkan filter dan pencarian
+  void applyFilters() {
+    var result = invoices;
+
+    // Filter berdasarkan kategori jika ada yang dipilih
+    // if (selectedCategory.value.isNotEmpty) {
+    //   result = result.where((product) {
+    //     return product['category'] == selectedCategory.value;
+    //   }).toList().obs;
+    // }
+
+    // Filter berdasarkan pencarian (misal mencari berdasarkan nama produk)
+    if (searchQuery.value.isNotEmpty) {
+      result = result
+          .where((inv) {
+            return inv.invoiceId!
+                    .toLowerCase()
+                    .contains(searchQuery.toLowerCase()) ||
+                inv.customer.value!.name
+                    .toLowerCase()
+                    .contains(searchQuery.toLowerCase());
+          })
+          .toList()
+          .obs;
+    }
+
+    // Update produk yang sudah difilter
+    filteredInvoices.value = result;
+
+    for (var invoice in filteredInvoices) {
+      if (invoice.totalPaid >= invoice.totalBill) {
+        paidInv.add(InvoiceModel.fromJson(invoice.toJson()));
+      } else {
+        debtInv.add(InvoiceModel.fromJson(invoice.toJson()));
+      }
+    }
+  }
 
   @override
   Future<void> insert(InvoiceModel invoice) async {

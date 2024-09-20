@@ -11,20 +11,22 @@ import '../../../infrastructure/models/invoice_model/invoice_model.dart';
 
 class InvoiceController extends GetxController {
   late final AuthService _authService = Get.find();
-  late final InvoiceService _invoiceService = Get.find();
+  late final InvoiceService invoiceService = Get.find();
 
-  // late final foundInvoices = _invoiceService.foundInvoices;
+  // late final foundInvoices = invoiceService.foundInvoices;
 
-  late final debtInv = _invoiceService.debtInv;
+  late final debtInv = invoiceService.debtInv;
   late InvoiceModel initInvoice;
 
   // Observable untuk pencarian dan filter
-  var searchQuery = ''.obs;
+  // var searchQuery = ''.obs;
   var dateRangePicked = PickerDateRange(
           DateTime.now(), DateTime.now().add(const Duration(days: 1)))
       .obs;
-  late final invoices = <InvoiceModel>[].obs;
-  late final filteredInvoices = <InvoiceModel>[].obs;
+
+  // late StreamSubscription<List<InvoiceModel>> subscription;
+  // late final invoices = <InvoiceModel>[].obs;
+  // late final filteredInvoices = <InvoiceModel>[].obs;
   var displayedItems = <InvoiceModel>[].obs; // Data yang ditampilkan saat ini
 
   var isLoading = false.obs; // Untuk memantau status loading
@@ -41,21 +43,15 @@ class InvoiceController extends GetxController {
   @override
   void onInit() async {
     super.onInit();
-    // Listen ke stream dan update produk
-    _invoiceService.stream.listen((inv) {
-      invoices.clear();
-      invoices.value = inv.where((i) {
-        return i.totalPaid >= i.totalBill;
-      }).map((purchased) {
-        InvoiceModel invPurchase = InvoiceModel.fromJson(purchased.toJson());
-        return invPurchase;
-      }).toList();
-      applyFilters();
-      print('invoices.length: ${invoices.length}');
-    });
+    // invoiceService.applyFilters();
+    loadMore();
+
     // Listen perubahan searchQuery atau selectedCategory
-    ever(searchQuery, (_) => applyFilters());
-    ever(dateRangePicked, (_) => applyFilters());
+    ever(invoiceService.searchQuery, (_) {
+      invoiceService.applyFilters();
+      loadMore();
+    });
+    // ever(dateRangePicked, (_) => invoiceService.applyFilters());
 
     editInvoice.value = await _authService.checkAccess('editInvoice');
     returnInvoice.value = await _authService.checkAccess('returnInvoice');
@@ -66,53 +62,9 @@ class InvoiceController extends GetxController {
   // @override
   // void onClose() {
   //   // Berhenti mendengarkan stream saat controller dihapus dari memori
-  //   _invoiceService.stream.cancel();
+  //   subscription.cancel();
   //   super.onClose();
   // }
-
-  // Fungsi untuk menerapkan filter dan pencarian
-  void applyFilters() {
-    var result = invoices;
-
-    // Filter berdasarkan kategori jika ada yang dipilih
-
-    // result = result
-    //     .where((inv) {
-    //       if (inv.createdAt.value != null) {
-    //         DateTime invoiceDate = inv.createdAt.value!;
-    //         return invoiceDate.isAfter(dateRangePicked.value.startDate!) &&
-    //             invoiceDate.isBefore(dateRangePicked.value.endDate!);
-    //       }
-    //       return false;
-    //     })
-    //     .toList()
-    //     .obs;
-
-    // Filter berdasarkan pencarian (misal mencari berdasarkan nama produk)
-    if (searchQuery.value.isNotEmpty) {
-      result = result
-          .where((inv) {
-            return inv.customer.value!.name
-                    .toString()
-                    .toLowerCase()
-                    .contains(searchQuery.value.toLowerCase()) ||
-                inv.invoiceId
-                    .toString()
-                    .toLowerCase()
-                    .contains(searchQuery.value.toLowerCase());
-          })
-          .toList()
-          .obs;
-    }
-
-    // Update produk yang sudah difilter
-    filteredInvoices.value = result;
-    print('filteredInvoices.length ${filteredInvoices.length}');
-    hasMore.value = true;
-    page = 1;
-    displayedItems.clear();
-    loadMore();
-  }
 
   void loadMore() {
     if (isLoading.value || !hasMore.value) return;
@@ -124,11 +76,11 @@ class InvoiceController extends GetxController {
     int endIndex = startIndex + limit;
 
     List<InvoiceModel> newData = [];
-    if (startIndex < filteredInvoices.length) {
-      newData = filteredInvoices.sublist(
+    if (startIndex < invoiceService.paidInv.length) {
+      newData = invoiceService.paidInv.sublist(
           startIndex,
-          endIndex > filteredInvoices.length
-              ? filteredInvoices.length
+          endIndex > invoiceService.paidInv.length
+              ? invoiceService.paidInv.length
               : endIndex);
     }
 
@@ -148,18 +100,19 @@ class InvoiceController extends GetxController {
     if (searchValue is String) {
       if (debounceTimer?.isActive ?? false) debounceTimer?.cancel();
       debounceTimer = Timer(const Duration(milliseconds: 500), () {
-        searchQuery.value = searchValue;
+        invoiceService.searchQuery.value = searchValue;
       });
-    } else if (searchValue is PickerDateRange) {
-      _invoiceService.searchInvoicesByPickerDateRange(searchValue);
     }
+    // else if (searchValue is PickerDateRange) {
+    //   invoiceService.searchInvoicesByPickerDateRange(searchValue);
+    // }
     // if (searchValue is String) {
     //   if (debounceTimer?.isActive ?? false) debounceTimer?.cancel();
     //   debounceTimer = Timer(const Duration(milliseconds: 500), () {
-    //     _invoiceService.searchInvoicesByName(searchValue);
+    //     invoiceService.searchInvoicesByName(searchValue);
     //   });
     // } else if (searchValue is PickerDateRange) {
-    //   _invoiceService.searchInvoicesByPickerDateRange(searchValue);
+    //   invoiceService.searchInvoicesByPickerDateRange(searchValue);
     // }
   }
 
@@ -276,6 +229,6 @@ class InvoiceController extends GetxController {
   }
 
   destroyHandle(InvoiceModel invoice) async {
-    await _invoiceService.delete(invoice.id!);
+    await invoiceService.delete(invoice.id!);
   }
 }
