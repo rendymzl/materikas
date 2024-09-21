@@ -13,8 +13,6 @@ class MenuWidget extends GetView<MenuWidgetController> {
 
   @override
   Widget build(BuildContext context) {
-    Get.put(MenuWidgetController(), permanent: true);
-
     return Container(
       // padding: const EdgeInsets.all(8),
       margin: const EdgeInsets.all(8),
@@ -102,7 +100,7 @@ class MenuWidget extends GetView<MenuWidgetController> {
         onPressed: () => controller.handleClick(index, data.label),
         icon: Icon(
           data.icon,
-          color: controller.selectedIndex.value == index
+          color: controller.authService.selectedIndexMenu.value == index
               ? Colors.white
               : Colors.grey[700],
         ),
@@ -110,7 +108,7 @@ class MenuWidget extends GetView<MenuWidgetController> {
           data.label,
           style: TextStyle(
             fontSize: 14,
-            color: controller.selectedIndex.value == index
+            color: controller.authService.selectedIndexMenu.value == index
                 ? Colors.white
                 : Colors.grey[700],
             // fontWeight: controller.isExpand.value
@@ -122,7 +120,7 @@ class MenuWidget extends GetView<MenuWidgetController> {
           alignment: Alignment.centerLeft,
           enableFeedback: true,
           backgroundColor: WidgetStatePropertyAll(
-            controller.selectedIndex.value == index
+            controller.authService.selectedIndexMenu.value == index
                 ? Theme.of(context).colorScheme.primary
                 : Colors.white,
           ),

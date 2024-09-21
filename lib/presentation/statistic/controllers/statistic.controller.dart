@@ -27,7 +27,10 @@ class StatisticController extends GetxController {
   final isDaily = true.obs;
   final selectedSection = 'daily'.obs;
 
-  late List<InvoiceModel> currentAndPrevFilteredInvoices = <InvoiceModel>[].obs;
+  late List<InvoiceModel> currentAndPrevFilteredPaidInvoices =
+      <InvoiceModel>[].obs;
+  late List<InvoiceModel> currentAndPrevFilteredDebtInvoices =
+      <InvoiceModel>[].obs;
   late List<InvoiceSalesModel> currentAndPrevFilteredSalesInvoices =
       <InvoiceSalesModel>[].obs;
   late List<OperatingCostModel> currentAndPrevFilteredOperatingCosts =
@@ -100,7 +103,8 @@ class StatisticController extends GetxController {
     super.onInit();
     everAll([
       operatingCosts,
-      _invoiceService.invoices,
+      _invoiceService.paidInv,
+      _invoiceService.debtInv,
       _invoiceSalesService.invoices
     ], (_) {
       rangePickerHandle(DateTime.now());
@@ -177,7 +181,12 @@ class StatisticController extends GetxController {
     DateTime currentStartOfWeek = await getStartofWeek(selectedDate);
     DateTime prevStartOfWeek = await getStartofWeek(prevWeekPickedDay);
 
-    currentAndPrevFilteredInvoices = _invoiceService.invoices.where((invoice) {
+    currentAndPrevFilteredPaidInvoices =
+        _invoiceService.paidInv.where((invoice) {
+      return invoice.createdAt.value!.isAfter(prevStartOfWeek);
+    }).toList();
+    currentAndPrevFilteredDebtInvoices =
+        _invoiceService.debtInv.where((invoice) {
       return invoice.createdAt.value!.isAfter(prevStartOfWeek);
     }).toList();
 
@@ -228,7 +237,16 @@ class StatisticController extends GetxController {
     final startOfPrevMonth = DateTime(currentYear, prevMonth, 1);
     final endOfMonth = DateTime(currentYear, currentMonth + 1, 0);
 
-    currentAndPrevFilteredInvoices = _invoiceService.invoices.where((invoice) {
+    currentAndPrevFilteredPaidInvoices =
+        _invoiceService.paidInv.where((invoice) {
+      return invoice.createdAt.value!
+              .isAfter(startOfPrevMonth.subtract(const Duration(days: 1))) &&
+          invoice.createdAt.value!
+              .isBefore(endOfMonth.add(const Duration(days: 1)));
+    }).toList();
+
+    currentAndPrevFilteredDebtInvoices =
+        _invoiceService.debtInv.where((invoice) {
       return invoice.createdAt.value!
               .isAfter(startOfPrevMonth.subtract(const Duration(days: 1))) &&
           invoice.createdAt.value!
@@ -276,7 +294,16 @@ class StatisticController extends GetxController {
     final startOfPrevYear = DateTime(prevYear, 1);
     final endOfYear = DateTime(currentYear, 12);
 
-    currentAndPrevFilteredInvoices = _invoiceService.invoices.where((invoice) {
+    currentAndPrevFilteredPaidInvoices =
+        _invoiceService.paidInv.where((invoice) {
+      return invoice.createdAt.value!
+              .isAfter(startOfPrevYear.subtract(const Duration(days: 1))) &&
+          invoice.createdAt.value!
+              .isBefore(endOfYear.add(const Duration(days: 1)));
+    }).toList();
+
+    currentAndPrevFilteredDebtInvoices =
+        _invoiceService.debtInv.where((invoice) {
       return invoice.createdAt.value!
               .isAfter(startOfPrevYear.subtract(const Duration(days: 1))) &&
           invoice.createdAt.value!
@@ -321,13 +348,26 @@ class StatisticController extends GetxController {
               ? DateTime(startingYear, startingMonth, i + 1)
               : DateTime(startingYear, startingMonth + i);
 
-      final invoicesGroup = groupDate.value == 'yearly'
-          ? currentAndPrevFilteredInvoices.where((invoice) {
+      var invoicesGroup = groupDate.value == 'yearly'
+          ? currentAndPrevFilteredPaidInvoices.where((invoice) {
               DateTime localDate = invoice.createdAt.value!;
               return localDate.year == currentDate.year &&
                   localDate.month == currentDate.month;
             }).toList()
-          : currentAndPrevFilteredInvoices.where((invoice) {
+          : currentAndPrevFilteredPaidInvoices.where((invoice) {
+              DateTime localDate = invoice.createdAt.value!;
+              return localDate.year == currentDate.year &&
+                  localDate.month == currentDate.month &&
+                  localDate.day == currentDate.day;
+            }).toList();
+
+      invoicesGroup = groupDate.value == 'yearly'
+          ? currentAndPrevFilteredDebtInvoices.where((invoice) {
+              DateTime localDate = invoice.createdAt.value!;
+              return localDate.year == currentDate.year &&
+                  localDate.month == currentDate.month;
+            }).toList()
+          : currentAndPrevFilteredDebtInvoices.where((invoice) {
               DateTime localDate = invoice.createdAt.value!;
               return localDate.year == currentDate.year &&
                   localDate.month == currentDate.month &&
@@ -410,7 +450,16 @@ class StatisticController extends GetxController {
       var debtTransfer = 0.0;
       var salesCash = 0.0;
       var salesTransfer = 0.0;
-      for (var invoice in _invoiceService.invoices) {
+      for (var invoice in _invoiceService.paidInv) {
+        cash += invoice.getTotalPayByMethod('cash', selectedDate: date);
+        transfer += invoice.getTotalPayByMethod('transfer', selectedDate: date);
+
+        debtCash += invoice.getTotalDebtByMethod('cash', selectedDate: date);
+        debtTransfer +=
+            invoice.getTotalDebtByMethod('transfer', selectedDate: date);
+      }
+
+      for (var invoice in _invoiceService.debtInv) {
         cash += invoice.getTotalPayByMethod('cash', selectedDate: date);
         transfer += invoice.getTotalPayByMethod('transfer', selectedDate: date);
 

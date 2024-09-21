@@ -400,7 +400,7 @@ class InvoiceModel {
 
   void removePayment(PaymentModel paymentModel) {
     payments.remove(paymentModel);
-    isDebtPaid.value = remainingDebt <= 0;
+    updateIsDebtPaid();
   }
 
   void updateIsDebtPaid() {

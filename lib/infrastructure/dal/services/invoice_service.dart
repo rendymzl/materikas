@@ -7,114 +7,118 @@ import '../../models/invoice_model/invoice_model.dart';
 import '../database/powersync.dart';
 
 class InvoiceService extends GetxService implements InvoiceRepository {
-  var invoices = <InvoiceModel>[].obs;
+  // var invoices = <InvoiceModel>[].obs;
   var paidInv = <InvoiceModel>[].obs;
-  var filteredInvoices = <InvoiceModel>[].obs;
+  var debtInv = <InvoiceModel>[].obs;
+  var filteredPaidInv = <InvoiceModel>[].obs;
+  var filteredDebtInv = <InvoiceModel>[].obs;
   var displayedInvoices = <InvoiceModel>[].obs;
 
   var searchQuery = ''.obs;
 
-  var foundInvoices = <InvoiceModel>[].obs;
-  var debtInv = <InvoiceModel>[].obs;
   late Stream<List<InvoiceModel>> stream;
-
-  // void searchInvoicesByName(String invoiceName) {
-  //   WidgetsBinding.instance.addPostFrameCallback((_) {
-  //     if (invoiceName == '') {
-  //       DateTime sevenDaysAgo =
-  //           DateTime.now().subtract(const Duration(days: 60));
-
-  //       List<InvoiceModel> subList = invoices.where((invoice) {
-  //         return invoice.createdAt.value!.isAfter(sevenDaysAgo);
-  //       }).toList();
-  //       List<InvoiceModel> sortInvoice = sortByDate(subList);
-  //       foundInvoices.clear();
-  //       foundInvoices.addAll(sortInvoice);
-  //     } else {
-  //       List<InvoiceModel> sortList = invoices.where((invoice) {
-  //         return invoice.invoiceId!
-  //                 .toLowerCase()
-  //                 .contains(invoiceName.toLowerCase()) ||
-  //             invoice.customer.value!.name
-  //                 .toLowerCase()
-  //                 .contains(invoiceName.toLowerCase());
-  //       }).toList();
-  //       List<InvoiceModel> sortInvoice = sortByDate(sortList);
-  //       foundInvoices.clear();
-  //       foundInvoices.addAll(sortInvoice);
-  //     }
-  //     asignPaidDebtInv();
-  //   });
-  // }
-
-  // void searchInvoicesByPickerDateRange(PickerDateRange? invoiceCreatedAt) {
-  //   if (invoiceCreatedAt != null) {
-  //     foundInvoices.clear();
-  //     foundInvoices.value = invoices.where((invoice) {
-  //       if (invoice.createdAt.value != null) {
-  //         DateTime invoiceDate = invoice.createdAt.value!;
-  //         return invoiceDate.isAfter(invoiceCreatedAt.startDate!) &&
-  //             invoiceDate.isBefore(invoiceCreatedAt.endDate!);
-  //       }
-  //       return false;
-  //     }).toList();
-  //     asignPaidDebtInv();
-  //   } else {
-  //     searchInvoicesByName('');
-  //   }
-
-  //   // });
-  // }
-
-  // void asignPaidDebtInv() {
-  //   paidInv.value = foundInvoices.where((i) {
-  //     return i.totalPaid >= i.totalBill;
-  //   }).map((purchased) {
-  //     InvoiceModel invPurchase = InvoiceModel.fromJson(purchased.toJson());
-  //     return invPurchase;
-  //   }).toList();
-
-  //   debtInv.value = foundInvoices.where((i) {
-  //     return i.totalPaid < i.totalBill;
-  //   }).map((purchased) {
-  //     InvoiceModel invPurchase = InvoiceModel.fromJson(purchased.toJson());
-  //     return invPurchase;
-  //   }).toList();
-  // }
-
-  List<InvoiceModel> sortByDate(List<InvoiceModel> invoicesList) {
-    invoicesList
-        .sort((a, b) => b.createdAt.value!.compareTo(a.createdAt.value!));
-    return invoicesList;
-  }
-
-  // @override
-  // Future<void> subscribe(String storeId) async {
-  //   stream = db
-  //       .watch('SELECT * FROM invoices WHERE store_id = ?',
-  //           parameters: [storeId])
-  //       .map((data) => data.map((json) => InvoiceModel.fromJson(json)).toList())
-  //       .asBroadcastStream();
-  // }
 
   @override
   Future<void> subscribe(String storeId) async {
-    var stream = db
-        .watch('SELECT * FROM invoices WHERE store_id = ?', parameters: [
+    //! streamCount
+
+    // var streamPayCash = db
+    //     .watch("SELECT * FROM invoices WHERE store_id = ? AND json_extract(data, '$.details.city') = ?", parameters: [
+    //   storeId,
+    //   storeId
+    // ]).map((data) => data.map((json) => InvoiceModel.fromJson(json)).toList());
+
+    // streamPayCash.listen((datas) {
+    //   paidInv.clear();
+    //   debtInv.clear();
+    //   for (var invoice in datas) {
+    //     if (invoice.totalPaid >= invoice.totalBill) {
+    //       paidInv.add(InvoiceModel.fromJson(invoice.toJson()));
+    //     } else {
+    //       debtInv.add(InvoiceModel.fromJson(invoice.toJson()));
+    //     }
+    //   }
+
+    //   // invoices.value = data;
+    //   applyFilters();
+    // });
+    //! paid invoice
+    var streamPaidInv = db.watch('''
+      SELECT * FROM invoices WHERE store_id = ? AND is_debt_paid = true
+      ''', parameters: [
       storeId
     ]).map((data) => data.map((json) => InvoiceModel.fromJson(json)).toList());
 
-    stream.listen((data) {
-      invoices.value = data;
-      applyFilters();
-
-      // searchInvoicesByName('');
+    streamPaidInv.listen((datas) {
+      paidInv.clear();
+      paidInv.value = datas;
+      paidInv.sort((a, b) =>
+          DateTime.parse(b.createdAt.value!.toIso8601String())
+              .compareTo(DateTime.parse(a.createdAt.value!.toIso8601String())));
     });
+
+    //! debt invoice
+    var streamDebtInv = db.watch('''
+      SELECT * FROM invoices WHERE store_id = ? AND is_debt_paid = false
+      ''', parameters: [
+      storeId
+    ]).map((data) => data.map((json) => InvoiceModel.fromJson(json)).toList());
+
+    streamDebtInv.listen((datas) {
+      debtInv.clear();
+      debtInv.value = datas;
+      debtInv.sort((a, b) =>
+          DateTime.parse(b.createdAt.value!.toIso8601String())
+              .compareTo(DateTime.parse(a.createdAt.value!.toIso8601String())));
+    });
+
+    // var streamPaymentCash = db.watch('''
+    //   SELECT * FROM invoices WHERE store_id = ? AND json_extract(data, '\$.method.city') = 'cash'
+    //   ''', parameters: [
+    //   storeId
+    // ]).map((data) => data.map((json) => InvoiceModel.fromJson(json)).toList());
+
+    // streamPaymentCash.listen((datas) {
+    //   paidInv.clear();
+    //   debtInv.clear();
+    //   for (var invoice in datas) {
+    //     if (invoice.totalPaid >= invoice.totalBill) {
+    //       paidInv.add(InvoiceModel.fromJson(invoice.toJson()));
+    //     } else {
+    //       debtInv.add(InvoiceModel.fromJson(invoice.toJson()));
+    //     }
+    //   }
+
+    //   // invoices.value = data;
+    //   applyFilters();
+    // });
+
+    // var stream = db
+    //     .watch('SELECT * FROM invoices WHERE store_id = ?', parameters: [
+    //   storeId
+    // ]).map((data) => data.map((json) => InvoiceModel.fromJson(json)).toList());
+
+    // stream.listen((datas) {
+    //   paidInv.clear();
+    //   debtInv.clear();
+    //   for (var invoice in datas) {
+    //     if (invoice.isDebtPaid.value) {
+    //       paidInv.add(InvoiceModel.fromJson(invoice.toJson()));
+    //     } else {
+    //       debtInv.add(InvoiceModel.fromJson(invoice.toJson()));
+    //     }
+    //   }
+    //   print('paidInv ${paidInv.length}');
+    //   print('debtInv ${debtInv.length}');
+    //   // invoices.value = data;
+    //   // applyFilters();
+    // });
   }
 
   // Fungsi untuk menerapkan filter dan pencarian
-  void applyFilters() {
-    var result = invoices;
+  void applyFilters() async {
+    var paidInvResult = paidInv;
+    var debtInvResult = debtInv;
 
     // Filter berdasarkan kategori jika ada yang dipilih
     // if (selectedCategory.value.isNotEmpty) {
@@ -125,29 +129,51 @@ class InvoiceService extends GetxService implements InvoiceRepository {
 
     // Filter berdasarkan pencarian (misal mencari berdasarkan nama produk)
     if (searchQuery.value.isNotEmpty) {
-      result = result
-          .where((inv) {
-            return inv.invoiceId!
-                    .toLowerCase()
-                    .contains(searchQuery.toLowerCase()) ||
-                inv.customer.value!.name
-                    .toLowerCase()
-                    .contains(searchQuery.toLowerCase());
-          })
-          .toList()
-          .obs;
+      paidInvResult.value = await searchInv(searchQuery.value, true);
+      debtInvResult.value = await searchInv(searchQuery.value, false);
+      // paidInvResult = paidInv
+      //     .where((inv) {
+      //       return inv.invoiceId!
+      //               .toLowerCase()
+      //               .contains(searchQuery.toLowerCase()) ||
+      //           inv.customer.value!.name
+      //               .toLowerCase()
+      //               .contains(searchQuery.toLowerCase());
+      //     })
+      //     .toList()
+      //     .obs;
+      // debtInvResult = debtInv
+      //     .where((inv) {
+      //       return inv.invoiceId!
+      //               .toLowerCase()
+      //               .contains(searchQuery.toLowerCase()) ||
+      //           inv.customer.value!.name
+      //               .toLowerCase()
+      //               .contains(searchQuery.toLowerCase());
+      //     })
+      //     .toList()
+      //     .obs;
     }
 
     // Update produk yang sudah difilter
-    filteredInvoices.value = result;
+    filteredPaidInv.value = paidInvResult
+      ..sort((a, b) => DateTime.parse(b.createdAt.value!.toIso8601String())
+          .compareTo(DateTime.parse(a.createdAt.value!.toIso8601String())));
+    filteredDebtInv.value = debtInvResult
+      ..sort((a, b) => DateTime.parse(b.createdAt.value!.toIso8601String())
+          .compareTo(DateTime.parse(a.createdAt.value!.toIso8601String())));
+  }
 
-    for (var invoice in filteredInvoices) {
-      if (invoice.totalPaid >= invoice.totalBill) {
-        paidInv.add(InvoiceModel.fromJson(invoice.toJson()));
-      } else {
-        debtInv.add(InvoiceModel.fromJson(invoice.toJson()));
-      }
-    }
+  Future<List<InvoiceModel>> searchInv(String searchTerm, bool paid) async {
+    String query = '''
+      SELECT * FROM invoices WHERE
+      invoice_id LIKE ? AND  OR
+      json_extract(data, '\$.customer.name') LIKE ?
+      ''';
+    List<Map<String, dynamic>> results =
+        await db.getAll(query, ['%$searchTerm%', '%$searchTerm%']);
+
+    return results.map((e) => InvoiceModel.fromJson(e)).toList();
   }
 
   @override

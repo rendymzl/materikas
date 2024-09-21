@@ -5,9 +5,12 @@ import 'package:hive/hive.dart';
 import '../../../infrastructure/dal/services/auth_service.dart';
 import '../../../infrastructure/navigation/routes.dart';
 import '../../global_widget/app_dialog_widget.dart';
+import '../../global_widget/menu_widget/menu_controller.dart';
 
 class SelectUserController extends GetxController {
-  final AuthService _authService = Get.find<AuthService>();
+  late final AuthService _authService = Get.find();
+  late final MenuWidgetController _menuC =
+      Get.put(MenuWidgetController(), permanent: true);
 
   late final Box<dynamic> box;
   final isLoading = true.obs;
@@ -38,7 +41,8 @@ class SelectUserController extends GetxController {
       print('usernya $user');
       selectedUser.value = user!;
       _authService.getSelectedCashier(user);
-
+      _authService.selectedIndexMenu.value = 0;
+      _menuC.getMenu();
       Get.offAllNamed(Routes.HOME);
     }
     await Future.delayed(const Duration(seconds: 2));
@@ -54,6 +58,7 @@ class SelectUserController extends GetxController {
     _authService.getSelectedCashier(selectedUser.value);
     box.put('user', selectedUser.value);
     _authService.isOwner.value = account.value!.role == selectedUser.value;
+    _menuC.getMenu();
     Get.offAllNamed(Routes.HOME);
   }
 

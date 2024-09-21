@@ -43,14 +43,30 @@ class InvoiceController extends GetxController {
   @override
   void onInit() async {
     super.onInit();
+    invoiceService.searchQuery.value = '';
     // invoiceService.applyFilters();
     loadMore();
 
     // Listen perubahan searchQuery atau selectedCategory
-    ever(invoiceService.searchQuery, (_) {
-      invoiceService.applyFilters();
+    everAll([
+      invoiceService.searchQuery,
+      invoiceService.paidInv,
+      invoiceService.debtInv
+    ], (_) {
+      if (invoiceService.searchQuery.value.isNotEmpty) {
+        invoiceService.applyFilters();
+      }
+      displayedItems.clear();
+      hasMore.value = true;
+      page = 1;
       loadMore();
     });
+    // everAll([invoiceService.paidInv, invoiceService.debtInv], (_) {
+    //   displayedItems.clear();
+    //   hasMore.value = true;
+    //   page = 1;
+    //   loadMore();
+    // });
     // ever(dateRangePicked, (_) => invoiceService.applyFilters());
 
     editInvoice.value = await _authService.checkAccess('editInvoice');

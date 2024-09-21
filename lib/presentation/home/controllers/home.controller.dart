@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import '../../../infrastructure/dal/services/auth_service.dart';
-import '../../../infrastructure/dal/services/invoice_service.dart';
+// import '../../../infrastructure/dal/services/invoice_service.dart';
 import '../../../infrastructure/dal/services/product_service.dart';
 import '../../../infrastructure/models/customer_model.dart';
 import '../../../infrastructure/models/invoice_model/cart_item_model.dart';
@@ -12,17 +12,15 @@ import '../../../infrastructure/models/invoice_model/invoice_model.dart';
 import '../../../infrastructure/models/product_model.dart';
 import '../../global_widget/date_picker_widget/date_picker_widget_controller.dart';
 import '../../global_widget/field_customer_widget/field_customer_widget_controller.dart';
-import '../../global_widget/menu_widget/menu_controller.dart';
 
 class HomeController extends GetxController {
   late final ProductService _productService = Get.find<ProductService>();
   late final AuthService _authService = Get.find<AuthService>();
-  late final InvoiceService _invoiceService = Get.put(InvoiceService());
+  // late final InvoiceService _invoiceService = Get.put(InvoiceService());
   late final DatePickerController _datePickerC =
       Get.put(DatePickerController());
   late final CustomerInputFieldController _customerInputFieldC =
       Get.put(CustomerInputFieldController());
-  final MenuWidgetController _menuC = Get.put(MenuWidgetController());
 
   late final products = _productService.products;
   late final foundProducts = _productService.foundProducts;
@@ -39,10 +37,7 @@ class HomeController extends GetxController {
 
   @override
   void onInit() async {
-    _menuC.selectedIndex.value = 0;
-    _menuC.getMenu();
     invoice = await createInvoice();
-    print(_authService.selectedUser.value);
     super.onInit();
   }
 
@@ -197,7 +192,7 @@ class HomeController extends GetxController {
   }
 
   Rx<CustomerModel?> selectedCustomer = Rx<CustomerModel?>(null);
-  late final invoices = _invoiceService.invoices;
+  // late final invoices = _invoiceService.invoices;
 
   // final selectedTime = TimeOfDay.now().obs;
   // final selectedDate = DateTime.now().obs;

@@ -17,7 +17,7 @@ class InvoiceList extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        // color: Colors.white,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Padding(
@@ -55,8 +55,8 @@ class InvoiceList extends StatelessWidget {
                       const Text('Tampilkan berdasarkan tanggal:'),
                       const SizedBox(width: 12),
                       InkWell(
-                        onTap: () async =>
-                            controller.handleFilteredDate(context),
+                        // onTap: () async =>
+                        //     controller.handleFilteredDate(context),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                               vertical: 4, horizontal: 8),
@@ -82,7 +82,7 @@ class InvoiceList extends StatelessWidget {
                     ],
                   ),
                   Text(
-                      'Total invoice: ${controller.invoiceService.invoices.length.toString()}')
+                      'Total invoice: ${(controller.invoiceService.paidInv.length + controller.invoiceService.debtInv.length).toString()}')
                 ],
               ),
             ),
@@ -204,15 +204,25 @@ class BuildListTile extends StatelessWidget {
                   CircularProgressIndicator()); // Tampilkan loading jika pertama kali
         }
 
-        final inv = isDebt ? controller.debtInv : controller.displayedItems;
+        final inv = controller.invoiceService.searchQuery.isEmpty
+            ? isDebt
+                ? controller.invoiceService.debtInv
+                : controller.displayedItems
+            : isDebt
+                ? controller.invoiceService.filteredDebtInv
+                : controller.invoiceService.filteredPaidInv;
         return ListView.builder(
           // separatorBuilder: (context, index) =>
           //     Divider(color: Colors.grey[200]),
           shrinkWrap: true,
           controller: isDebt ? null : scrollC,
-          itemCount: isDebt ? inv.length : inv.length + 1,
+          itemCount: controller.invoiceService.searchQuery.isEmpty
+              ? isDebt
+                  ? inv.length
+                  : inv.length + 1
+              : inv.length,
           itemBuilder: (BuildContext context, int index) {
-            if (index == controller.displayedItems.length) {
+            if (!isDebt && index == controller.displayedItems.length) {
               // Indikator loading di bagian bawah
               if (controller.isLoading.value) {
                 return const Center(child: CircularProgressIndicator());
@@ -222,10 +232,13 @@ class BuildListTile extends StatelessWidget {
                 return const SizedBox.shrink();
               }
             }
+
             final invoice = inv[index];
             return Container(
-              color: index % 2 == 0 ? Colors.white : Colors.grey[100],
+              // color: index % 2 == 0 ? Colors.white : Colors.grey[100],
               child: ListTile(
+                tileColor: index % 2 == 0 ? Colors.white : Colors.grey[100],
+                hoverColor: isDebt ? Colors.red[100] : Colors.green[100],
                 dense: true,
                 title: Row(
                   children: [
@@ -304,7 +317,6 @@ class BuildListTile extends StatelessWidget {
                       InvoiceModel.fromJson(invoice.toJson());
                   detailDialog(editInvoice);
                 },
-                hoverColor: isDebt ? Colors.red[100] : Colors.green[100],
               ),
             );
           },

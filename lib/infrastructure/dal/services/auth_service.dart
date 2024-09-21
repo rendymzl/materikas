@@ -21,6 +21,7 @@ class AuthService extends GetxService implements AuthRepository {
   late final store = Rx<StoreModel?>(null);
   late final cashiers = RxList<Cashier>(<Cashier>[]);
   late final selectedUser = Rx<Cashier?>(null);
+  final selectedIndexMenu = 0.obs;
   // late final selectedUser = ''.obs;
 
   var isLogin = false;

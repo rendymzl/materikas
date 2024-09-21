@@ -25,7 +25,11 @@ Future<String> generateInvoiceId(CustomerModel? customer) async {
 
   String dateCode = '$clientCode$month$day$year$hour$minute$second$millisecond';
 
-  List<InvoiceModel> result = _invoiceService.invoices
+  List<InvoiceModel> result = _invoiceService.paidInv
+      .where((element) => element.invoiceId!.contains('$month$day$year'))
+      .toList();
+
+  result = _invoiceService.debtInv
       .where((element) => element.invoiceId!.contains('$month$day$year'))
       .toList();
 

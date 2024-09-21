@@ -11,24 +11,24 @@ import '../../../infrastructure/navigation/routes.dart';
 import 'menu_data.dart';
 
 class MenuWidgetController extends GetxController {
-  final AuthService _authService = Get.find<AuthService>();
+  final AuthService authService = Get.find<AuthService>();
   SupabaseClient supabase = Supabase.instance.client;
 
   final connected = true.obs;
 
   late final account = Rx<AccountModel?>(null);
-  late final isOwner = _authService.isOwner;
-  final selectedIndex = 0.obs;
+  late final isOwner = authService.isOwner;
+  // final selectedIndex = 0.obs;
   // final selectedUser = ''.obs;
   final menuData = <MenuModel>[].obs;
 
   @override
   void onInit() async {
     debugPrint('MenuWidgetController INIT');
-    account.value = _authService.account.value;
-    connected.value = _authService.connected.value;
+    account.value = authService.account.value;
+    connected.value = authService.connected.value;
     getMenu();
-    // selectedUser.value = _authService.selectedUser.value;
+    // selectedUser.value = authService.selectedUser.value;
 
     // ever(account, (_) {
     //   isOwner.value = account.value?.role == 'owner';
@@ -44,7 +44,7 @@ class MenuWidgetController extends GetxController {
       menuData.clear();
 
       menuData.add(transaction);
-      final accessList = _authService.selectedUser.value?.accessList ?? [];
+      final accessList = authService.selectedUser.value?.accessList ?? [];
       final menus = [
         invoiceMenu,
         customerMenu,
@@ -63,7 +63,8 @@ class MenuWidgetController extends GetxController {
   }
 
   void handleClick(int index, String label) {
-    selectedIndex.value = index;
+    print('menu index $index');
+    authService.selectedIndexMenu.value = index;
     switch (label) {
       case 'Transaksi':
         Get.offNamed(Routes.HOME);
@@ -96,11 +97,12 @@ class MenuWidgetController extends GetxController {
     menuData.clear();
     var box = await Hive.openBox('selectedUser');
     box.put('user', '');
+    authService.selectedIndexMenu.value = 0;
     Get.offAllNamed(Routes.SELECT_USER);
   }
 
   Future<void> signOut() async {
-    if (_authService.connected.value) {
+    if (authService.connected.value) {
       await Supabase.instance.client.auth.signOut();
       Get.offNamed(Routes.LOGIN);
     } else {
