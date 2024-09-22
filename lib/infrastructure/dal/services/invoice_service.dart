@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:materikas/infrastructure/models/payment_model.dart';
@@ -15,6 +17,9 @@ class InvoiceService extends GetxService implements InvoiceRepository {
   var filteredDebtInv = <InvoiceModel>[].obs;
   var displayedInvoices = <InvoiceModel>[].obs;
 
+  // var CashPayment = <InvoiceModel>[].obs;
+  // var displayedInvoices = <InvoiceModel>[].obs;
+
   var searchQuery = ''.obs;
   var changeCount = 0.obs;
 
@@ -22,41 +27,42 @@ class InvoiceService extends GetxService implements InvoiceRepository {
 
   @override
   Future<void> subscribe(String storeId) async {
-    //! streamCount
+    var streamcashInv = db.watch('''
+      SELECT * FROM invoices
+      WHERE EXISTS (
+        SELECT *
+        FROM json_each(payments) AS payment
+        WHERE json_extract(payment.value, '\$.method') = 'cash' AND DATE(json_extract(payment.value, '\$.date')) = DATE(created_at)
+      )
+      ORDER BY created_at DESC;
+    ''').map((datas) {
+      print(datas);
+      var payments = datas.expand((data) {
+        List<dynamic> paymentList = jsonDecode(data['payments']);
+        return paymentList.map((payment) => PaymentModel.fromJson(payment));
+      }).toList();
 
-    // var streamPayCash = db
-    //     .watch("SELECT * FROM invoices WHERE store_id = ? AND json_extract(data, '$.details.city') = ?", parameters: [
-    //   storeId,
-    //   storeId
-    // ]).map((data) => data.map((json) => InvoiceModel.fromJson(json)).toList());
+      return payments;
+    });
 
-    // streamPayCash.listen((datas) {
-    //   paidInv.clear();
-    //   debtInv.clear();
-    //   for (var invoice in datas) {
-    //     if (invoice.totalPaid >= invoice.totalBill) {
-    //       paidInv.add(InvoiceModel.fromJson(invoice.toJson()));
-    //     } else {
-    //       debtInv.add(InvoiceModel.fromJson(invoice.toJson()));
-    //     }
-    //   }
+    streamcashInv.listen((payments) {
+      var cashPayments =
+          payments.where((payment) => payment.method == 'cash').toList();
+      var transferPayments =
+          payments.where((payment) => payment.method == 'transfer').toList();
 
-    //   // invoices.value = data;
-    //   applyFilters();
-    // });
-    // //! cash invoice
-    // var streamcashInv = db.watch('''
-    //   SELECT * FROM invoices
-    //   WHERE EXISTS (
-    //     SELECT 1
-    //     FROM json_each(payments) AS payment
-    //     WHERE json_extract(payment, '\$.method') = 'cash'
-    //   );
-    //   ''').map((data) => data.map((json) => PaymentModel.fromRow(json)).toList());
+      print('Pembayaran Cash: ${cashPayments.length}');
+      print('Pembayaran Transfer: ${transferPayments.length}');
 
-    // streamcashInv.listen((datas) {
-    //   print('payments ${datas[12].date}');
-    // });
+      // Proses lebih lanjut untuk masing-masing kelompok pembayaran
+      for (var payment in cashPayments) {
+        print('Cash Payment: ${payment.toJson()}');
+      }
+
+      for (var payment in transferPayments) {
+        print('Transfer Payment: ${payment.toJson()}');
+      }
+    });
 
     //! paid invoice
     var streamPaidInv = db.watch('''
