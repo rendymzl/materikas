@@ -170,6 +170,7 @@ class EditInvoiceController extends GetxController {
 
   bool validateTotal = false;
   Future<void> updateInvoice(InvoiceModel invoice) async {
+    invoice.updateIsDebtPaid();
     Get.defaultDialog(
       title: 'Menyimpan Invoice...',
       content: const CircularProgressIndicator(),

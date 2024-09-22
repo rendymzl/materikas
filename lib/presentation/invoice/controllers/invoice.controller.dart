@@ -35,6 +35,8 @@ class InvoiceController extends GetxController {
 
   final int limit = 20; // Batas data per halaman
 
+  final formKey = GlobalKey<FormState>();
+
   final editInvoice = true.obs;
   final returnInvoice = true.obs;
   final paymentInvoice = true.obs;
@@ -50,11 +52,13 @@ class InvoiceController extends GetxController {
     // Listen perubahan searchQuery atau selectedCategory
     everAll([
       invoiceService.searchQuery,
-      invoiceService.paidInv,
-      invoiceService.debtInv
-    ], (_) {
+      invoiceService.changeCount,
+    ], (_) async {
       if (invoiceService.searchQuery.value.isNotEmpty) {
-        invoiceService.applyFilters();
+        print('ondone: ${invoiceService.changeCount.value}');
+        print('search value from everAll: ${invoiceService.searchQuery.value}');
+        print('paidInv.length after updated: ${invoiceService.paidInv.length}');
+        await invoiceService.applyFilters();
       }
       displayedItems.clear();
       hasMore.value = true;
@@ -116,7 +120,9 @@ class InvoiceController extends GetxController {
     if (searchValue is String) {
       if (debounceTimer?.isActive ?? false) debounceTimer?.cancel();
       debounceTimer = Timer(const Duration(milliseconds: 500), () {
-        invoiceService.searchQuery.value = searchValue;
+        if (formKey.currentState!.validate()) {
+          invoiceService.searchQuery.value = searchValue;
+        }
       });
     }
     // else if (searchValue is PickerDateRange) {

@@ -201,6 +201,7 @@ class PaymentController extends GetxController {
     if (isNewInvoice) {
       invoice.invoiceId = await generateInvoiceId(invoice.customer.value!);
       invoice.purchaseList.value.bundleDiscount.value = bundleDiscount;
+      invoice.updateIsDebtPaid();
     }
     await addPayment(invoice);
 

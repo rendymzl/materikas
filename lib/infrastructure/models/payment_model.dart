@@ -17,17 +17,20 @@ class PaymentModel {
 
   PaymentModel.fromJson(Map<String, dynamic> json)
       : method = json['method'],
-        amountPaid = json['amount_paid'].toDouble(),
-        remain = json['remain'].toDouble(),
-        finalAmountPaid = json['final_amount_paid'].toDouble(),
-        date = DateTime.parse(json['date']).toLocal();
+        amountPaid = json['amount_paid']?.toDouble() ?? 0.0,
+        remain = json['remain']?.toDouble() ?? 0.0,
+        finalAmountPaid = json['final_amount_paid']?.toDouble() ?? 0.0,
+        date = json['date'] != null
+            ? DateTime.parse(json['date']).toLocal()
+            : null;
 
   PaymentModel.fromRow(sqlite.Row row)
       : method = row['method'],
-        amountPaid = row['amount_paid'].toDouble(),
-        remain = row['remain'].toDouble(),
-        finalAmountPaid = row['final_amount_paid'].toDouble(),
-        date = DateTime.parse(row['date']).toLocal();
+        amountPaid = row['amount_paid']?.toDouble() ?? 0.0,
+        remain = row['remain']?.toDouble() ?? 0.0,
+        finalAmountPaid = row['final_amount_paid']?.toDouble() ?? 0.0,
+        date =
+            row['date'] != null ? DateTime.parse(row['date']).toLocal() : null;
 
   Map<String, dynamic> toJson() {
     final data = <String, dynamic>{};

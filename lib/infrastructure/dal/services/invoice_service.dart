@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:materikas/infrastructure/models/payment_model.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 
 import '../../../domain/core/interfaces/invoice_repository.dart';
@@ -15,6 +16,7 @@ class InvoiceService extends GetxService implements InvoiceRepository {
   var displayedInvoices = <InvoiceModel>[].obs;
 
   var searchQuery = ''.obs;
+  var changeCount = 0.obs;
 
   late Stream<List<InvoiceModel>> stream;
 
@@ -42,19 +44,35 @@ class InvoiceService extends GetxService implements InvoiceRepository {
     //   // invoices.value = data;
     //   applyFilters();
     // });
+    // //! cash invoice
+    // var streamcashInv = db.watch('''
+    //   SELECT * FROM invoices
+    //   WHERE EXISTS (
+    //     SELECT 1
+    //     FROM json_each(payments) AS payment
+    //     WHERE json_extract(payment, '\$.method') = 'cash'
+    //   );
+    //   ''').map((data) => data.map((json) => PaymentModel.fromRow(json)).toList());
+
+    // streamcashInv.listen((datas) {
+    //   print('payments ${datas[12].date}');
+    // });
+
     //! paid invoice
     var streamPaidInv = db.watch('''
-      SELECT * FROM invoices WHERE store_id = ? AND is_debt_paid = true
+      SELECT * FROM invoices WHERE store_id = ? AND is_debt_paid = true ORDER BY created_at DESC LIMIT 100
       ''', parameters: [
       storeId
     ]).map((data) => data.map((json) => InvoiceModel.fromJson(json)).toList());
 
     streamPaidInv.listen((datas) {
+      print('paidInv.length before updated: ${paidInv.length}');
       paidInv.clear();
       paidInv.value = datas;
       paidInv.sort((a, b) =>
           DateTime.parse(b.createdAt.value!.toIso8601String())
               .compareTo(DateTime.parse(a.createdAt.value!.toIso8601String())));
+      changeCount.value++;
     });
 
     //! debt invoice
@@ -116,9 +134,9 @@ class InvoiceService extends GetxService implements InvoiceRepository {
   }
 
   // Fungsi untuk menerapkan filter dan pencarian
-  void applyFilters() async {
-    var paidInvResult = paidInv;
-    var debtInvResult = debtInv;
+  Future<void> applyFilters() async {
+    var paidInvResult = <InvoiceModel>[].obs;
+    var debtInvResult = <InvoiceModel>[].obs;
 
     // Filter berdasarkan kategori jika ada yang dipilih
     // if (selectedCategory.value.isNotEmpty) {
@@ -167,12 +185,15 @@ class InvoiceService extends GetxService implements InvoiceRepository {
   Future<List<InvoiceModel>> searchInv(String searchTerm, bool paid) async {
     String query = '''
       SELECT * FROM invoices WHERE
-      invoice_id LIKE ? AND  OR
-      json_extract(data, '\$.customer.name') LIKE ?
+      (customer LIKE ? OR
+      invoice_id LIKE ?) AND
+      is_debt_paid = ?
       ''';
-    List<Map<String, dynamic>> results =
-        await db.getAll(query, ['%$searchTerm%', '%$searchTerm%']);
-
+    List<Map<String, dynamic>> results = await db.getAll(query, [
+      '%${searchTerm.toLowerCase()}%',
+      '%${searchTerm.toLowerCase()}%',
+      paid
+    ]);
     return results.map((e) => InvoiceModel.fromJson(e)).toList();
   }
 
@@ -192,7 +213,7 @@ class InvoiceService extends GetxService implements InvoiceRepository {
         invoice.invoiceId,
         invoice.account.value,
         invoice.createdAt.value?.toIso8601String(),
-        invoice.customer.value?.toJson(),
+        invoice.customer.value,
         invoice.purchaseList.value.toJson(),
         invoice.returnList.value?.toJson(),
         invoice.afterReturnList.value?.toJson(),

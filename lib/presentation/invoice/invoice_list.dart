@@ -37,14 +37,31 @@ class InvoiceList extends StatelessWidget {
                         ),
                       ),
                       height: 50,
-                      child: TextField(
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          labelText: "Cari Invoice",
-                          labelStyle: TextStyle(color: Colors.grey),
-                          prefixIcon: Icon(Symbols.search),
+                      child: Form(
+                        key: controller.formKey,
+                        child: TextFormField(
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                            labelText: "Cari Invoice",
+                            labelStyle: TextStyle(color: Colors.grey),
+                            prefixIcon: Icon(Symbols.search),
+                          ),
+                          validator: (value) {
+                            if (value != null) {
+                              if (value.isNotEmpty && value.length < 3) {
+                                return '    Ketik minimal 3 huruf';
+                              }
+                            } else {
+                              return null;
+                            }
+                            return null;
+                          },
+                          onChanged: (value) {
+                            // if (value.length >= 3) {
+                            controller.filterInvoices(value);
+                            // }
+                          },
                         ),
-                        onChanged: (value) => controller.filterInvoices(value),
                       ),
                     ),
                   ),
@@ -81,8 +98,8 @@ class InvoiceList extends StatelessWidget {
                       const SizedBox(width: 80),
                     ],
                   ),
-                  Text(
-                      'Total invoice: ${(controller.invoiceService.paidInv.length + controller.invoiceService.debtInv.length).toString()}')
+                  // Text(
+                  //     'Total invoice : ${(controller.invoiceService.paidInv.length + controller.invoiceService.debtInv.length).toString()}')
                 ],
               ),
             ),
