@@ -28,37 +28,31 @@ class InvoiceService extends GetxService implements InvoiceRepository {
   @override
   Future<void> subscribe(String storeId) async {
     var streamcashInv = db.watch('''
-      SELECT * FROM invoices
+      SELECT payments FROM invoices
       WHERE EXISTS (
         SELECT *
         FROM json_each(payments) AS payment
-        WHERE json_extract(payment.value, '\$.method') = 'cash' AND DATE(json_extract(payment.value, '\$.date')) = DATE(created_at)
+        WHERE payment.value LIKE '%transfer%'
+        AND payment.value LIKE '%' || SUBSTR(created_at, 1, 10) || '%'
       )
       ORDER BY created_at DESC;
     ''').map((datas) {
       print(datas);
       var payments = datas.expand((data) {
-        List<dynamic> paymentList = jsonDecode(data['payments']);
+        List<dynamic> paymentList = jsonDecode(jsonDecode(data['payments']));
+        print('paymentList dynamic: $paymentList');
         return paymentList.map((payment) => PaymentModel.fromJson(payment));
       }).toList();
-
       return payments;
     });
 
     streamcashInv.listen((payments) {
-      var cashPayments =
-          payments.where((payment) => payment.method == 'cash').toList();
       var transferPayments =
           payments.where((payment) => payment.method == 'transfer').toList();
 
-      print('Pembayaran Cash: ${cashPayments.length}');
       print('Pembayaran Transfer: ${transferPayments.length}');
 
       // Proses lebih lanjut untuk masing-masing kelompok pembayaran
-      for (var payment in cashPayments) {
-        print('Cash Payment: ${payment.toJson()}');
-      }
-
       for (var payment in transferPayments) {
         print('Transfer Payment: ${payment.toJson()}');
       }
