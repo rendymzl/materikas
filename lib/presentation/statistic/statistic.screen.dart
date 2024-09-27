@@ -34,9 +34,9 @@ class StatisticScreen extends GetView<StatisticController> {
                         Expanded(child: Card(child: ReportMoneyWidget())),
                       ],
                     )),
-                    Card(
-                      child: SectionMenuBar(),
-                    ),
+                    // Card(
+                    //   child: SectionMenuBar(),
+                    // ),
                   ],
                 )),
                 // Obx(
@@ -328,8 +328,53 @@ class ReportSellingWidget extends StatelessWidget {
                       ],
                     ),
                     PropertiesRowWidget(
-                      title: 'SubTotal Penjualan',
+                      title: 'Total Penjualan',
                       value: currency.format(data.totalSellPrice),
+                      primary: true,
+                    ),
+                    PropertiesRowWidget(
+                      title: 'Total Diskon',
+                      value: '-${currency.format(data.totalDiscount)}',
+                      color: Colors.red,
+                    ),
+                    if (data.totalOtherCost > 0)
+                      PropertiesRowWidget(
+                        title: 'Total Biaya Lainnya',
+                        value: currency.format(data.totalOtherCost),
+                        color: Colors.green,
+                      ),
+                    if (data.totalReturn > 0)
+                      const PropertiesRowWidget(
+                        title: 'Return',
+                        value: 'title',
+                        primary: true,
+                      ),
+                    if (data.totalReturn > 0)
+                      PropertiesRowWidget(
+                        title: '      - Pesanan Direturn',
+                        value: 'title',
+                        subValue: currency.format(data.totalReturn * -1),
+                        italic: true,
+                        color: Colors.red,
+                      ),
+                    if (data.totalReturn > 0)
+                      PropertiesRowWidget(
+                        title: '      - Total Cas Return',
+                        value: 'title',
+                        subValue: currency.format(data.totalChargeReturn),
+                        italic: true,
+                        color: Colors.green,
+                      ),
+                    if (data.totalReturn > 0)
+                      PropertiesRowWidget(
+                        title: 'Total Return',
+                        value: currency.format((data.finalReturn) * -1),
+                        color: Colors.red,
+                      ),
+                    Divider(color: Colors.grey[400]),
+                    PropertiesRowWidget(
+                      title: 'Penjualan Bersih',
+                      value: currency.format(data.sellPrice),
                       primary: true,
                     ),
                     PropertiesRowWidget(
@@ -340,24 +385,13 @@ class ReportSellingWidget extends StatelessWidget {
                     Divider(color: Colors.grey[400]),
                     PropertiesRowWidget(
                       title: 'Laba Kotor',
-                      value: currency
-                          .format(data.totalSellPrice - data.totalCostPrice),
+                      value: currency.format(data.grossProfit),
                       primary: true,
-                    ),
-                    PropertiesRowWidget(
-                      title: 'Total Diskon',
-                      value: '-${currency.format(data.totalDiscount)}',
-                      color: Colors.red,
                     ),
                     PropertiesRowWidget(
                       title: 'Biaya Operasional',
                       value: currency.format(data.operatingCost * -1),
                       color: Colors.red,
-                    ),
-                    PropertiesRowWidget(
-                      title: 'Total Cas Retur',
-                      value: currency.format(data.totalChargeReturn),
-                      color: Colors.green,
                     ),
                     Divider(color: Colors.grey[400]),
                     PropertiesRowWidget(
@@ -404,19 +438,42 @@ class ReportMoneyWidget extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [Text(data.dateString)],
                     ),
+                    // PropertiesRowWidget(
+                    //   title: 'SubTotal Penjualan',
+                    //   value: currency.format(data.totalSellPrice),
+                    //   subValue: '',
+                    //   primary: true,
+                    // ),
+                    // PropertiesRowWidget(
+                    //   title: 'Total Diskon',
+                    //   value: currency.format(data.totalDiscount * -1),
+                    //   subValue: '',
+                    //   color: Colors.red,
+                    // ),
+                    // PropertiesRowWidget(
+                    //   title: 'Total Biaya Lainnya',
+                    //   value: currency.format(data.totalOtherCost),
+                    //   subValue: '',
+                    //   color: Colors.green,
+                    // ),
+                    // PropertiesRowWidget(
+                    //   title: 'Total Return',
+                    //   value: currency.format(data.totalReturn * -1),
+                    //   subValue: '',
+                    //   color: Colors.red,
+                    // ),
+                    // PropertiesRowWidget(
+                    //   title: 'Total Cas Return',
+                    //   value: currency.format(data.totalChargeReturn),
+                    //   subValue: '',
+                    //   color: Colors.green,
+                    // ),
                     PropertiesRowWidget(
-                      title: 'Total Penjualan',
-                      value: currency.format(data.totalSellPrice),
-                      subValue: '',
+                      title: 'Penjualan Bersih',
+                      value: currency.format(data.sellPrice),
                       primary: true,
                     ),
-                    PropertiesRowWidget(
-                      title: 'Total Diskon',
-                      value: currency.format(data.totalDiscount * -1),
-                      subValue: '',
-                      primary: true,
-                      color: Colors.red,
-                    ),
+
                     const PropertiesRowWidget(
                       title: 'Pembayaran Pembelian',
                       value: 'title',
@@ -424,27 +481,28 @@ class ReportMoneyWidget extends StatelessWidget {
                     ),
                     PropertiesRowWidget(
                       title: '      - Cash',
-                      value: currency.format(data.cash),
-                      subValue: '',
+                      value: 'title',
+                      italic: true,
+                      subValue: currency.format(data.cash),
                       color: Colors.green,
                     ),
                     PropertiesRowWidget(
                       title: '      - Transfer',
-                      value: currency.format(data.transfer),
-                      subValue: '',
+                      value: 'title',
+                      italic: true,
+                      subValue: currency.format(data.transfer),
                       color: Colors.green,
                     ),
                     PropertiesRowWidget(
                       title: 'Total Bayar Pembelian',
                       value: currency.format(data.totalPay),
-                      subValue: '',
                       primary: true,
                       color: Colors.green,
                     ),
+                    Divider(color: Colors.grey[400]),
                     PropertiesRowWidget(
                       title: 'Belum Bayar',
-                      value:
-                          currency.format(data.totalDebt - data.totalDiscount),
+                      value: currency.format(data.totalDebt),
                       // subValue: data.totalDiscount > 0
                       //     ? 'Rp${currency.format(data.totalDebt)} - diskon Rp${currency.format(data.totalDiscount)}'
                       //     : '',
@@ -452,34 +510,8 @@ class ReportMoneyWidget extends StatelessWidget {
                       color: Colors.red,
                     ),
                     Divider(color: Colors.grey[400]),
-                    PropertiesRowWidget(
-                      title: 'Total Return',
-                      value: currency.format(data.totalReturn * -1),
-                      subValue: '',
-                      primary: true,
-                      color: Colors.red,
-                    ),
-                    // PropertiesRowWidget(
-                    //   title: 'Total Diskon',
-                    //   value: currency.format(data.totalDiscount * -1),
-                    //   subValue: '',
-                    //   primary: true,
-                    //   color: Colors.red,
-                    // ),
-                    PropertiesRowWidget(
-                      title: 'Total Cas Return',
-                      value: currency.format(data.totalChargeReturn),
-                      subValue: '',
-                      primary: true,
-                      color: Colors.green,
-                    ),
-                    PropertiesRowWidget(
-                      title: 'Biaya Operasional',
-                      value: currency.format(data.operatingCost * -1),
-                      color: Colors.red,
-                    ),
-                    const SizedBox(height: 30),
-                    Divider(color: Colors.grey[400]),
+                    const SizedBox(height: 60),
+                    // Divider(color: Colors.grey[400]),
                     const PropertiesRowWidget(
                       title: 'Pembayaran Piutang',
                       value: 'title',
@@ -487,24 +519,25 @@ class ReportMoneyWidget extends StatelessWidget {
                     ),
                     PropertiesRowWidget(
                       title: '      - Cash',
-                      value: currency.format(data.debtCash),
-                      subValue: '',
+                      value: 'title',
+                      subValue: currency.format(data.debtCash),
+                      italic: true,
                       color: Colors.green,
                     ),
                     PropertiesRowWidget(
                       title: '      - Transfer',
-                      value: currency.format(data.debtTransfer),
-                      subValue: '',
+                      value: 'title',
+                      subValue: currency.format(data.debtTransfer),
+                      italic: true,
                       color: Colors.green,
                     ),
                     PropertiesRowWidget(
                       title: 'Total Bayar Piutang',
                       value: currency.format(data.totalDebtPay),
-                      subValue: '',
                       primary: true,
                       color: Colors.green,
                     ),
-                    const SizedBox(height: 30),
+                    // const SizedBox(height: 30),
                     Divider(color: Colors.grey[400]),
                     const PropertiesRowWidget(
                       title: 'Pembayaran Sales',
@@ -513,33 +546,69 @@ class ReportMoneyWidget extends StatelessWidget {
                     ),
                     PropertiesRowWidget(
                       title: '      - Bayar Sales Cash',
-                      value: currency.format(data.salesCash * -1),
+                      value: 'title',
+                      subValue: currency.format(data.salesCash * -1),
+                      italic: true,
                       color: Colors.red,
                     ),
                     PropertiesRowWidget(
                       title: '      - Bayar Sales Transfer',
-                      value: currency.format(data.salesTransfer * -1),
+                      value: 'title',
+                      subValue: currency.format(data.salesTransfer * -1),
+                      italic: true,
                       color: Colors.red,
                     ),
                     PropertiesRowWidget(
                       title: 'Total Bayar Sales',
-                      value: currency
-                          .format((data.salesCash + data.salesTransfer) * -1),
+                      value: currency.format(data.totalSalesPay * -1),
                       color: Colors.red,
                       primary: true,
                     ),
-                    const SizedBox(height: 30),
+                    const SizedBox(height: 60),
                     Divider(color: Colors.grey[400]),
                     PropertiesRowWidget(
-                      title: 'Sisa Uang',
+                      title: 'Total Bayar Pembelian',
+                      value: currency.format(data.totalPay),
                       primary: true,
-                      value: currency.format(data.totalSellPrice +
-                          data.totalDebtPay -
-                          data.totalDebt -
-                          data.totalReturn +
-                          data.totalChargeReturn -
-                          data.operatingCost -
-                          data.salesCash),
+                      color: Colors.green,
+                    ),
+                    PropertiesRowWidget(
+                      title: 'Total Bayar Piutang',
+                      value: currency.format(data.totalDebtPay),
+                      primary: true,
+                      color: Colors.green,
+                    ),
+                    PropertiesRowWidget(
+                      title: controller.authService.account.value!.name ==
+                              'Arca Nusantara'
+                          ? 'Total Bayar Sales Cash'
+                          : 'Total Bayar Sales',
+                      value: currency.format(
+                          (controller.authService.account.value!.name ==
+                                      'Arca Nusantara'
+                                  ? data.salesCash
+                                  : data.totalSalesPay) *
+                              -1),
+                      color: Colors.red,
+                      primary: true,
+                    ),
+                    if (data.operatingCost > 0)
+                      PropertiesRowWidget(
+                        title: 'Biaya Operasional',
+                        value: currency.format(data.operatingCost * -1),
+                        primary: true,
+                        color: Colors.red,
+                      ),
+                    Divider(color: Colors.grey[400]),
+                    PropertiesRowWidget(
+                      title: 'TOTAL UANG YANG DITERIMA',
+                      primary: true,
+                      value: currency.format(
+                        controller.authService.account.value!.name ==
+                                'Arca Nusantara'
+                            ? data.totalReceiveMoneyArca
+                            : data.totalReceiveMoney,
+                      ),
                     ),
                     const SizedBox(height: 30),
                   ],

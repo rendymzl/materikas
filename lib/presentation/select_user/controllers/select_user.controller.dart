@@ -2,21 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 
+import '../../../infrastructure/dal/database/powersync.dart';
 import '../../../infrastructure/dal/services/auth_service.dart';
 import '../../../infrastructure/navigation/routes.dart';
 import '../../global_widget/app_dialog_widget.dart';
 import '../../global_widget/menu_widget/menu_controller.dart';
 
 class SelectUserController extends GetxController {
-  late final AuthService _authService = Get.find();
+  late final AuthService authService = Get.find();
   late final MenuWidgetController _menuC =
       Get.put(MenuWidgetController(), permanent: true);
 
   late final Box<dynamic> box;
-  final isLoading = true.obs;
-  late final isConnected = _authService.connected;
-  late final account = _authService.account;
-  late final store = _authService.store;
+  final isLoading = false.obs;
+  // late final loadingStatus = authService.loadingStatus;
+  late final isConnected = authService.connected;
+  late final account = authService.account;
+  late final store = authService.store;
 
   // final workers = <Cashier>[].obs;
   var selectedUser = ''.obs;
@@ -30,18 +32,19 @@ class SelectUserController extends GetxController {
   @override
   void onInit() async {
     isLoading.value = true;
+    // authService.loadingStatus.value = 'Menghubungkan User...';
     box = await Hive.openBox('selectedUser');
-
-    await _authService.getAccount();
-    await _authService.getStore();
+    // authService.loadingStatus.value = 'Menghubungkan Akun...';
+    await authService.getAccount();
+    await authService.getStore();
     isLoading.value = false;
     // print('SelectUserController : ${account.value}');
     String? user = await isSelectedUser();
     if (user?.isNotEmpty ?? false) {
       print('usernya $user');
       selectedUser.value = user!;
-      _authService.getSelectedCashier(user);
-      _authService.selectedIndexMenu.value = 0;
+      authService.getSelectedCashier(user);
+      authService.selectedIndexMenu.value = 0;
       _menuC.getMenu();
       Get.offAllNamed(Routes.HOME);
     }
@@ -55,9 +58,9 @@ class SelectUserController extends GetxController {
   }
 
   void goToHome() {
-    _authService.getSelectedCashier(selectedUser.value);
+    authService.getSelectedCashier(selectedUser.value);
     box.put('user', selectedUser.value);
-    _authService.isOwner.value = account.value!.role == selectedUser.value;
+    authService.isOwner.value = account.value!.role == selectedUser.value;
     _menuC.getMenu();
     Get.offAllNamed(Routes.HOME);
   }
@@ -72,7 +75,8 @@ class SelectUserController extends GetxController {
         } else {
           Get.defaultDialog(
             title: 'Error',
-            content: Text('Password tidak cocok dengan akun yang dipilih!'),
+            content:
+                const Text('Password tidak cocok dengan akun yang dipilih!'),
           );
         }
       } else {
@@ -85,7 +89,8 @@ class SelectUserController extends GetxController {
           } else {
             Get.defaultDialog(
               title: 'Error',
-              content: Text('Password tidak cocok dengan akun yang dipilih!'),
+              content:
+                  const Text('Password tidak cocok dengan akun yang dipilih!'),
             );
           }
         }
@@ -94,7 +99,7 @@ class SelectUserController extends GetxController {
       // Tampilkan pesan kesalahan jika akun atau password tidak diisi
       Get.defaultDialog(
         title: 'Error',
-        content: Text('Harap pilih akun dan masukkan password!'),
+        content: const Text('Harap pilih akun dan masukkan password!'),
       );
     }
   }
@@ -102,7 +107,7 @@ class SelectUserController extends GetxController {
   Future<void> signOut() async {
     // try {
     if (isConnected.value) {
-      await _authService.supabaseClient.auth.signOut();
+      await logout();
       Get.offNamed(Routes.LOGIN);
     } else {
       AppDialog.show(

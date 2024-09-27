@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
@@ -13,6 +15,9 @@ import 'infrastructure/theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  HttpOverrides.global = MyHttpOverrides();
+
   var initialRoute = await Routes.initialRoute;
 
   String feedURL = 'https://api.menantikan.com/releases/appcast.xml';
@@ -55,5 +60,14 @@ class Main extends StatelessWidget {
       getPages: Nav.routes,
       debugShowCheckedModeBanner: false,
     );
+  }
+}
+
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
   }
 }

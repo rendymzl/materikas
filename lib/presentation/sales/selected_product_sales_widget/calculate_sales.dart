@@ -102,14 +102,16 @@ class PropertiesRowWidget extends StatelessWidget {
     required this.title,
     required this.value,
     this.subValue,
-    this.primary,
+    this.primary = false,
+    this.italic = false,
     this.color,
   });
 
   final String title;
   final String value;
   final String? subValue;
-  final bool? primary;
+  final bool primary;
+  final bool italic;
   final Color? color;
 
   @override
@@ -123,15 +125,25 @@ class PropertiesRowWidget extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(title,
-                    style: primary != null && primary == true
-                        ? context.textTheme.titleLarge!
-                            .copyWith(fontWeight: FontWeight.bold, color: color)
-                        : context.textTheme.titleMedium!
-                            .copyWith(color: color)),
+                    style: primary
+                        ? context.textTheme.titleLarge!.copyWith(
+                            fontWeight: FontWeight.bold,
+                            fontStyle: italic ? FontStyle.italic : null,
+                            color: color)
+                        : context.textTheme.titleMedium!.copyWith(
+                            fontWeight: FontWeight.w400,
+                            fontStyle: italic ? FontStyle.italic : null,
+                            color: color)),
                 Row(
                   children: [
                     Text(
-                      subValue ?? '',
+                      subValue != null
+                          ? subValue!.isEmpty ||
+                                  subValue == '0' ||
+                                  subValue == '-0'
+                              ? '-'
+                              : '$subValue'
+                          : '',
                       style: context.textTheme.bodySmall!
                           .copyWith(fontStyle: FontStyle.italic, color: color),
                     ),
@@ -147,10 +159,15 @@ class PropertiesRowWidget extends StatelessWidget {
                 : value == 'title'
                     ? ''
                     : 'Rp$value',
-            style: primary != null && primary == true
-                ? context.textTheme.titleLarge!
-                    .copyWith(fontWeight: FontWeight.bold, color: color)
-                : context.textTheme.titleMedium!.copyWith(color: color),
+            style: primary
+                ? context.textTheme.titleLarge!.copyWith(
+                    fontWeight: FontWeight.bold,
+                    fontStyle: italic ? FontStyle.italic : null,
+                    color: color)
+                : context.textTheme.titleMedium!.copyWith(
+                    fontWeight: FontWeight.w400,
+                    fontStyle: italic ? FontStyle.italic : null,
+                    color: color),
           )
         ],
       ),

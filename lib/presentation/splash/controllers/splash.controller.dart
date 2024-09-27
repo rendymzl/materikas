@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 
+import '../../../infrastructure/dal/database/powersync.dart';
 import '../../../infrastructure/dal/services/account_service.dart';
 import '../../../infrastructure/dal/services/auth_service.dart';
 import '../../../infrastructure/dal/services/customer_service.dart';
@@ -12,9 +13,10 @@ import '../../../infrastructure/dal/services/store_service.dart';
 import '../../../infrastructure/models/account_model.dart';
 import '../../../infrastructure/models/store_model.dart';
 import '../../../infrastructure/navigation/routes.dart';
+import '../../global_widget/app_dialog_widget.dart';
 
 class SplashController extends GetxController {
-  final AuthService _authService = Get.put(AuthService());
+  final AuthService authService = Get.put(AuthService());
   final ProductService _productService = Get.put(ProductService());
   final InvoiceService _invoiceService = Get.put(InvoiceService());
   final CustomerService _customerService = Get.put(CustomerService());
@@ -28,19 +30,23 @@ class SplashController extends GetxController {
   late final StoreModel? store;
 
   late final isConnected = false.obs;
+  late final loadingStatus = authService.loadingStatus;
 
   void init() async {
-    final isLoggedIn = await _authService.isLoggedIn();
+    isConnected.value = authService.connected.value;
+    final isLoggedIn = await authService.isLoggedIn();
     if (isLoggedIn) {
-      await _authService.getAccount();
-      await _authService.getStore();
-      await _authService.getCashier();
+      await authService.getAccount();
+      authService.loadingStatus.value = 'menghubungkan toko';
+      await authService.getStore();
+      authService.loadingStatus.value = 'mengambil data toko';
+      await authService.getCashier();
       Get.put(StoreService());
       Get.put(AccountService());
       print('SelectUserController INIT');
-      isConnected.value = _authService.connected.value;
+
       print('SelectUserController getAccount');
-      account = _authService.account.value;
+      account = authService.account.value;
 
       // store = await _storeService.getStore(account!.storeId!);
       await _invoiceService.subscribe(account!.storeId!);
@@ -50,9 +56,31 @@ class SplashController extends GetxController {
       await _invoiceSalesService.subscribe(account!.storeId!);
       await _operatingCostService.subscribe(account!.storeId!);
       print('SelectUserController FINISH INIT');
+      authService.loadingStatus.value = 'selesai';
       Get.offAllNamed(Routes.SELECT_USER);
     } else {
       Get.offAllNamed(Routes.LOGIN);
     }
+  }
+
+  Future<void> signOut() async {
+    // try {
+    if (isConnected.value) {
+      await logout();
+      Get.offNamed(Routes.LOGIN);
+    } else {
+      AppDialog.show(
+        title: 'Error',
+        content: 'Tidak ada koneksi internet untuk mengeluarkan akun.',
+        onConfirm: () {
+          Get.back();
+          Get.back();
+        },
+      );
+    }
+  }
+
+  Future<void> checkStats() async {
+    authService.checkStats();
   }
 }

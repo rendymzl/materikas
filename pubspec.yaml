@@ -1,7 +1,7 @@
 name: materikas
-description: "A new Flutter project."
+description: "Aplikasi Kasir."
 publish_to: "none"
-version: 0.1.2
+version: 0.1.7
 
 environment:
   sdk: ^3.5.0

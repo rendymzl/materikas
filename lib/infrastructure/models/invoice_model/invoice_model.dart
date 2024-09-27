@@ -441,10 +441,12 @@ class InvoiceModel {
   Map<String, Map<String, double>> totalPaymentsByMethodAndDebtStatus(
       {DateTime? selectedDate}) {
     Map<String, Map<String, double>> totals = {};
+    print('---START $createdAt $totals ----');
     for (var payment in payments) {
+      print('--------------');
       if (payment.method != null) {
-        bool isDebt = payment.date!
-            .isAfter(createdAt.value!.add(const Duration(days: 1)));
+        bool isDebt = payment.date!.isAfter(DateTime(createdAt.value!.year,
+            createdAt.value!.month, createdAt.value!.day + 1, 0, 0, 0));
         String debtStatus = isDebt ? "debt" : "pay";
         if (!totals.containsKey(payment.method)) {
           totals[payment.method!] = {"debt": 0, "pay": 0};
@@ -453,11 +455,20 @@ class InvoiceModel {
             (payment.date?.year == selectedDate.year &&
                 payment.date?.month == selectedDate.month &&
                 payment.date?.day == selectedDate.day)) {
-          double result =
-              totals[payment.method!]![debtStatus]! + payment.amountPaid;
-          totals[payment.method!]![debtStatus] =
-              result <= totalBill ? result : totalBill;
+          double prev = totals[payment.method!]![debtStatus]!;
+          double result = prev + payment.amountPaid;
+          print('result $totals $result');
+          double adjustment = result;
+          adjustment += payment.method == 'cash'
+              ? (totals['transfer']?[debtStatus] ?? 0)
+              : (totals['cash']?[debtStatus] ?? 0);
+          print('adjustment $adjustment');
+          if (adjustment > totalBill) {
+            result -= adjustment - totalBill;
+          }
+          totals[payment.method!]![debtStatus] = result;
         }
+        print('===== NEXT $totals');
       }
     }
     return totals;

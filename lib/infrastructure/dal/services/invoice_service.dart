@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:materikas/infrastructure/models/payment_model.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 
@@ -27,36 +28,35 @@ class InvoiceService extends GetxService implements InvoiceRepository {
 
   @override
   Future<void> subscribe(String storeId) async {
-    var streamcashInv = db.watch('''
-      SELECT payments FROM invoices
-      WHERE EXISTS (
-        SELECT *
-        FROM json_each(payments) AS payment
-        WHERE payment.value LIKE '%transfer%'
-        AND payment.value LIKE '%' || SUBSTR(created_at, 1, 10) || '%'
-      )
-      ORDER BY created_at DESC;
-    ''').map((datas) {
-      print(datas);
-      var payments = datas.expand((data) {
-        List<dynamic> paymentList = jsonDecode(jsonDecode(data['payments']));
-        print('paymentList dynamic: $paymentList');
-        return paymentList.map((payment) => PaymentModel.fromJson(payment));
-      }).toList();
-      return payments;
-    });
+    // var streamcashInv = db.watch('''
+    //   SELECT * FROM invoices
+    //   WHERE EXISTS (
+    //     SELECT *
+    //     FROM json_each(payments) AS payment
+    //     WHERE payment.value LIKE '%transfer%'
+    //   )
+    //   ORDER BY created_at DESC;
+    // ''').map((datas) {
+    //   print(datas);
+    //   var payments = datas.expand((data) {
+    //     List<dynamic> paymentList = jsonDecode(jsonDecode(data['payments']));
+    //     print('paymentList dynamic: $paymentList');
+    //     return paymentList.map((payment) => PaymentModel.fromJson(payment));
+    //   }).toList();
+    //   return payments;
+    // });
 
-    streamcashInv.listen((payments) {
-      var transferPayments =
-          payments.where((payment) => payment.method == 'transfer').toList();
+    // streamcashInv.listen((payments) {
+    //   var transferPayments =
+    //       payments.where((payment) => payment.method == 'transfer').toList();
 
-      print('Pembayaran Transfer: ${transferPayments.length}');
+    //   print('Pembayaran Transfer: ${transferPayments.length}');
 
-      // Proses lebih lanjut untuk masing-masing kelompok pembayaran
-      for (var payment in transferPayments) {
-        print('Transfer Payment: ${payment.toJson()}');
-      }
-    });
+    //   // Proses lebih lanjut untuk masing-masing kelompok pembayaran
+    //   for (var payment in transferPayments) {
+    //     print('Transfer Payment: ${payment.toJson()}');
+    //   }
+    // });
 
     //! paid invoice
     var streamPaidInv = db.watch('''
@@ -66,7 +66,7 @@ class InvoiceService extends GetxService implements InvoiceRepository {
     ]).map((data) => data.map((json) => InvoiceModel.fromJson(json)).toList());
 
     streamPaidInv.listen((datas) {
-      print('paidInv.length before updated: ${paidInv.length}');
+      print('paidInv.length: ${datas.length}');
       paidInv.clear();
       paidInv.value = datas;
       paidInv.sort((a, b) =>
@@ -83,6 +83,7 @@ class InvoiceService extends GetxService implements InvoiceRepository {
     ]).map((data) => data.map((json) => InvoiceModel.fromJson(json)).toList());
 
     streamDebtInv.listen((datas) {
+      print('debtInv.length: ${datas.length}');
       debtInv.clear();
       debtInv.value = datas;
       debtInv.sort((a, b) =>
@@ -195,6 +196,50 @@ class InvoiceService extends GetxService implements InvoiceRepository {
       paid
     ]);
     return results.map((e) => InvoiceModel.fromJson(e)).toList();
+  }
+
+  @override
+  Future<List<InvoiceModel>> getByCreatedDate(DateTime startOfDate) async {
+    String query = '''
+      SELECT * FROM invoices WHERE
+      DATE(created_at) LIKE ?
+      ''';
+    List<Map<String, dynamic>> results = await db.getAll(query, [
+      '%${DateFormat('yyyy-MM-dd').format(startOfDate)}%',
+    ]);
+    var invoiceList = results.map((e) => InvoiceModel.fromJson(e)).toList();
+    print('created at ${invoiceList.length}');
+    return invoiceList;
+  }
+
+  //   @override
+  // Future<List<InvoiceModel>> getByCreatedDate(DateTime startOfDate) async {
+  //   DateTime endOfDate = startOfDate.add(Duration(days: 7));
+  //   String query = '''
+  //     SELECT * FROM invoices WHERE
+  //     created_at BETWEEN ? AND ?
+  //     ''';
+  //   List<Map<String, dynamic>> results = await db.getAll(query, [
+  //     DateFormat('yyyy-MM-dd').format(startOfDate),
+  //     DateFormat('yyyy-MM-dd').format(endOfDate),
+  //   ]);
+  //   var invoiceList = results.map((e) => InvoiceModel.fromJson(e)).toList();
+  //   print('created at $invoiceList');
+  //   return invoiceList;
+  // }
+
+  @override
+  Future<List<InvoiceModel>> getByPaymentDate(DateTime datetime) async {
+    String query = '''
+      SELECT * FROM invoices WHERE
+      payments LIKE ?
+      ''';
+    List<Map<String, dynamic>> results = await db.getAll(query, [
+      '%${DateFormat('yyyy-MM-dd').format(datetime)}%',
+    ]);
+    var invoiceList = results.map((e) => InvoiceModel.fromJson(e)).toList();
+    print('getByPaymentDate $invoiceList');
+    return invoiceList;
   }
 
   @override

@@ -6,6 +6,7 @@ class Chart {
   double totalReturn;
   double totalChargeReturn;
   double totalDiscount;
+  double totalOtherCost;
 
   double cash;
   double transfer;
@@ -28,6 +29,7 @@ class Chart {
     required this.totalReturn,
     required this.totalChargeReturn,
     required this.totalDiscount,
+    required this.totalOtherCost,
     required this.cash,
     required this.transfer,
     required this.debtCash,
@@ -43,16 +45,26 @@ class Chart {
 
   // double get totalTransfer => transfer + debtTransfer + salesTransfer;
 
+  double get sellPrice =>
+      totalSellPrice - totalDiscount + totalOtherCost - finalReturn;
+
+  double get finalReturn => totalReturn - totalChargeReturn;
+
+  double get grossProfit => sellPrice - totalCostPrice;
+
+  double get cleanProfit => grossProfit - operatingCost;
+
+  double get totalDebt => sellPrice - totalPay;
+
   double get totalPay => cash + transfer;
 
   double get totalDebtPay => debtCash + debtTransfer;
 
   double get totalSalesPay => salesCash + salesTransfer;
 
-  double get grossProfit => totalSellPrice - totalCostPrice;
+  double get totalReceiveMoney =>
+      totalPay + totalDebtPay - operatingCost - totalSalesPay;
 
-  double get cleanProfit =>
-      grossProfit - totalDiscount - operatingCost + totalChargeReturn;
-
-  double get totalDebt => totalSellPrice - totalPay;
+  double get totalReceiveMoneyArca =>
+      totalPay + totalDebtPay - operatingCost - salesCash;
 }

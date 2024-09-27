@@ -11,10 +11,47 @@ class SelectUserScreen extends GetView<SelectUserController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          onPressed: () async {
+            controller.isConnected.value
+                ? AppDialog.show(
+                    title: 'Keluar',
+                    content: 'Keluar dari aplikasi?',
+                    confirmText: "Ya",
+                    cancelText: "Tidak",
+                    confirmColor: Colors.grey,
+                    cancelColor: Get.theme.primaryColor,
+                    onConfirm: () => controller.signOut(),
+                    onCancel: () => Get.back(),
+                  )
+                : await Get.defaultDialog(
+                    title: 'Error',
+                    middleText:
+                        'Tidak ada koneksi internet untuk mengeluarkan akun.',
+                    confirm: TextButton(
+                      onPressed: () {
+                        Get.back();
+                        Get.back();
+                      },
+                      child: const Text('OK'),
+                    ),
+                  );
+          },
+          icon: const Icon(Symbols.logout),
+        ),
+      ),
       body: Obx(
         () => Center(
           child: controller.isLoading.value
-              ? const CircularProgressIndicator()
+              ? const Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(),
+                    // const SizedBox(height: 8),
+                    // Text(controller.loadingStatus.value)
+                  ],
+                )
               : Container(
                   margin: const EdgeInsets.symmetric(vertical: 30),
                   width: 400,
@@ -76,7 +113,7 @@ class SelectUserScreen extends GetView<SelectUserController> {
                               selectedColor: Colors.white,
                               selected:
                                   controller.selectedUser.value == 'owner',
-                              title: Text(
+                              title: const Text(
                                 'Pemilik Toko',
                                 style: TextStyle(
                                   fontSize: 16,
@@ -111,7 +148,7 @@ class SelectUserScreen extends GetView<SelectUserController> {
                                           cashier.name,
                                       title: Text(
                                         cashier.name,
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                           fontSize: 16,
                                         ),
                                       ),
@@ -123,23 +160,23 @@ class SelectUserScreen extends GetView<SelectUserController> {
                               ),
                             ),
                           ),
-                          SizedBox(height: 16),
+                          const SizedBox(height: 16),
 
                           // Input untuk password
                           TextFormField(
                             controller: controller.passwordController,
                             obscureText: true,
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               border: OutlineInputBorder(),
                               labelText: 'PIN',
                             ),
                           ),
-                          SizedBox(height: 24),
+                          const SizedBox(height: 24),
 
                           // Tombol login
                           ElevatedButton(
                             onPressed: () => controller.loginUserHandle(),
-                            child: Text('Pilih Akun'),
+                            child: const Text('Pilih Akun'),
                           ),
                         ],
                       ),

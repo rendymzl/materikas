@@ -16,6 +16,7 @@ class AuthService extends GetxService implements AuthRepository {
 
   late StreamSubscription<List<ConnectivityResult>> connectivitySubs;
   final connected = true.obs;
+  final loadingStatus = 'Menghubungkan...'.obs;
 
   late final account = Rx<AccountModel?>(null);
   late final store = Rx<StoreModel?>(null);
@@ -26,6 +27,10 @@ class AuthService extends GetxService implements AuthRepository {
 
   var isLogin = false;
   var isOwner = false.obs;
+
+  void checkStats() {
+    loadingStatus.value = '${db.currentStatus}';
+  }
 
   Future<bool> checkAccess(String code) async {
     final accessList = selectedUser.value?.accessList ?? [];
@@ -62,12 +67,15 @@ class AuthService extends GetxService implements AuthRepository {
 
   @override
   Future<AccountModel> getAccount() async {
+    loadingStatus.value = 'Menghubungkan Akun, ${db.currentStatus.anyError}';
     while (db.currentStatus.lastSyncedAt == null) {
       await Future.delayed(const Duration(seconds: 2));
       print(db.currentStatus);
-      print('menunggu koneksi');
+      print('Menunggu koneksi, ${db.currentStatus.lastSyncedAt}');
+      loadingStatus.value = 'Menunggu koneksi ${db.currentStatus.anyError}';
       if (db.currentStatus.lastSyncedAt == null) {
-        print('mencoba koneksi ulang');
+        print('Mencoba koneksi ulang, ${db.currentStatus.downloadError}');
+        loadingStatus.value = 'Mencoba koneksi ulang, ${db.currentStatus}';
       }
     }
     final row = await db.get('SELECT * FROM accounts WHERE account_id = ?',
@@ -79,6 +87,8 @@ class AuthService extends GetxService implements AuthRepository {
 
   @override
   Future<StoreModel> getStore() async {
+    loadingStatus.value =
+        'Menghubungkan Toko, ${db.currentStatus.lastSyncedAt}';
     while (db.currentStatus.lastSyncedAt == null) {
       await Future.delayed(const Duration(seconds: 2));
       print(db.currentStatus);
@@ -95,6 +105,8 @@ class AuthService extends GetxService implements AuthRepository {
 
   @override
   RxList<Cashier> getCashier() {
+    loadingStatus.value =
+        'Mengambil data Toko, ${db.currentStatus.lastSyncedAt}';
     if (account.value!.users.isNotEmpty) {
       print('account.value!.users ${account.value!.users.length}');
       cashiers.assignAll(
