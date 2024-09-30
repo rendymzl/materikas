@@ -55,6 +55,8 @@ class PurchaseOrderController extends GetxController {
       barrierDismissible: false,
     );
     try {
+      var purchaseOrderPrint =
+          PurchaseOrderModel.fromJson(purchaseOrder.toJson());
       if (isEdit) {
         await _purchaseOrderService.update(purchaseOrder);
         _buyProductC.clear();
@@ -86,7 +88,7 @@ class PurchaseOrderController extends GetxController {
                         const EdgeInsets.symmetric(vertical: 12.0))),
             onPressed: () async {
               // Get.back();
-              printPurchaseOrderDialog(purchaseOrder);
+              printPurchaseOrderDialog(purchaseOrderPrint);
             },
             child: const Text('Cetak Invoice'),
           ),

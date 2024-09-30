@@ -305,7 +305,7 @@ void printPurchaseOrderDialog(PurchaseOrderModel invoice) {
                                                   .printTransportInv(invoice);
                                           Get.back();
                                         },
-                                        child: const Text('Cetak surat jalan'),
+                                        child: const Text('Cetak PO'),
                                       ),
                                     ),
                                   ],

@@ -32,7 +32,7 @@ Future<List<int>> generateInvPurchaseOrder(PurchaseOrderModel invoice) async {
     PrintColumn(text: '', width: 14, bold: true, size: 'large', align: 'right'),
   ]);
   bytes += generator.row([
-    PrintColumn(text: 'SURAT JALAN', width: 22, bold: true, size: 'large'),
+    PrintColumn(text: 'PO Barang', width: 22, bold: true, size: 'large'),
     PrintColumn(text: '', width: 14, bold: true, size: 'large', align: 'right'),
   ]);
   bytes += generator.row([

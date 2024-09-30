@@ -107,7 +107,10 @@ void purchaseOrderDetail({PurchaseOrderModel? purchaseOrder}) async {
                 onPressed: () async {
                   // final sales = controller.invoice.sales.value!;
                   if (purchaseOrder != null) {
-                    await purchaseOrderC.savePurchaseOrder(editedPurchaseOrder!,
+                    editedPurchaseOrder!.orderId = controller.invoice.invoiceId;
+                    editedPurchaseOrder.sales.value =
+                        salesC.selectedSales.value;
+                    await purchaseOrderC.savePurchaseOrder(editedPurchaseOrder,
                         isEdit: true);
                     print('save new');
                   } else {
