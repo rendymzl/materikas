@@ -28,14 +28,16 @@ class SalesController extends GetxController {
     salesCustomerSecvice.search(salesName);
   }
 
-  void selectedSalesHandle(SalesModel sales) {
+  void selectedSalesHandle(SalesModel? sales) {
     selectedSales.value = sales;
-    showSuffixClear.value = true;
-    salesTextC.text = selectedSales.value!.name!;
-    invoiceById.value =
-        selectedSales.value!.getInvoiceListBySalesId(salesInvoices);
-    invoiceById
-        .sort((a, b) => b.createdAt.value!.compareTo(a.createdAt.value!));
+    salesTextC.text = selectedSales.value?.name ?? '';
+    if (sales != null) {
+      showSuffixClear.value = true;
+      invoiceById.value =
+          selectedSales.value!.getInvoiceListBySalesId(salesInvoices);
+      invoiceById
+          .sort((a, b) => b.createdAt.value!.compareTo(a.createdAt.value!));
+    }
   }
 
   final selectedFilterCheckBox = ''.obs;

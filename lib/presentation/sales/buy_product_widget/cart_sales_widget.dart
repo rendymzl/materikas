@@ -17,11 +17,13 @@ class CartSalesWidget extends StatelessWidget {
     required this.item,
     required this.index,
     required this.cart,
+    this.po = false,
   });
 
   final CartItem item;
   final int index;
   final Cart cart;
+  final bool po;
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +65,8 @@ class CartSalesWidget extends StatelessWidget {
                       color: Theme.of(context).colorScheme.primary,
                       borderRadius: const BorderRadius.all(Radius.circular(5))),
                   child: IconButton(
-                    onPressed: () => controller.removeFromCart(item, cart),
+                    onPressed: () =>
+                        controller.removeFromCart(item, cart, po: po),
                     icon: const Icon(
                       Symbols.close,
                       size: 12,
@@ -104,10 +107,8 @@ class CartSalesWidget extends StatelessWidget {
                             Expanded(
                               child: QuantityTextField(
                                 item: item,
-                                onChanged: (value) => controller.quantityHandle(
-                                  item,
-                                  value,
-                                ),
+                                onChanged: (value) => controller
+                                    .quantityHandle(item, value, po: po),
                               ),
                             ),
                           ],
@@ -117,19 +118,22 @@ class CartSalesWidget extends StatelessWidget {
                     const SizedBox(width: 16),
                     Expanded(
                       flex: 6,
-                      child: SizedBox(
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: DiscountTextfield(
-                                item: item,
-                                onChanged: (value) => controller.discountHandle(
-                                    item.product.id!, value),
+                      child: po
+                          ? const SizedBox()
+                          : SizedBox(
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: DiscountTextfield(
+                                      item: item,
+                                      onChanged: (value) =>
+                                          controller.discountHandle(
+                                              item.product.id!, value),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
-                        ),
-                      ),
                     ),
                     Expanded(
                       flex: 7,
@@ -155,70 +159,73 @@ class CartSalesWidget extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      flex: 6,
-                      child: SizedBox(
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: SellTextfield(
-                                title: 'Harga Jual 1',
-                                asignNumber: item.product.sellPrice1,
-                                onChanged: (value) => controller.sellHandle(
-                                  item.product.sellPrice1,
-                                  value,
+                if (!po)
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 6,
+                        child: SizedBox(
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: SellTextfield(
+                                  title: 'Harga Jual 1',
+                                  asignNumber: item.product.sellPrice1,
+                                  onChanged: (value) => controller.sellHandle(
+                                    item.product.sellPrice1,
+                                    value,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      flex: 6,
-                      child: SizedBox(
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: SellTextfield(
-                                title: 'Harga Jual 2',
-                                asignNumber: item.product.sellPrice2 ?? 0.0.obs,
-                                onChanged: (value) => controller.sellHandle(
-                                  item.product.sellPrice2 ?? 0.0.obs,
-                                  value,
+                      const SizedBox(width: 16),
+                      Expanded(
+                        flex: 6,
+                        child: SizedBox(
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: SellTextfield(
+                                  title: 'Harga Jual 2',
+                                  asignNumber:
+                                      item.product.sellPrice2 ?? 0.0.obs,
+                                  onChanged: (value) => controller.sellHandle(
+                                    item.product.sellPrice2 ?? 0.0.obs,
+                                    value,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      flex: 6,
-                      child: SizedBox(
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: SellTextfield(
-                                title: 'Harga Jual 3',
-                                asignNumber: item.product.sellPrice3 ?? 0.0.obs,
-                                onChanged: (value) => controller.sellHandle(
-                                  item.product.sellPrice3 ?? 0.0.obs,
-                                  value,
+                      const SizedBox(width: 16),
+                      Expanded(
+                        flex: 6,
+                        child: SizedBox(
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: SellTextfield(
+                                  title: 'Harga Jual 3',
+                                  asignNumber:
+                                      item.product.sellPrice3 ?? 0.0.obs,
+                                  onChanged: (value) => controller.sellHandle(
+                                    item.product.sellPrice3 ?? 0.0.obs,
+                                    value,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    const Expanded(flex: 6, child: SizedBox()),
-                  ],
-                ),
+                      const Expanded(flex: 6, child: SizedBox()),
+                    ],
+                  ),
               ],
             ),
           ),

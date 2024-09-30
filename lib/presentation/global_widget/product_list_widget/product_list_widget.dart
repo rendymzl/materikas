@@ -11,12 +11,14 @@ class ProductListWidget extends StatelessWidget {
   final Function(ProductModel) onClick;
   final bool isSales;
   final bool isPopUp;
+  final bool po;
 
   const ProductListWidget({
     super.key,
     required this.onClick,
     this.isSales = false,
     this.isPopUp = false,
+    this.po = false,
   });
 
   @override
@@ -39,11 +41,12 @@ class ProductListWidget extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: Container(
@@ -89,6 +92,31 @@ class ProductListWidget extends StatelessWidget {
               ],
             ),
           ),
+          SizedBox(
+            width: 200,
+            child: Obx(
+              () => InkWell(
+                onTap: () => controller.toggleLowStock(),
+                child: SizedBox(
+                  child: Row(
+                    children: [
+                      Checkbox(
+                        value: controller.isLowStock.value,
+                        onChanged: (value) => controller.toggleLowStock(),
+                      ),
+                      Text(
+                        'Urutkan stok sedikit',
+                        style: controller.isLowStock.value
+                            ? context.textTheme.bodySmall!.copyWith(
+                                color: Theme.of(context).colorScheme.primary)
+                            : context.textTheme.bodySmall,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
           Expanded(
             child: Obx(
               () {
@@ -99,9 +127,15 @@ class ProductListWidget extends StatelessWidget {
                           CircularProgressIndicator()); // Tampilkan loading jika pertama kali
                 }
 
+                final productList = controller.isLowStock.value
+                    ? controller.lowStockProduct
+                    : controller.displayedItems;
+
                 return ListView.builder(
-                  controller: scrollC,
-                  itemCount: controller.displayedItems.length,
+                  controller: controller.isLowStock.value ? null : scrollC,
+                  itemCount: controller.isLowStock.value
+                      ? productList.length
+                      : productList.length + 1,
                   itemBuilder: (BuildContext context, int index) {
                     if (index == controller.displayedItems.length) {
                       // Indikator loading di bagian bawah
@@ -114,7 +148,7 @@ class ProductListWidget extends StatelessWidget {
                       }
                     }
 
-                    final foundProduct = controller.displayedItems[index];
+                    final foundProduct = productList[index];
                     double getPrice =
                         foundProduct.getPrice(controller.priceType.value).value;
                     double sellPrice = getPrice.toInt() != 0
@@ -128,25 +162,31 @@ class ProductListWidget extends StatelessWidget {
                           horizontal: BorderSide(color: Colors.grey[200]!),
                         ),
                       ),
-                      child: ListTile(
-                          leading: SizedBox(
-                            width: 80,
-                            child: Obx(
-                              () => Text(
-                                '${number.format(foundProduct.stock.value)} ${foundProduct.unit}',
-                                style: context.textTheme.bodySmall,
+                      child: Container(
+                        color: foundProduct.stock.value <
+                                foundProduct.stockMin.value
+                            ? Colors.red[200]
+                            : null,
+                        child: ListTile(
+                            leading: SizedBox(
+                              width: 80,
+                              child: Obx(
+                                () => Text(
+                                  '${number.format(foundProduct.stock.value)} ${foundProduct.unit}',
+                                  style: context.textTheme.bodySmall,
+                                ),
                               ),
                             ),
-                          ),
-                          title: Text(
-                            foundProduct.productName,
-                            style: context.textTheme.titleLarge,
-                          ),
-                          trailing: Text(
-                            'Rp ${currency.format(isSales ? costPrice : sellPrice)}',
-                            style: const TextStyle(fontSize: 14),
-                          ),
-                          onTap: () => onClick(foundProduct)),
+                            title: Text(
+                              foundProduct.productName,
+                              style: context.textTheme.titleLarge,
+                            ),
+                            trailing: Text(
+                              'Rp ${currency.format(isSales ? costPrice : sellPrice)}',
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                            onTap: () => onClick(foundProduct)),
+                      ),
                     );
                   },
                 );

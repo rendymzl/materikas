@@ -70,7 +70,6 @@ const schema = Schema([
     Column.text('product_id'),
     Column.text('store_id'),
     Column.text('created_at'),
-    Column.text('barcode'),
     Column.integer('featured'),
     Column.text('product_name'),
     Column.text('unit'),
@@ -81,7 +80,8 @@ const schema = Schema([
     Column.real('sell_price3'),
     Column.real('stock'),
     Column.real('stock_min'),
-    Column.real('sold')
+    Column.real('sold'),
+    Column.text('barcode')
   ]),
   Table('operating_costs', [
     Column.text('store_id'),
@@ -89,5 +89,12 @@ const schema = Schema([
     Column.text('name'),
     Column.integer('amount'),
     Column.text('note')
+  ]),
+  Table('purchase_orders', [
+    Column.text('created_at'),
+    Column.text('purchase_order_list'),
+    Column.text('order_id'),
+    Column.text('store_id'),
+    Column.text('sales')
   ])
 ]);

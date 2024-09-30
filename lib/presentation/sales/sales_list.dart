@@ -6,6 +6,8 @@ import '../../infrastructure/models/sales_model.dart';
 import '../../infrastructure/utils/display_format.dart';
 import 'controllers/sales.controller.dart';
 import 'detail_sales/detail_sales.dart';
+import 'purchase_order_detail.dart';
+import 'purchase_order_dialog.dart';
 
 class SalesList extends StatelessWidget {
   final Function(SalesModel) onClick;
@@ -22,6 +24,7 @@ class SalesList extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
@@ -71,7 +74,6 @@ class SalesList extends StatelessWidget {
             child: Obx(
               () {
                 var sales = controller.foundSales;
-                print('sales.length ${sales.length}');
                 return ListView.builder(
                   itemCount: sales.length,
                   itemBuilder: (BuildContext context, int index) {
@@ -128,6 +130,10 @@ class SalesList extends StatelessWidget {
                 );
               },
             ),
+          ),
+          ElevatedButton(
+            onPressed: () => purchaseOrderDialog(),
+            child: const Text('PO Barang'),
           ),
         ],
       ),

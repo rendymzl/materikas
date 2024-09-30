@@ -8,6 +8,7 @@ import 'buy_product_widget/buy_product_dialog.dart';
 import 'controllers/sales.controller.dart';
 import 'detail_invoice_sales/detail_invoice_sales.dart';
 import 'detail_sales/detail_sales.dart';
+import 'purchase_order_detail.dart';
 
 class SelectedSalesInvoice extends StatelessWidget {
   const SelectedSalesInvoice({super.key});
@@ -40,15 +41,15 @@ class SelectedSalesCard extends StatelessWidget {
     return Column(
       children: [
         SizedBox(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                controller.selectedSales.value!.name!,
-                style: context.textTheme.titleLarge!.copyWith(fontSize: 24),
-              ),
-              Obx(
-                () => Row(
+          child: Obx(
+            () => Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  controller.selectedSales.value!.name!,
+                  style: context.textTheme.titleLarge!.copyWith(fontSize: 24),
+                ),
+                Row(
                   children: [
                     InkWell(
                       onTap: () => controller.checkBoxHandle('paid'),
@@ -114,8 +115,8 @@ class SelectedSalesCard extends StatelessWidget {
                     // ),
                   ],
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         Divider(color: Colors.grey[300]),

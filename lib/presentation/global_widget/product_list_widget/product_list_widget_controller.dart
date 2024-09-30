@@ -14,6 +14,7 @@ class ProductListWidgetController extends GetxController {
 
   late final product = _productService.products;
   late final foundProducts = _productService.foundProducts;
+  late final lowStockProduct = _productService.lowStockProducts;
 
   final priceType = 1.obs;
 
@@ -72,5 +73,10 @@ class ProductListWidgetController extends GetxController {
       displayedItems.assignAll(foundProducts);
       print(displayedItems.length);
     });
+  }
+
+  final isLowStock = false.obs;
+  void toggleLowStock() {
+    isLowStock.value = !isLowStock.value;
   }
 }

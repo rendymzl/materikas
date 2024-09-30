@@ -8,6 +8,7 @@ import '../../../infrastructure/dal/services/invoice_sales_service.dart';
 import '../../../infrastructure/dal/services/invoice_service.dart';
 import '../../../infrastructure/dal/services/operating_cost_service.dart';
 import '../../../infrastructure/dal/services/product_service.dart';
+import '../../../infrastructure/dal/services/purchase_order_service.dart';
 import '../../../infrastructure/dal/services/sales_service.dart';
 import '../../../infrastructure/dal/services/store_service.dart';
 import '../../../infrastructure/models/account_model.dart';
@@ -25,6 +26,8 @@ class SplashController extends GetxController {
       Get.put(InvoiceSalesService());
   final OperatingCostService _operatingCostService =
       Get.put(OperatingCostService());
+  final PurchaseOrderService _purchaseOrderService =
+      Get.put(PurchaseOrderService());
 
   late final AccountModel? account;
   late final StoreModel? store;
@@ -55,6 +58,7 @@ class SplashController extends GetxController {
       await _salesService.subscribe(account!.storeId!);
       await _invoiceSalesService.subscribe(account!.storeId!);
       await _operatingCostService.subscribe(account!.storeId!);
+      await _purchaseOrderService.subscribe(account!.storeId!);
       print('SelectUserController FINISH INIT');
       authService.loadingStatus.value = 'selesai';
       Get.offAllNamed(Routes.SELECT_USER);

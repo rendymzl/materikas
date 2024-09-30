@@ -9,10 +9,12 @@ class CalculateSalesPrice extends StatelessWidget {
     super.key,
     required this.invoice,
     this.isEdit = false,
+    this.po = false,
   });
 
   final InvoiceSalesModel invoice;
   final bool isEdit;
+  final bool po;
 
   @override
   Widget build(BuildContext context) {
@@ -58,9 +60,13 @@ class CalculateSalesPrice extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               SizedBox(
-                                width: 200,
+                                width: 300,
                                 child: Text(
-                                    isEdit ? 'Sisa Bayar' : 'Total Belanja:',
+                                    po
+                                        ? 'Total Purchase Order'
+                                        : isEdit
+                                            ? 'Sisa Bayar'
+                                            : 'Total Belanja:',
                                     style: const TextStyle(
                                       fontSize: 24,
                                       fontWeight: FontWeight.bold,

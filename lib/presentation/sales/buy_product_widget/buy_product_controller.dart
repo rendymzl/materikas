@@ -68,7 +68,7 @@ class BuyProductController extends GetxController {
   }
 
   //! ADD TO CART ===
-  void addToCart(ProductModel product) async {
+  void addToCart(ProductModel product, {bool po = false}) async {
     //! add product to initCartItem
     var initCartItem = checkExistence(product, initCartList);
 
@@ -81,8 +81,10 @@ class BuyProductController extends GetxController {
     //!---
 
     //! change Stock
-    product.stock.value += 1;
-    print('stock: ${product.stock.value}');
+    if (!po) {
+      product.stock.value += 1;
+      print('stock: ${product.stock.value}');
+    }
     //!---
 
     //! add product to cart
@@ -105,7 +107,7 @@ class BuyProductController extends GetxController {
   }
 
   //! ADD TO CART ===
-  void addToCartEdit(ProductModel product, Cart cart) async {
+  void addToCartEdit(ProductModel product, Cart cart, {bool po = false}) async {
     //! add product to initCartItem
     var initCartItem = checkExistence(product, initCartList);
 
@@ -118,8 +120,10 @@ class BuyProductController extends GetxController {
     //!---
 
     //! change Stock
-    product.stock.value += 1;
-    print('stock: ${product.stock.value}');
+    if (!po) {
+      product.stock.value += 1;
+      print('stock: ${product.stock.value}');
+    }
     //!---
 
     //! add product to cart
@@ -129,7 +133,7 @@ class BuyProductController extends GetxController {
   }
 
   //! QUANTITY HANDLE ===
-  void quantityHandle(CartItem cartItem, String quantity) {
+  void quantityHandle(CartItem cartItem, String quantity, {bool po = false}) {
     //! add product to initCartItem
     var initCartItem = checkExistence(cartItem.product, initCartList);
 
@@ -150,15 +154,17 @@ class BuyProductController extends GetxController {
     //!---
 
     //! change Stock
-    cartItem.product.stock.value = initCartItem.product.stock.value +
-        cartItem.quantity.value -
-        initCartItem.quantity.value;
+    if (!po) {
+      cartItem.product.stock.value = initCartItem.product.stock.value +
+          cartItem.quantity.value -
+          initCartItem.quantity.value;
+    }
     //!---
     print('-------------${initCartList.length}-------------');
   }
 
   //! REMOVE FROM CART ===
-  void removeFromCart(CartItem cartItem, Cart cart) {
+  void removeFromCart(CartItem cartItem, Cart cart, {bool po = false}) {
     var initCartItem = checkExistence(cartItem.product, initCartList);
     var foundProduct = foundProducts
         .firstWhereOrNull((item) => item.id == cartItem.product.id);
@@ -173,7 +179,7 @@ class BuyProductController extends GetxController {
       }
     }
 
-    cartItem.product.stock.value -= cartItem.quantity.value;
+    if (!po) cartItem.product.stock.value -= cartItem.quantity.value;
     removeCartList.add(cartItem);
     cart.removeItem(cartItem.product.id!);
     print('=================');
