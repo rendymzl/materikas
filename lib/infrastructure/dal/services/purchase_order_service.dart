@@ -64,7 +64,7 @@ class PurchaseOrderService extends GetxService
       order_id = ?, 
       created_at = ?, 
       purchase_order_list = ?, 
-      sales = ?, 
+      sales = ?
     WHERE id = ?
     ''',
       [

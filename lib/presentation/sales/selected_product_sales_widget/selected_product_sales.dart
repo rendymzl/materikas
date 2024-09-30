@@ -26,6 +26,8 @@ class SelectedProductSales extends StatelessWidget {
         () {
           if (purchaseOrder != null) {
             print(purchaseOrder!.purchaseList.value.toJson());
+            // controller.invoice.id = purchaseOrder!.id;
+            // controller.invoice.sales = purchaseOrder!.sales;
             controller.cart.value = purchaseOrder!.purchaseList.value;
           }
           final cart = controller.cart.value;
@@ -40,7 +42,8 @@ class SelectedProductSales extends StatelessWidget {
                     decoration: const BoxDecoration(
                       color: Colors.white,
                     ),
-                    child: HeaderSelectedProductSales(po: po),
+                    child: HeaderSelectedProductSales(
+                        po: po, purchaseOrder: purchaseOrder),
                   ),
                   Divider(color: Colors.grey[100]),
                   cartItems.isNotEmpty
@@ -79,7 +82,9 @@ class SelectedProductSales extends StatelessWidget {
                                     borderRadius:
                                         BorderRadius.all(Radius.circular(10))),
                                 child: CalculateSalesPrice(
-                                    invoice: controller.invoice, po: po),
+                                    invoice: controller.invoice,
+                                    po: po,
+                                    purchaseOrder: purchaseOrder),
                               ),
                             ],
                           ),
@@ -97,13 +102,28 @@ class SelectedProductSales extends StatelessWidget {
 }
 
 class HeaderSelectedProductSales extends StatelessWidget {
-  const HeaderSelectedProductSales({super.key, this.po = false});
+  const HeaderSelectedProductSales(
+      {super.key, this.po = false, this.purchaseOrder});
   final bool po;
+  final PurchaseOrderModel? purchaseOrder;
 
   @override
   Widget build(BuildContext context) {
     late BuyProductController controller = Get.find();
     late SalesController salesC = Get.find();
+    var textIdC = TextEditingController();
+
+    if (purchaseOrder != null) {
+      textIdC.text = purchaseOrder!.orderId!;
+      controller.nomorInvoice.value = purchaseOrder!.orderId!;
+      salesC.salesTextC.text = purchaseOrder!.sales.value!.name!;
+      Future.delayed(Duration.zero, () async {
+        salesC.selectedSales.value = purchaseOrder!.sales.value;
+      });
+      // WidgetsBinding.instance.addPostFrameCallback((_) {
+      //   salesC.selectedSales.value = purchaseOrder!.sales.value;
+      // });
+    }
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -119,6 +139,7 @@ class HeaderSelectedProductSales extends StatelessWidget {
           ),
           height: 50,
           child: TextField(
+            controller: textIdC,
             decoration: InputDecoration(
               labelText: po ? "ID Purchase Order" : "ID Invoice",
               labelStyle: const TextStyle(color: Colors.grey),

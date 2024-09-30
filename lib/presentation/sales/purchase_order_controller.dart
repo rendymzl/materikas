@@ -57,6 +57,9 @@ class PurchaseOrderController extends GetxController {
     try {
       if (isEdit) {
         await _purchaseOrderService.update(purchaseOrder);
+        _buyProductC.clear();
+        Get.back();
+        Get.back();
         // _buyProductC.clear();
       } else {
         // print(purchaseOrder.toJson());

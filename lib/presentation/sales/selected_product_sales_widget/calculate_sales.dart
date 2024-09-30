@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../infrastructure/models/invoice_sales_model.dart';
+import '../../../infrastructure/models/purchase_order_model.dart';
 import '../../../infrastructure/utils/display_format.dart';
 
 class CalculateSalesPrice extends StatelessWidget {
@@ -10,11 +11,13 @@ class CalculateSalesPrice extends StatelessWidget {
     required this.invoice,
     this.isEdit = false,
     this.po = false,
+    this.purchaseOrder,
   });
 
   final InvoiceSalesModel invoice;
   final bool isEdit;
   final bool po;
+  final PurchaseOrderModel? purchaseOrder;
 
   @override
   Widget build(BuildContext context) {
@@ -24,6 +27,10 @@ class CalculateSalesPrice extends StatelessWidget {
           Expanded(
             child: Obx(
               () {
+                if (purchaseOrder != null) {
+                  invoice.purchaseList.value =
+                      purchaseOrder!.purchaseList.value;
+                }
                 final cartItems = invoice.purchaseList.value.items;
                 return SizedBox(
                   child: Column(
