@@ -32,7 +32,7 @@ void editInvoice(InvoiceModel invoice) {
   showPopupPageWidget(
     title: 'Edit Invoice ${editInvoice.invoiceId}',
     height: MediaQuery.of(Get.context!).size.height * (6 / 7),
-    width: MediaQuery.of(Get.context!).size.width * (0.6),
+    width: MediaQuery.of(Get.context!).size.width * (0.65),
     content: ListView(
       shrinkWrap: true,
       padding: const EdgeInsets.all(16),

@@ -8,6 +8,7 @@ import '../../../infrastructure/models/invoice_model/invoice_model.dart';
 import '../../../infrastructure/utils/display_format.dart';
 import '../../global_widget/field_discount_widget/field_discount_widget.dart';
 import '../../global_widget/field_quantity_widget/field_quantity_widget.dart';
+import '../../global_widget/field_sell_widget/field_sell_widget.dart';
 import 'edit_invoice_controller.dart';
 
 class SingleCartList extends StatelessWidget {
@@ -39,6 +40,19 @@ class SingleCartList extends StatelessWidget {
               if (cartItemList.items.isNotEmpty) {
                 productCart = cartItemList.items[index];
               }
+
+              RxDouble sellPrice = switch (editInvoice.priceType.value) {
+                1 => productCart.product.sellPrice1,
+                2 => productCart.product.sellPrice2 != null &&
+                        productCart.product.sellPrice2 != 0.0.obs
+                    ? productCart.product.sellPrice2!
+                    : productCart.product.sellPrice1,
+                3 => productCart.product.sellPrice3 != null &&
+                        productCart.product.sellPrice3 != 0.0.obs
+                    ? productCart.product.sellPrice3!
+                    : productCart.product.sellPrice1,
+                _ => productCart.product.sellPrice1,
+              };
 
               final quantityTextC = TextEditingController();
               String displayQtyValue = productCart.quantity.value % 1 == 0
@@ -131,8 +145,20 @@ class SingleCartList extends StatelessWidget {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                'Rp${currency.format(productCart.product.getPrice(editInvoice.priceType.value).value)}',
+                              // Text(
+                              //   'Rp${currency.format(productCart.product.getPrice(editInvoice.priceType.value).value)}',
+                              // ),
+                              SizedBox(
+                                width: 130,
+                                child: SellTextfield(
+                                  title: 'Harga Jual',
+                                  asignNumber: sellPrice,
+                                  onChanged: (value) =>
+                                      controller.sellPriceHandle(
+                                    sellPrice,
+                                    value,
+                                  ),
+                                ),
                               ),
                               SizedBox(
                                 width: 100,

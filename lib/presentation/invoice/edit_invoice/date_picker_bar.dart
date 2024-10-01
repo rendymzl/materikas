@@ -21,64 +21,68 @@ class DatePickerBar extends StatelessWidget {
         children: [
           Row(
             children: [
-              InkWell(
-                onTap: () {
-                  editInvoice.priceType.value == 2
-                      ? editInvoice.priceType.value = 1
-                      : editInvoice.priceType.value = 2;
-                  editInvoice.updateIsDebtPaid();
-                },
-                child: SizedBox(
-                  child: Row(
-                    children: [
-                      Checkbox(
-                        value: editInvoice.priceType.value == 2,
-                        onChanged: (value) {
-                          editInvoice.priceType.value == 2
-                              ? editInvoice.priceType.value = 1
-                              : editInvoice.priceType.value = 2;
-                          editInvoice.updateIsDebtPaid();
-                        },
-                      ),
-                      Text(
-                        'Harga masuk gang',
-                        style: editInvoice.priceType.value == 2
-                            ? Get.context!.textTheme.bodySmall!.copyWith(
-                                color: Theme.of(context).colorScheme.primary)
-                            : context.textTheme.bodySmall,
-                      ),
-                    ],
+              Obx(
+                () => InkWell(
+                  onTap: () {
+                    editInvoice.priceType.value == 2
+                        ? editInvoice.priceType.value = 1
+                        : editInvoice.priceType.value = 2;
+                    editInvoice.updateIsDebtPaid();
+                  },
+                  child: SizedBox(
+                    child: Row(
+                      children: [
+                        Checkbox(
+                          value: editInvoice.priceType.value == 2,
+                          onChanged: (value) {
+                            editInvoice.priceType.value == 2
+                                ? editInvoice.priceType.value = 1
+                                : editInvoice.priceType.value = 2;
+                            editInvoice.updateIsDebtPaid();
+                          },
+                        ),
+                        Text(
+                          'Harga masuk gang',
+                          style: editInvoice.priceType.value == 2
+                              ? Get.context!.textTheme.bodySmall!.copyWith(
+                                  color: Theme.of(context).colorScheme.primary)
+                              : context.textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
               const SizedBox(width: 20),
-              InkWell(
-                onTap: () {
-                  editInvoice.priceType.value == 3
-                      ? editInvoice.priceType.value = 1
-                      : editInvoice.priceType.value = 3;
-                  editInvoice.updateIsDebtPaid();
-                },
-                child: SizedBox(
-                  child: Row(
-                    children: [
-                      Checkbox(
-                        value: editInvoice.priceType.value == 3,
-                        onChanged: (value) {
-                          editInvoice.priceType.value == 3
-                              ? editInvoice.priceType.value = 1
-                              : editInvoice.priceType.value = 3;
-                          editInvoice.updateIsDebtPaid();
-                        },
-                      ),
-                      Text(
-                        'Harga material',
-                        style: editInvoice.priceType.value == 3
-                            ? context.textTheme.bodySmall!.copyWith(
-                                color: Theme.of(context).colorScheme.primary)
-                            : context.textTheme.bodySmall,
-                      ),
-                    ],
+              Obx(
+                () => InkWell(
+                  onTap: () {
+                    editInvoice.priceType.value == 3
+                        ? editInvoice.priceType.value = 1
+                        : editInvoice.priceType.value = 3;
+                    editInvoice.updateIsDebtPaid();
+                  },
+                  child: SizedBox(
+                    child: Row(
+                      children: [
+                        Checkbox(
+                          value: editInvoice.priceType.value == 3,
+                          onChanged: (value) {
+                            editInvoice.priceType.value == 3
+                                ? editInvoice.priceType.value = 1
+                                : editInvoice.priceType.value = 3;
+                            editInvoice.updateIsDebtPaid();
+                          },
+                        ),
+                        Text(
+                          'Harga material',
+                          style: editInvoice.priceType.value == 3
+                              ? context.textTheme.bodySmall!.copyWith(
+                                  color: Theme.of(context).colorScheme.primary)
+                              : context.textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

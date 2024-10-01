@@ -107,6 +107,13 @@ class EditInvoiceController extends GetxController {
     //!---
   }
 
+  //! SELLPRICE ===
+  void sellPriceHandle(RxDouble sellPrice, String value) {
+    double valueDouble = value == '' ? 0 : double.parse(value);
+    sellPrice.value = valueDouble;
+    // cart.value.updateDiscount(productId, valueDouble);
+  }
+
   //! QUANTITY HANDLE ===
   void quantityHandle(CartItem cartItem, String quantity, bool isReturn) {
     //! add product to initCartItem
