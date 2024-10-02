@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../infrastructure/dal/services/auth_service.dart';
 import '../../global_widget/date_picker_widget/date_picker_widget.dart';
 import '../controllers/home.controller.dart';
 import 'calculate_price.dart';
@@ -62,6 +63,7 @@ class PriceTypeWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final HomeController controller = Get.find();
+    // final AuthService accountC = Get.find();
 
     return Container(
       height: 40,
@@ -86,7 +88,7 @@ class PriceTypeWidget extends StatelessWidget {
                               controller.priceTypeHandleCheckBox(2),
                         ),
                         Text(
-                          'Harga masuk gang',
+                          'Harga ${controller.authService.account.value!.name.toLowerCase() == 'arca nusantara' ? 'masuk gang' : '3'}',
                           style: controller.priceType.value == 2
                               ? context.textTheme.bodySmall!.copyWith(
                                   color: Theme.of(context).colorScheme.primary)
@@ -110,7 +112,7 @@ class PriceTypeWidget extends StatelessWidget {
                               controller.priceTypeHandleCheckBox(3),
                         ),
                         Text(
-                          'Harga material',
+                          'Harga ${controller.authService.account.value!.name.toLowerCase() == 'arca nusantara' ? 'material' : '3'}',
                           style: controller.priceType.value == 3
                               ? context.textTheme.bodySmall!.copyWith(
                                   color: Theme.of(context).colorScheme.primary)

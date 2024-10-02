@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../infrastructure/dal/services/auth_service.dart';
 import '../../../infrastructure/models/invoice_model/invoice_model.dart';
 import '../../global_widget/date_picker_widget/date_picker_widget.dart';
+import 'edit_invoice_controller.dart';
 
 class DatePickerBar extends StatelessWidget {
   const DatePickerBar({
@@ -14,6 +16,9 @@ class DatePickerBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final EditInvoiceController controller = Get.find();
+    // final AuthService accountC = Get.find();
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -24,9 +29,10 @@ class DatePickerBar extends StatelessWidget {
               Obx(
                 () => InkWell(
                   onTap: () {
-                    editInvoice.priceType.value == 2
-                        ? editInvoice.priceType.value = 1
-                        : editInvoice.priceType.value = 2;
+                    controller.priceTypeHandleCheckBox(2);
+                    editInvoice.priceType.value == 1
+                        ? editInvoice.priceType.value = 2
+                        : editInvoice.priceType.value = 1;
                     editInvoice.updateIsDebtPaid();
                   },
                   child: SizedBox(
@@ -35,14 +41,15 @@ class DatePickerBar extends StatelessWidget {
                         Checkbox(
                           value: editInvoice.priceType.value == 2,
                           onChanged: (value) {
-                            editInvoice.priceType.value == 2
-                                ? editInvoice.priceType.value = 1
-                                : editInvoice.priceType.value = 2;
+                            controller.priceTypeHandleCheckBox(2);
+                            editInvoice.priceType.value == 1
+                                ? editInvoice.priceType.value = 2
+                                : editInvoice.priceType.value = 1;
                             editInvoice.updateIsDebtPaid();
                           },
                         ),
                         Text(
-                          'Harga masuk gang',
+                          'Harga ${controller.accountC.account.value!.name.toLowerCase() == 'arca nusantara' ? 'masuk gang' : '2'}',
                           style: editInvoice.priceType.value == 2
                               ? Get.context!.textTheme.bodySmall!.copyWith(
                                   color: Theme.of(context).colorScheme.primary)
@@ -57,9 +64,10 @@ class DatePickerBar extends StatelessWidget {
               Obx(
                 () => InkWell(
                   onTap: () {
-                    editInvoice.priceType.value == 3
-                        ? editInvoice.priceType.value = 1
-                        : editInvoice.priceType.value = 3;
+                    controller.priceTypeHandleCheckBox(3);
+                    editInvoice.priceType.value == 1
+                        ? editInvoice.priceType.value = 3
+                        : editInvoice.priceType.value = 1;
                     editInvoice.updateIsDebtPaid();
                   },
                   child: SizedBox(
@@ -68,14 +76,15 @@ class DatePickerBar extends StatelessWidget {
                         Checkbox(
                           value: editInvoice.priceType.value == 3,
                           onChanged: (value) {
-                            editInvoice.priceType.value == 3
-                                ? editInvoice.priceType.value = 1
-                                : editInvoice.priceType.value = 3;
+                            controller.priceTypeHandleCheckBox(3);
+                            editInvoice.priceType.value == 1
+                                ? editInvoice.priceType.value = 3
+                                : editInvoice.priceType.value = 1;
                             editInvoice.updateIsDebtPaid();
                           },
                         ),
                         Text(
-                          'Harga material',
+                          'Harga ${controller.accountC.account.value!.name.toLowerCase() == 'arca nusantara' ? 'material' : '3'}',
                           style: editInvoice.priceType.value == 3
                               ? context.textTheme.bodySmall!.copyWith(
                                   color: Theme.of(context).colorScheme.primary)

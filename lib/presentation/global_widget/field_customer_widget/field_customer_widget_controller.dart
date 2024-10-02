@@ -10,6 +10,7 @@ class CustomerInputFieldController extends GetxController {
   late final customers = _customerService.customers;
 
   final displayName = ''.obs;
+  final saveInvoice = false.obs;
   final customerNameController = TextEditingController();
   final customerPhoneController = TextEditingController();
   final customerAddressController = TextEditingController();
@@ -31,6 +32,10 @@ class CustomerInputFieldController extends GetxController {
     customer.phone = customerPhoneController.text;
     customer.address = customerAddressController.text;
     selectedCustomer.value = customer;
+  }
+
+  void ckeckBoxSaveCustomer() {
+    saveInvoice.value = !saveInvoice.value;
   }
 
   void clear() {

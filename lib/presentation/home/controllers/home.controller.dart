@@ -15,7 +15,7 @@ import '../../global_widget/field_customer_widget/field_customer_widget_controll
 
 class HomeController extends GetxController {
   late final ProductService _productService = Get.find<ProductService>();
-  late final AuthService _authService = Get.find<AuthService>();
+  late final AuthService authService = Get.find<AuthService>();
   // late final InvoiceService _invoiceService = Get.put(InvoiceService());
   late final DatePickerController _datePickerC =
       Get.put(DatePickerController());
@@ -226,8 +226,8 @@ class HomeController extends GetxController {
     }
 
     final invoice = InvoiceModel(
-      storeId: _authService.account.value!.storeId,
-      account: _authService.account.value!,
+      storeId: authService.account.value!.storeId,
+      account: authService.account.value!,
       createdAt: dateTime,
       customer: customer,
       purchaseList: cart.value,
