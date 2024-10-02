@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../infrastructure/dal/services/auth_service.dart';
 import '../../../infrastructure/dal/services/invoice_service.dart';
 import '../../../infrastructure/dal/services/product_service.dart';
 import '../../../infrastructure/models/invoice_model/cart_item_model.dart';
@@ -14,10 +15,13 @@ class EditInvoiceController extends GetxController {
   late final InvoiceService _invoiceService = Get.find();
   late final ProductService _productService = Get.find<ProductService>();
   late final foundProducts = _productService.foundProducts;
+  final AuthService accountC = Get.find();
 
   final initCartList = <CartItem>[].obs;
   final initAdditionalCartList = <CartItem>[].obs;
   final removeCartList = <CartItem>[].obs;
+
+  final priceType = 1.obs;
 
   CartItem? checkExistence(
     ProductModel product,
@@ -112,6 +116,11 @@ class EditInvoiceController extends GetxController {
     double valueDouble = value == '' ? 0 : double.parse(value);
     sellPrice.value = valueDouble;
     // cart.value.updateDiscount(productId, valueDouble);
+  }
+
+  void priceTypeHandleCheckBox(int type) async {
+    priceType.value == type ? priceType.value = 1 : priceType.value = type;
+    // invoice.priceType.value = priceType.value;
   }
 
   //! QUANTITY HANDLE ===

@@ -40,8 +40,10 @@ class SingleCartList extends StatelessWidget {
               if (cartItemList.items.isNotEmpty) {
                 productCart = cartItemList.items[index];
               }
-
-              RxDouble sellPrice = switch (editInvoice.priceType.value) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                controller.priceType.value = editInvoice.priceType.value;
+              });
+              RxDouble sellPrice = switch (controller.priceType.value) {
                 1 => productCart.product.sellPrice1,
                 2 => productCart.product.sellPrice2 != null &&
                         productCart.product.sellPrice2 != 0.0.obs
@@ -150,13 +152,44 @@ class SingleCartList extends StatelessWidget {
                               // ),
                               SizedBox(
                                 width: 130,
-                                child: SellTextfield(
-                                  title: 'Harga Jual',
-                                  asignNumber: sellPrice,
-                                  onChanged: (value) =>
-                                      controller.sellPriceHandle(
-                                    sellPrice,
-                                    value,
+                                child: Obx(
+                                  () => Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: SellTextfield(
+                                              title: 'Harga Jual',
+                                              asignNumber: sellPrice,
+                                              onChanged: (value) =>
+                                                  controller.sellPriceHandle(
+                                                sellPrice,
+                                                value,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      // Text(
+                                      //   'Rp${currency.format(sellPrice)}',
+                                      //   style: context.textTheme.bodyMedium,
+                                      // ),
+
+                                      if (editInvoice.priceType.value != 1 &&
+                                          sellPrice !=
+                                              productCart.product.sellPrice1)
+                                        Text(
+                                          'Rp${currency.format(productCart.product.sellPrice1.value)}',
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: context.textTheme.bodySmall!
+                                              .copyWith(
+                                                  decoration: TextDecoration
+                                                      .lineThrough),
+                                        ),
+                                    ],
                                   ),
                                 ),
                               ),

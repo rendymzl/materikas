@@ -63,6 +63,7 @@ class DetailCustomerController extends GetxController {
 
   //! create
   Future addCustomer(CustomerModel customer) async {
+    print('customer harusnya di save');
     bool isCustomerExists =
         customers.any((item) => item.customerId == customer.customerId);
     if (isCustomerExists) {
