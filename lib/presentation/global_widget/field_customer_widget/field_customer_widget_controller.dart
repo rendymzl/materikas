@@ -5,11 +5,11 @@ import '../../../infrastructure/dal/services/auth_service.dart';
 import '../../../infrastructure/dal/services/customer_service.dart';
 import '../../../infrastructure/models/customer_model.dart';
 import '../../../infrastructure/models/invoice_model/invoice_model.dart';
-import '../../customer/detail_customer/detail_customer_controller.dart';
+// import '../../customer/detail_customer/detail_customer_controller.dart';
 
 class CustomerInputFieldController extends GetxController {
   late final CustomerService _customerService = Get.find();
-  late final DetailCustomerController _detailCustC = Get.find();
+  // late final DetailCustomerController _detailCustC = Get.find();
   final AuthService _authService = Get.find();
   late final customers = _customerService.customers;
   late final lastCustomersId = _customerService.lastCustomersId;
@@ -55,7 +55,7 @@ class CustomerInputFieldController extends GetxController {
             phone: customerPhoneController.text,
             address: customerAddressController.text,
             storeId: _authService.account.value!.storeId);
-        await _detailCustC.addCustomer(customer);
+        await _customerService.insert(customer);
       } catch (e) {
         Get.defaultDialog(
           title: 'cekError',
@@ -70,6 +70,7 @@ class CustomerInputFieldController extends GetxController {
   }
 
   void clear() {
+    saveCust.value = false;
     showSuffixClear.value = false;
     displayName.value = '';
     customerNameController.text = '';
