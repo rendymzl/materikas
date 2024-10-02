@@ -179,6 +179,62 @@ class CustomerInputField extends StatelessWidget {
                   //         controller.selectedCustomer.value!,
                   //       );
                   //     }),
+                      return Align(
+                        alignment: Alignment.topLeft,
+                        child: Container(
+                          margin: const EdgeInsets.only(top: 4),
+                          decoration: BoxDecoration(),
+                          width: textFieldWidth,
+                          child: Card(
+                            color: Colors.grey[100],
+                            shadowColor: Colors.grey[300],
+                            elevation: 4,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: optionsLength,
+                              itemBuilder: (BuildContext context, int index) {
+                                final CustomerModel option =
+                                    options.elementAt(index);
+                                return ListTile(
+                                  title: Text(option.name),
+                                  onTap: () {
+                                    onSelected(option);
+                                  },
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                    onSelected: (CustomerModel customer) {
+                      controller.asignCustomer(customer);
+                    },
+                  ),
+                  //  TextField(
+                  //     controller: controller.customerNameController,
+                  //     decoration: InputDecoration(
+                  //       border: const OutlineInputBorder(),
+                  //       labelText: 'Nama Pelanggan',
+                  //       labelStyle: const TextStyle(color: Colors.grey),
+                  //       floatingLabelStyle: TextStyle(
+                  //           color: Theme.of(context).colorScheme.primary),
+                  //       focusedErrorBorder: outlineRed,
+                  //       errorBorder: outlineRed,
+                  //     ),
+                  //     onChanged: (value) {
+                  //       controller.customerNameController.text = value;
+                  //       controller.displayName.value = value;
+                  //       controller.updateSelectedCustomer(
+                  //         controller.selectedCustomer.value!,
+                  //       );
+                  //     }),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
