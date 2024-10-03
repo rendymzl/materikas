@@ -12,6 +12,11 @@ class Account {
   String? storeId;
   RxList<Cashier> users;
   String password;
+  String accountType;
+  DateTime? startDate;
+  DateTime? endDate;
+  bool? isActive;
+  DateTime updatedAt;
 
   Account({
     this.id,
@@ -23,5 +28,10 @@ class Account {
     this.storeId,
     required this.users,
     required this.password,
+    required this.accountType,
+    this.startDate,
+    this.endDate,
+    this.isActive,
+    required this.updatedAt,
   });
 }

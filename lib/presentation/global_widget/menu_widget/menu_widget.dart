@@ -16,80 +16,102 @@ class MenuWidget extends GetView<MenuWidgetController> {
     return Container(
       // padding: const EdgeInsets.all(8),
       margin: const EdgeInsets.all(8),
-      height: 60,
-      child: Row(
+      height:
+          60 + (controller.account.value!.accountType == 'free_trial' ? 40 : 0),
+      child: Column(
         children: [
-          Expanded(
-            flex: 5,
+          Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(
+                color: Colors.red, borderRadius: BorderRadius.circular(8)),
+            height: 25,
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Obx(
-                  () {
-                    var data = controller.menuData;
-                    return ListView.separated(
-                      separatorBuilder: (context, index) =>
-                          const SizedBox(width: 8),
-                      shrinkWrap: true,
-                      scrollDirection: Axis.horizontal,
-                      itemCount: (data.length),
-                      itemBuilder: (context, index) =>
-                          buildMenuEntry(data[index], index, context),
-                    );
-                  },
-                )
+                Text(
+                  controller.account.value!.accountType,
+                  style: const TextStyle(color: Colors.white),
+                ),
               ],
             ),
           ),
-          Obx(
-            () => Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(30),
-                color: controller.authService.connected.value
-                    ? Colors.green
-                    : Colors.red,
-              ),
-              height: 12,
-              width: 12,
+          Expanded(
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 5,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Obx(
+                        () {
+                          var data = controller.menuData;
+                          return ListView.separated(
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(width: 8),
+                            shrinkWrap: true,
+                            scrollDirection: Axis.horizontal,
+                            itemCount: (data.length),
+                            itemBuilder: (context, index) =>
+                                buildMenuEntry(data[index], index, context),
+                          );
+                        },
+                      )
+                    ],
+                  ),
+                ),
+                Obx(
+                  () => Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(30),
+                      color: controller.authService.connected.value
+                          ? Colors.green
+                          : Colors.red,
+                    ),
+                    height: 12,
+                    width: 12,
+                  ),
+                ),
+                IconButton(
+                  onPressed: () async {
+                    AppDialog.show(
+                      title: 'Keluar',
+                      content: 'Ganti Pengguna?',
+                      confirmText: "Ya",
+                      cancelText: "Tidak",
+                      confirmColor: Colors.grey,
+                      cancelColor: Get.theme.primaryColor,
+                      onConfirm: () => controller.changeUser(),
+                      onCancel: () => Get.back(),
+                    );
+                    // controller.connected.value
+                    //     ? AppDialog.show(
+                    //         title: 'Keluar',
+                    //         content: 'Keluar dari aplikasi?',
+                    //         confirmText: "Ya",
+                    //         cancelText: "Tidak",
+                    //         confirmColor: Colors.grey,
+                    //         cancelColor: Get.theme.primaryColor,
+                    //         onConfirm: () => controller.signOut(),
+                    //         onCancel: () => Get.back(),
+                    //       )
+                    //     : await Get.defaultDialog(
+                    //         title: 'Error',
+                    //         middleText:
+                    //             'Tidak ada koneksi internet untuk mengeluarkan akun.',
+                    //         confirm: TextButton(
+                    //           onPressed: () {
+                    //             Get.back();
+                    //             Get.back();
+                    //           },
+                    //           child: const Text('OK'),
+                    //         ),
+                    //       );
+                  },
+                  icon: const Icon(Symbols.logout),
+                ),
+              ],
             ),
-          ),
-          IconButton(
-            onPressed: () async {
-              AppDialog.show(
-                title: 'Keluar',
-                content: 'Ganti Pengguna?',
-                confirmText: "Ya",
-                cancelText: "Tidak",
-                confirmColor: Colors.grey,
-                cancelColor: Get.theme.primaryColor,
-                onConfirm: () => controller.changeUser(),
-                onCancel: () => Get.back(),
-              );
-              // controller.connected.value
-              //     ? AppDialog.show(
-              //         title: 'Keluar',
-              //         content: 'Keluar dari aplikasi?',
-              //         confirmText: "Ya",
-              //         cancelText: "Tidak",
-              //         confirmColor: Colors.grey,
-              //         cancelColor: Get.theme.primaryColor,
-              //         onConfirm: () => controller.signOut(),
-              //         onCancel: () => Get.back(),
-              //       )
-              //     : await Get.defaultDialog(
-              //         title: 'Error',
-              //         middleText:
-              //             'Tidak ada koneksi internet untuk mengeluarkan akun.',
-              //         confirm: TextButton(
-              //           onPressed: () {
-              //             Get.back();
-              //             Get.back();
-              //           },
-              //           child: const Text('OK'),
-              //         ),
-              //       );
-            },
-            icon: const Icon(Symbols.logout),
           ),
         ],
       ),

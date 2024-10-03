@@ -9,7 +9,12 @@ const schema = Schema([
     Column.text('role'),
     Column.text('created_at'),
     Column.text('users'),
-    Column.text('password')
+    Column.text('password'),
+    Column.text('account_type'),
+    Column.text('start_date'),
+    Column.text('end_date'),
+    Column.integer('is_active'),
+    Column.text('updated_at')
   ]),
   Table('stores', [
     Column.text('owner_id'),
