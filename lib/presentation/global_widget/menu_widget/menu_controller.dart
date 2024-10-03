@@ -14,7 +14,7 @@ class MenuWidgetController extends GetxController {
   final AuthService authService = Get.find<AuthService>();
   SupabaseClient supabase = Supabase.instance.client;
 
-  final connected = true.obs;
+  // final isConnected = true.obs;
 
   late final account = Rx<AccountModel?>(null);
   late final isOwner = authService.isOwner;
@@ -26,15 +26,8 @@ class MenuWidgetController extends GetxController {
   void onInit() async {
     debugPrint('MenuWidgetController INIT');
     account.value = authService.account.value;
-    connected.value = authService.connected.value;
+    // isConnected.value = authService.connected.value;
     getMenu();
-    // selectedUser.value = authService.selectedUser.value;
-
-    // ever(account, (_) {
-    //   isOwner.value = account.value?.role == 'owner';
-
-    //   print('MenuWidgetController: isAdmin ${isOwner.value}');
-    // });
 
     super.onInit();
   }

@@ -45,7 +45,9 @@ class MenuWidget extends GetView<MenuWidgetController> {
             () => Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(30),
-                color: controller.connected.value ? Colors.green : Colors.red,
+                color: controller.authService.connected.value
+                    ? Colors.green
+                    : Colors.red,
               ),
               height: 12,
               width: 12,

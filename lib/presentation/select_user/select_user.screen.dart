@@ -11,36 +11,6 @@ class SelectUserScreen extends GetView<SelectUserController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          onPressed: () async {
-            controller.isConnected.value
-                ? AppDialog.show(
-                    title: 'Keluar',
-                    content: 'Keluar dari aplikasi?',
-                    confirmText: "Ya",
-                    cancelText: "Tidak",
-                    confirmColor: Colors.grey,
-                    cancelColor: Get.theme.primaryColor,
-                    onConfirm: () => controller.signOut(),
-                    onCancel: () => Get.back(),
-                  )
-                : await Get.defaultDialog(
-                    title: 'Error',
-                    middleText:
-                        'Tidak ada koneksi internet untuk mengeluarkan akun.',
-                    confirm: TextButton(
-                      onPressed: () {
-                        Get.back();
-                        Get.back();
-                      },
-                      child: const Text('OK'),
-                    ),
-                  );
-          },
-          icon: const Icon(Symbols.logout),
-        ),
-      ),
       body: Obx(
         () => Center(
           child: controller.isLoading.value
@@ -69,29 +39,16 @@ class SelectUserScreen extends GetView<SelectUserController> {
                                   style: context.textTheme.titleLarge),
                               IconButton(
                                 onPressed: () async {
-                                  controller.isConnected.value
-                                      ? AppDialog.show(
-                                          title: 'Keluar',
-                                          content: 'Keluar dari aplikasi?',
-                                          confirmText: "Ya",
-                                          cancelText: "Tidak",
-                                          confirmColor: Colors.grey,
-                                          cancelColor: Get.theme.primaryColor,
-                                          onConfirm: () => controller.signOut(),
-                                          onCancel: () => Get.back(),
-                                        )
-                                      : await Get.defaultDialog(
-                                          title: 'Error',
-                                          middleText:
-                                              'Tidak ada koneksi internet untuk mengeluarkan akun.',
-                                          confirm: TextButton(
-                                            onPressed: () {
-                                              Get.back();
-                                              Get.back();
-                                            },
-                                            child: const Text('OK'),
-                                          ),
-                                        );
+                                  AppDialog.show(
+                                    title: 'Keluar',
+                                    content: 'Keluar dari aplikasi?',
+                                    confirmText: "Ya",
+                                    cancelText: "Tidak",
+                                    confirmColor: Colors.grey,
+                                    cancelColor: Get.theme.primaryColor,
+                                    onConfirm: () => controller.signOut(),
+                                    onCancel: () => Get.back(),
+                                  );
                                 },
                                 icon: const Icon(Symbols.logout),
                               ),

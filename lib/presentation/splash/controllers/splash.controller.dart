@@ -39,14 +39,13 @@ class SplashController extends GetxController {
   late final loadingStatus = authService.loadingStatus;
 
   void init() async {
-    // isConnected.value = authService.connected.value;
     final isLoggedIn = await authService.isLoggedIn();
     print('login in $isLoggedIn');
 
     if (isLoggedIn) {
-      while (!syncController.hasSynced.value) {
-        await Future.delayed(const Duration(seconds: 2));
-      }
+      // while (!authService.hasSynced.value) {
+      await Future.delayed(const Duration(seconds: 2));
+      // }
       await authService.getAccount();
       authService.loadingStatus.value = 'menghubungkan toko';
       await authService.getStore();
@@ -69,6 +68,7 @@ class SplashController extends GetxController {
       await _purchaseOrderService.subscribe(account!.storeId!);
       print('SelectUserController FINISH INIT');
       authService.loadingStatus.value = 'selesai';
+      isConnected.value = authService.connected.value;
       Get.offAllNamed(Routes.SELECT_USER);
     } else {
       Get.offAllNamed(Routes.LOGIN);

@@ -52,8 +52,6 @@ class LoginController extends GetxController {
     if (formkey.currentState!.validate()) {
       isLoading.value = true;
       await _authService.login(emailFieldC.text.trim(), passwordFieldC.text);
-      //! await Fetch Data
-      Get.offAllNamed(Routes.SPLASH);
     }
   }
 

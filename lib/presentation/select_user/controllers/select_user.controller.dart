@@ -16,7 +16,7 @@ class SelectUserController extends GetxController {
   late final Box<dynamic> box;
   final isLoading = false.obs;
   // late final loadingStatus = authService.loadingStatus;
-  late final isConnected = authService.connected;
+  // late final isConnected = authService.connected;
   late final account = authService.account;
   late final store = authService.store;
 
@@ -75,8 +75,7 @@ class SelectUserController extends GetxController {
         } else {
           Get.defaultDialog(
             title: 'Error',
-            content:
-                const Text('Password tidak cocok dengan akun yang dipilih!'),
+            content: const Text('Ada yang salah, silahkan coba lagi'),
           );
         }
       } else {
@@ -105,30 +104,19 @@ class SelectUserController extends GetxController {
   }
 
   Future<void> signOut() async {
+    await Future.delayed(const Duration(milliseconds: 200));
     // try {
-    if (isConnected.value) {
+    if (authService.connected.value) {
       await logout();
       Get.offNamed(Routes.LOGIN);
     } else {
-      AppDialog.show(
+      print('ga ada inet');
+
+      await Get.defaultDialog(
         title: 'Error',
-        content: 'Tidak ada koneksi internet untuk mengeluarkan akun.',
-        onConfirm: () {
-          Get.back();
-          Get.back();
-        },
+        content:
+            const Text('Tidak ada koneksi internet untuk mengeluarkan akun.'),
       );
-      // await Get.defaultDialog(
-      //   title: 'Error',
-      //   middleText: 'Tidak ada koneksi internet untuk mengeluarkan akun.',
-      //   confirm: TextButton(
-      //     onPressed: () {
-      //       Get.back();
-      //       Get.back();
-      //     },
-      //     child: const Text('OK'),
-      //   ),
-      // );
     }
   }
 }

@@ -24,7 +24,7 @@ class SplashScreen extends GetView<SplashController> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               // Menampilkan CircularProgressIndicator hanya saat belum sinkron
-              if (!controller.syncController.hasSynced.value) ...[
+              if (!controller.authService.hasSynced.value) ...[
                 const CircularProgressIndicator(),
                 const SizedBox(height: 8),
                 const Text('Menghubungkan Akun...'),

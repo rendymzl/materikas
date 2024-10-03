@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:materikas/infrastructure/models/user_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -9,6 +10,7 @@ import '../../../domain/core/interfaces/auth_repository.dart';
 // import '../../../presentation/global_widget/menu_widget/menu_controller.dart';
 import '../../models/account_model.dart';
 import '../../models/store_model.dart';
+import '../../navigation/routes.dart';
 import '../database/powersync.dart';
 
 class AuthService extends GetxService implements AuthRepository {
@@ -17,6 +19,7 @@ class AuthService extends GetxService implements AuthRepository {
   late StreamSubscription<List<ConnectivityResult>> connectivitySubs;
   final connected = true.obs;
   final loadingStatus = 'Menghubungkan...'.obs;
+  RxBool hasSynced = false.obs;
 
   late final account = Rx<AccountModel?>(null);
   late final store = Rx<StoreModel?>(null);
@@ -42,6 +45,7 @@ class AuthService extends GetxService implements AuthRepository {
     connectivitySubs = Connectivity()
         .onConnectivityChanged
         .listen((List<ConnectivityResult> result) {
+      print('connection change : $result');
       connected.value = !result.contains(ConnectivityResult.none);
     });
     super.onInit();
@@ -60,28 +64,36 @@ class AuthService extends GetxService implements AuthRepository {
         email: email,
         password: password,
       );
+      //! await Fetch Data
+      Get.offAllNamed(Routes.SPLASH);
     } on AuthException catch (e) {
       print('AuthException: $e');
+      Get.defaultDialog(
+        title: 'Error',
+        content: const Text('Email atau password yang anda masukkan salah'),
+      );
     }
   }
 
   @override
   Future<AccountModel> getAccount() async {
-    // loadingStatus.value = 'Menghubungkan Akun, ${db.currentStatus.anyError}';
-    while (db.currentStatus.lastSyncedAt == null) {
-      await Future.delayed(const Duration(seconds: 2));
-      print(db.currentStatus);
-      print('Menunggu koneksi, ${db.currentStatus.lastSyncedAt}');
-      loadingStatus.value = 'Menunggu koneksi ${db.currentStatus.anyError}';
-      if (db.currentStatus.lastSyncedAt == null) {
-        print('Mencoba koneksi ulang, ${db.currentStatus.downloadError}');
-        loadingStatus.value = 'Mencoba koneksi ulang, ${db.currentStatus}';
+    if (db.currentStatus.connecting == false) {
+      while (db.currentStatus.lastSyncedAt == null) {
+        await Future.delayed(const Duration(seconds: 2));
+        print(db.currentStatus);
+        print('Menunggu koneksi, ${db.currentStatus.lastSyncedAt}');
+        loadingStatus.value = 'Menunggu koneksi ${db.currentStatus.anyError}';
+        if (db.currentStatus.lastSyncedAt == null) {
+          print('Mencoba koneksi ulang, ${db.currentStatus.downloadError}');
+          loadingStatus.value = 'Mencoba koneksi ulang, ${db.currentStatus}';
+        }
       }
     }
     final row = await db.get('SELECT * FROM accounts WHERE account_id = ?',
         [supabaseClient.auth.currentUser!.id]);
     account.value = AccountModel.fromRow(row);
     print('AuthService: ${account.value}');
+    hasSynced.value = true;
     return account.value!;
   }
 
@@ -93,9 +105,9 @@ class AuthService extends GetxService implements AuthRepository {
     await Future.delayed(const Duration(seconds: 2));
     print(db.currentStatus);
     print('menunggu koneksi');
-    if (db.currentStatus.lastSyncedAt == null) {
-      print('mencoba koneksi ulang');
-    }
+    // if (db.currentStatus.lastSyncedAt == null) {
+    //   print('mencoba koneksi ulang');
+    // }
     // }
     final row = await db
         .get('SELECT * FROM stores WHERE id = ?', [account.value!.storeId!]);
