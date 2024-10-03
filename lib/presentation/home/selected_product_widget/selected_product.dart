@@ -88,7 +88,7 @@ class PriceTypeWidget extends StatelessWidget {
                               controller.priceTypeHandleCheckBox(2),
                         ),
                         Text(
-                          'Harga ${controller.authService.account.value!.name.toLowerCase() == 'arca nusantara' ? 'masuk gang' : '3'}',
+                          'Harga ${controller.authService.account.value!.name.toLowerCase() == 'arca nusantara' ? 'masuk gang' : '2'}',
                           style: controller.priceType.value == 2
                               ? context.textTheme.bodySmall!.copyWith(
                                   color: Theme.of(context).colorScheme.primary)

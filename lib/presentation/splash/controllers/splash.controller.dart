@@ -1,6 +1,8 @@
 import 'package:get/get.dart';
 
 import '../../../infrastructure/dal/database/powersync.dart';
+import '../../../infrastructure/dal/database/sync_controller.dart.dart';
+import '../../../infrastructure/dal/database/sync_status.dart';
 import '../../../infrastructure/dal/services/account_service.dart';
 import '../../../infrastructure/dal/services/auth_service.dart';
 import '../../../infrastructure/dal/services/customer_service.dart';
@@ -17,6 +19,7 @@ import '../../../infrastructure/navigation/routes.dart';
 import '../../global_widget/app_dialog_widget.dart';
 
 class SplashController extends GetxController {
+  final SyncAppBar syncController = Get.put(SyncAppBar());
   final AuthService authService = Get.put(AuthService());
   final ProductService _productService = Get.put(ProductService());
   final InvoiceService _invoiceService = Get.put(InvoiceService());
@@ -36,9 +39,14 @@ class SplashController extends GetxController {
   late final loadingStatus = authService.loadingStatus;
 
   void init() async {
-    isConnected.value = authService.connected.value;
+    // isConnected.value = authService.connected.value;
     final isLoggedIn = await authService.isLoggedIn();
+    print('login in $isLoggedIn');
+
     if (isLoggedIn) {
+      while (!syncController.hasSynced.value) {
+        await Future.delayed(const Duration(seconds: 2));
+      }
       await authService.getAccount();
       authService.loadingStatus.value = 'menghubungkan toko';
       await authService.getStore();

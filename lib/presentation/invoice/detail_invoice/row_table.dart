@@ -43,7 +43,7 @@ class RowTable extends StatelessWidget {
             'Rp-${currency.format(purchaseItem!.individualDiscount.value)}';
       }
       totalPurchase =
-          'Rp${currency.format(purchaseItem!.getPurchase(invoice!.priceType.value) + purchaseItem!.individualDiscount.value)}';
+          'Rp${currency.format(purchaseItem!.getSubBill(invoice!.priceType.value))}';
 
       quantityReturnDisplay = purchaseItem!.quantityReturnDisplay;
       quantityReturn =
@@ -51,9 +51,9 @@ class RowTable extends StatelessWidget {
       subTotalReturn =
           'Rp-${currency.format(purchaseItem!.getReturn(invoice!.priceType.value))}';
       quantityPurchase =
-          '${purchaseItem!.quantityTotalDisplay} ${purchaseItem!.product.unit}';
+          '${number.format(purchaseItem!.quantity.value)} ${purchaseItem!.product.unit}';
       subTotalPurchase =
-          'Rp${currency.format(purchaseItem!.getPurchase(invoice!.priceType.value))}';
+          'Rp${currency.format(purchaseItem!.getBill(invoice!.priceType.value))}';
     }
 
     return (!isAdditionalDiscount)

@@ -245,11 +245,15 @@ class PaymentController extends GetxController {
       }
 
       await customerFieldC.handleSave();
+      await customerFieldC.addCustomer(invoice);
 
       if (isNewInvoice) {
         if (_authService.selectedUser.value != null) {
           invoice.account.value.name = _authService.selectedUser.value!.name;
         }
+
+        invoice.customer.value?.id = customerFieldC.lastCustomersId.value;
+
         await _invoiceService.insert(invoice);
         _homeC.resetData();
         Get.back();

@@ -67,7 +67,7 @@ class AuthService extends GetxService implements AuthRepository {
 
   @override
   Future<AccountModel> getAccount() async {
-    loadingStatus.value = 'Menghubungkan Akun, ${db.currentStatus.anyError}';
+    // loadingStatus.value = 'Menghubungkan Akun, ${db.currentStatus.anyError}';
     while (db.currentStatus.lastSyncedAt == null) {
       await Future.delayed(const Duration(seconds: 2));
       print(db.currentStatus);
@@ -89,14 +89,14 @@ class AuthService extends GetxService implements AuthRepository {
   Future<StoreModel> getStore() async {
     loadingStatus.value =
         'Menghubungkan Toko, ${db.currentStatus.lastSyncedAt}';
-    while (db.currentStatus.lastSyncedAt == null) {
-      await Future.delayed(const Duration(seconds: 2));
-      print(db.currentStatus);
-      print('menunggu koneksi');
-      if (db.currentStatus.lastSyncedAt == null) {
-        print('mencoba koneksi ulang');
-      }
+    // while (db.currentStatus.lastSyncedAt == null) {
+    await Future.delayed(const Duration(seconds: 2));
+    print(db.currentStatus);
+    print('menunggu koneksi');
+    if (db.currentStatus.lastSyncedAt == null) {
+      print('mencoba koneksi ulang');
     }
+    // }
     final row = await db
         .get('SELECT * FROM stores WHERE id = ?', [account.value!.storeId!]);
     store.value = StoreModel.fromRow(row);

@@ -30,12 +30,13 @@ class CustomerInputFieldController extends GetxController {
     customerAddressController.text = customer.address ?? '';
     customer.storeId = customer.storeId == 'null' ? null : customer.storeId;
     selectedCustomer.value = customer;
+    showSuffixClear.value = customer.name != '';
   }
 
-  void updateSelectedCustomer(CustomerModel customer) {
-    customer.name = customerNameController.text;
-    customer.phone = customerPhoneController.text;
-    customer.address = customerAddressController.text;
+  void updateSelectedCustomer(CustomerModel? customer) {
+    customer?.name = customerNameController.text;
+    customer?.phone = customerPhoneController.text;
+    customer?.address = customerAddressController.text;
     selectedCustomer.value = customer;
   }
 
@@ -56,6 +57,7 @@ class CustomerInputFieldController extends GetxController {
             address: customerAddressController.text,
             storeId: _authService.account.value!.storeId);
         await _customerService.insert(customer);
+        selectedCustomer.value = customer;
       } catch (e) {
         Get.defaultDialog(
           title: 'cekError',
@@ -76,11 +78,11 @@ class CustomerInputFieldController extends GetxController {
     customerNameController.text = '';
     customerPhoneController.text = '';
     customerAddressController.text = '';
-    CustomerModel customer = CustomerModel(
-        name: customerNameController.text,
-        phone: customerPhoneController.text,
-        address: customerAddressController.text);
-    selectedCustomer.value = customer;
+    // CustomerModel customer = CustomerModel(
+    //     name: customerNameController.text,
+    //     phone: customerPhoneController.text,
+    //     address: customerAddressController.text);
+    selectedCustomer.value = null;
   }
 
   bool validateCustomer() {

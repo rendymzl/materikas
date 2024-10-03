@@ -23,10 +23,10 @@ class CustomerInputField extends StatelessWidget {
         children: [
           Obx(
             () {
-              print(controller.selectedCustomer.value!.customerId);
+              // print(controller.selectedCustomer.value!.customerId);
               controller.showSuffixClear.value;
               return (controller.customerNameController.text != '' &&
-                      (controller.selectedCustomer.value!.customerId == null))
+                      (controller.selectedCustomer.value?.customerId == null))
                   ? Expanded(
                       child: SizedBox(
                         width: 200,
@@ -88,8 +88,9 @@ class CustomerInputField extends StatelessWidget {
                             controller.showSuffixClear.value = value != '';
                             controller.customerNameController.text = value;
                             controller.displayName.value = value;
+                            controller.selectedCustomer.value = null;
                             controller.updateSelectedCustomer(
-                              controller.selectedCustomer.value!,
+                              controller.selectedCustomer.value,
                             );
                           },
                           onSubmitted: (String value) {
