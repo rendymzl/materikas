@@ -293,7 +293,7 @@ void detailDialog(InvoiceModel invoice) {
                 ),
               ],
             ),
-            if (invoice.totalPaid > 0 && !invoice.isDebtPaid.value)
+            if (invoice.totalPaid > 0)
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -312,7 +312,7 @@ void detailDialog(InvoiceModel invoice) {
                               title:
                                   'Pembayaran ${(!invoice.isDebtPaid.value || invoice.payments.length > 1) ? '${index + 1}' ' (${DateFormat('dd MMM y', 'id').format(invoice.payments[index].date!)})' : ''}',
                               value:
-                                  'Rp${currency.format(invoice.payments[index].amountPaid)}',
+                                  'Rp${currency.format(invoice.totalPaidByIndex(index) == invoice.totalBill ? invoice.payments[index].amountPaid : invoice.payments[index].finalAmountPaid)}',
                             );
                           },
                         );
@@ -347,9 +347,7 @@ void detailDialog(InvoiceModel invoice) {
                     payment: !(invoice.totalPaid < invoice.totalBill),
                     title: invoice.totalPaid < invoice.totalBill
                         ? 'SISA TAGIHAN'
-                        : invoice.isReturn
-                            ? ''
-                            : '',
+                        : '',
                     value: invoice.totalPaid < invoice.totalBill
                         ? 'Rp${currency.format((invoice.totalBill - invoice.totalPaid))}'
                         : 'LUNAS',

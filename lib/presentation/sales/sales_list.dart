@@ -100,9 +100,14 @@ class SalesList extends StatelessWidget {
                             title: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(
-                                  foundSales.name!,
-                                  style: context.textTheme.titleLarge,
+                                SizedBox(
+                                  width: 240,
+                                  child: Text(
+                                    foundSales.name!,
+                                    style: context.textTheme.titleLarge,
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
                                 ),
                                 if (foundSales.getTotalDebt(
                                         controller.salesInvoices) >

@@ -64,7 +64,7 @@ class AccountModel extends Account {
       endDate: json['end_date'] != null
           ? DateTime.parse(json['end_date']).toLocal()
           : null,
-      isActive: json['is_active'] == 1,
+      isActive: json['is_active'] != null ? json['is_active'] == 1 : true,
       updatedAt: json['updated_at'] != null
           ? DateTime.parse(json['updated_at']).toLocal()
           : DateTime.now(),
@@ -83,10 +83,10 @@ class AccountModel extends Account {
       'users': users.map((item) => item.toJson()).toList(),
       'password': password,
       'account_type': accountType,
-      'start_date': startDate,
-      'end_date': endDate,
+      'start_date': startDate?.toIso8601String(),
+      'end_date': endDate?.toIso8601String(),
       'is_active': isActive,
-      'updated_at': updatedAt
+      'updated_at': updatedAt.toIso8601String()
     };
   }
 

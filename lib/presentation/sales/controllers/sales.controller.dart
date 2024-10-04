@@ -21,6 +21,7 @@ class SalesController extends GetxController {
   late InvoiceSalesModel initInvoice;
 
   final salesTextC = TextEditingController();
+  final invoiceSearchC = TextEditingController();
   final GlobalKey textFieldKey = GlobalKey();
   final showSuffixClear = false.obs;
 
@@ -28,7 +29,29 @@ class SalesController extends GetxController {
     salesCustomerSecvice.search(salesName);
   }
 
+  void filterSalesInvoice(String salesName) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (salesName.isEmpty) {
+        selectedSalesHandle(selectedSales.value);
+        // List<InvoiceSalesModel> salesInvList = [];
+        // salesInvList.addAll(invoiceById);
+        // salesInvList
+        //     .sort((a, b) => a.createdAt.value!.compareTo(b.createdAt.value!));
+        // invoiceById.assignAll(salesInvList);
+      } else {
+        List<InvoiceSalesModel> salesInvList = [];
+        salesInvList = invoiceById.where((sales) {
+          return sales.invoiceId!
+              .toLowerCase()
+              .contains(salesName.toLowerCase());
+        }).toList();
+        invoiceById.assignAll(salesInvList);
+      }
+    });
+  }
+
   void selectedSalesHandle(SalesModel? sales) {
+    invoiceSearchC.text = '';
     selectedSales.value = sales;
     salesTextC.text = selectedSales.value?.name ?? '';
     if (sales != null) {

@@ -378,8 +378,23 @@ class InvoiceModel {
   //   return totalPurchase - totalReturn;
   // }
 
+  double totalPaidByIndex(int index) {
+    var sublist = payments.sublist(0, index + 1);
+
+    double total = sublist
+        .map((payment) => payment.finalAmountPaid)
+        .reduce((a, b) => a + b);
+    return total;
+  }
+
   double get totalPaid {
-    return payments.fold(0, (prev, payment) => prev + payment.amountPaid);
+    return payments.fold(
+        0,
+        (prev, payment) =>
+            prev +
+            ((prev + payment.amountPaid) < totalBill
+                ? payment.finalAmountPaid
+                : payment.amountPaid));
   }
 
   double get remainingDebt {
@@ -391,7 +406,7 @@ class InvoiceModel {
         method: method,
         amountPaid: amount,
         remain: totalBill - (totalPaid + amount),
-        finalAmountPaid: (totalPaid + amount) > totalBill
+        finalAmountPaid: (totalPaid + amount) >= totalBill
             ? amount + (totalBill - (totalPaid + amount))
             : (totalPaid + amount),
         date: date));

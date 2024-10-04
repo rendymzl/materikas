@@ -28,6 +28,7 @@ class RowTable extends StatelessWidget {
     String price = '-';
     String discount = '-';
     String totalPurchase = '-';
+    String quantityDisplay = '';
     String quantityReturnDisplay = '';
     String quantityReturn = '';
     late String subTotalReturn;
@@ -45,7 +46,9 @@ class RowTable extends StatelessWidget {
       totalPurchase =
           'Rp${currency.format(purchaseItem!.getSubBill(invoice!.priceType.value))}';
 
+      quantityDisplay = purchaseItem!.quantityDisplay;
       quantityReturnDisplay = purchaseItem!.quantityReturnDisplay;
+
       quantityReturn =
           '-${purchaseItem!.quantityReturnDisplay} ${purchaseItem!.product.unit}';
       subTotalReturn =
@@ -55,9 +58,10 @@ class RowTable extends StatelessWidget {
       subTotalPurchase =
           'Rp${currency.format(purchaseItem!.getBill(invoice!.priceType.value))}';
     }
-
+    print('quantity ${quantityDisplay}');
     return (!isAdditionalDiscount)
-        ? (isReturn && (quantityReturnDisplay == '0'))
+        ? (isReturn && (quantityReturnDisplay == '0') ||
+                (!isReturn && (quantityDisplay == '0')))
             ? const SizedBox()
             : ListTile(
                 dense: true,

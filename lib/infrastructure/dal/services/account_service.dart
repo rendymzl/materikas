@@ -8,8 +8,8 @@ class AccountService extends GetxService implements AccountRepository {
   @override
   Future<void> insert(AccountModel account) async {
     await db.execute('''
-      INSERT INTO accounts (id, account_id, created_at, name, email, role, store_id, users, password)
-      VALUES (uuid(), ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO accounts (id, account_id, created_at, name, email, role, store_id, users, password, account_type, start_date, end_date, is_active, updated_at)
+      VALUES (uuid(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', [
       // id,
       account.accountId,
@@ -19,7 +19,12 @@ class AccountService extends GetxService implements AccountRepository {
       account.role,
       account.storeId,
       account.users.map((e) => e.toJson()).toList(),
-      account.password
+      account.password,
+      account.accountType,
+      account.startDate,
+      account.endDate,
+      account.isActive,
+      account.endDate
     ]);
   }
 
@@ -27,7 +32,7 @@ class AccountService extends GetxService implements AccountRepository {
   Future<void> update(AccountModel updatedAccount) async {
     await db.execute('''
       UPDATE accounts
-      SET account_id = ?, created_at = ?, name = ?, email = ?, role = ?, store_id = ?, users = ?, password = ?
+      SET account_id = ?, created_at = ?, name = ?, email = ?, role = ?, store_id = ?, users = ?, password = ?, account_type = ?, start_date = ?, end_date = ?, is_active = ?, updated_at = ?
       WHERE id = ?
     ''', [
       updatedAccount.accountId,
@@ -38,6 +43,11 @@ class AccountService extends GetxService implements AccountRepository {
       updatedAccount.storeId,
       updatedAccount.users.map((e) => e.toJson()).toList(),
       updatedAccount.password,
+      updatedAccount.accountType,
+      updatedAccount.startDate,
+      updatedAccount.endDate,
+      updatedAccount.isActive,
+      updatedAccount.endDate,
       updatedAccount.id
     ]);
   }

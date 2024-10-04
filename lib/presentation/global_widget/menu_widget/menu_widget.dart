@@ -20,21 +20,22 @@ class MenuWidget extends GetView<MenuWidgetController> {
           60 + (controller.account.value!.accountType == 'free_trial' ? 40 : 0),
       child: Column(
         children: [
-          Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            decoration: BoxDecoration(
-                color: Colors.red, borderRadius: BorderRadius.circular(8)),
-            height: 25,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  controller.account.value!.accountType,
-                  style: const TextStyle(color: Colors.white),
-                ),
-              ],
+          if (controller.account.value!.accountType == 'free_trial')
+            Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                  color: Colors.red, borderRadius: BorderRadius.circular(8)),
+              height: 25,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    controller.account.value!.accountType,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ],
+              ),
             ),
-          ),
           Expanded(
             child: Row(
               children: [

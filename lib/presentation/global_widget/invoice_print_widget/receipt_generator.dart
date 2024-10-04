@@ -81,12 +81,12 @@ Future<List<int>> generateReceiptBytes(InvoiceModel invoice) async {
   bytes += generator.feed(1);
 
   // Add items
-  if (invoice.isReturn) {
-    bytes += generator.text(
-      '-- Pesanan Awal --',
-      styles: const PosStyles(bold: true),
-    );
-  }
+  // if (invoice.isReturn) {
+  //   bytes += generator.text(
+  //     '-- Pesanan Awal --',
+  //     styles: const PosStyles(bold: true),
+  //   );
+  // }
 
   bytes += generator.hr();
   bytes += generator.row([
@@ -107,9 +107,11 @@ Future<List<int>> generateReceiptBytes(InvoiceModel invoice) async {
     ),
   ]);
   bytes += generator.hr();
-
-  for (var i = 0; i < invoice.purchaseList.value.items.length; i++) {
-    var item = invoice.purchaseList.value.items[i];
+  var filteredPurchase = invoice.purchaseList.value.items
+      .where((item) => item.quantity.value > 0)
+      .toList();
+  for (var i = 0; i < filteredPurchase.length; i++) {
+    var item = filteredPurchase[i];
     bytes += generator.row([
       PosColumn(
         text: '${i + 1}',
@@ -146,72 +148,19 @@ Future<List<int>> generateReceiptBytes(InvoiceModel invoice) async {
 
   // Add totals
   bytes += generator.hr();
-  bytes += generator.row([
-    PosColumn(
-      text: 'Subtotal:',
-      width: 8,
-    ),
-    PosColumn(
-      text: currency.format(invoice.subTotalPurchase),
-      width: 4,
-      styles: const PosStyles(align: PosAlign.right),
-    ),
-  ]);
-  bytes += generator.row([
-    PosColumn(
-      text: 'Total diskon:',
-      width: 8,
-    ),
-    PosColumn(
-      text: invoice.totalDiscount > 0
-          ? '-${currency.format(invoice.totalDiscount)}'
-          : '0',
-      width: 4,
-      styles: const PosStyles(align: PosAlign.right),
-    ),
-  ]);
-  if (invoice.totalOtherCosts > 0) {
+  if (invoice.isReturn) {
     bytes += generator.row([
       PosColumn(
-        text: 'Biaya lainnya:',
+        text: 'Subtotal:',
         width: 8,
       ),
       PosColumn(
-        text: invoice.totalOtherCosts > 0
-            ? currency.format(invoice.totalOtherCosts)
-            : '0',
+        text: currency.format(invoice.subTotalPurchase),
         width: 4,
         styles: const PosStyles(align: PosAlign.right),
       ),
     ]);
-  }
 
-  bytes += generator.row([
-    PosColumn(
-      text: '',
-      width: 8,
-    ),
-    PosColumn(
-      text: '----------',
-      width: 4,
-      styles: const PosStyles(bold: true, align: PosAlign.right),
-    ),
-  ]);
-
-  bytes += generator.row([
-    PosColumn(
-      text: 'Total tagihan:',
-      width: 8,
-      styles: const PosStyles(bold: true),
-    ),
-    PosColumn(
-      text: currency.format(invoice.totalPurchase),
-      width: 4,
-      styles: const PosStyles(bold: true, align: PosAlign.right),
-    ),
-  ]);
-
-  if (invoice.isReturn) {
     bytes += generator.feed(2);
     bytes += generator.text(
       '-- Barang yang direturn --',
@@ -268,7 +217,7 @@ Future<List<int>> generateReceiptBytes(InvoiceModel invoice) async {
       ),
       PosColumn(
         text: invoice.isReturn
-            ? '-${currency.format((invoice.totalReturn + invoice.returnFee.value))}'
+            ? '-${currency.format((invoice.totalReturn))}'
             : '0',
         width: 4,
         styles: const PosStyles(align: PosAlign.right),
@@ -303,14 +252,64 @@ Future<List<int>> generateReceiptBytes(InvoiceModel invoice) async {
         styles: const PosStyles(bold: true),
       ),
       PosColumn(
-        text: '-${currency.format(invoice.totalReturn)}',
+        text: '-${currency.format(invoice.totalReturnFinal)}',
         width: 4,
         styles: const PosStyles(bold: true, align: PosAlign.right),
       ),
     ]);
+
+    bytes += generator.feed(2);
+    bytes += generator.hr();
+  }
+
+  bytes += generator.row([
+    PosColumn(
+      text:
+          'SUBTOTAL HARGA (${invoice.purchaseList.value.items.length} Barang)',
+      width: 8,
+      styles: const PosStyles(bold: true),
+    ),
+    PosColumn(
+      text: currency.format(invoice.subTotalPurchase),
+      width: 4,
+      styles: const PosStyles(bold: true, align: PosAlign.right),
+    ),
+  ]);
+
+  bytes += generator.row([
+    PosColumn(
+      text: 'Total diskon:',
+      width: 8,
+    ),
+    PosColumn(
+      text: invoice.totalDiscount > 0
+          ? '-${currency.format(invoice.totalDiscount)}'
+          : '0',
+      width: 4,
+      styles: const PosStyles(align: PosAlign.right),
+    ),
+  ]);
+  if (invoice.totalOtherCosts > 0) {
     bytes += generator.row([
       PosColumn(
-        text: 'Total tagihan:',
+        text: 'Biaya lainnya:',
+        width: 8,
+      ),
+      PosColumn(
+        text: invoice.totalOtherCosts > 0
+            ? currency.format(invoice.totalOtherCosts)
+            : '0',
+        width: 4,
+        styles: const PosStyles(align: PosAlign.right),
+      ),
+    ]);
+  }
+
+  if (invoice.isReturn) {
+    bytes += generator.hr();
+    bytes += generator.row([
+      PosColumn(
+        text: 'Tagihan sebelum return:',
         width: 8,
         styles: const PosStyles(bold: true),
       ),
@@ -320,10 +319,25 @@ Future<List<int>> generateReceiptBytes(InvoiceModel invoice) async {
         styles: const PosStyles(bold: true, align: PosAlign.right),
       ),
     ]);
-    bytes += generator.hr();
+
     bytes += generator.row([
       PosColumn(
-        text: 'Total setelah return:',
+        text: 'Total return:',
+        width: 8,
+        // styles: const PosStyles(bold: true),
+      ),
+      PosColumn(
+        text: currency.format(invoice.totalReturnFinal),
+        width: 4,
+        styles: const PosStyles(align: PosAlign.right),
+      ),
+    ]);
+
+    bytes += generator.hr();
+
+    bytes += generator.row([
+      PosColumn(
+        text: 'Tagihan setelah return:',
         width: 8,
         styles: const PosStyles(bold: true),
       ),
@@ -335,33 +349,64 @@ Future<List<int>> generateReceiptBytes(InvoiceModel invoice) async {
     ]);
   }
 
-  if (!invoice.isReturn) {
+  for (var i = 0; i < invoice.payments.length; i++) {
     bytes += generator.row([
       PosColumn(
-        text: 'Bayar:',
+        text:
+            'Pembayaran ${(!invoice.isDebtPaid.value || invoice.payments.length > 1) ? '${i + 1}' ' (${DateFormat('dd MMM y', 'id').format(invoice.payments[i].date!)})' : ''}',
         width: 8,
         styles: const PosStyles(bold: true),
       ),
       PosColumn(
-        text: currency.format(invoice.totalPaid),
-        width: 4,
-        styles: const PosStyles(bold: true, align: PosAlign.right),
-      ),
-    ]);
-    bytes += generator.hr();
-    bytes += generator.row([
-      PosColumn(
-        text: invoice.remainingDebt <= 0 ? 'Kembalian:' : 'Kurang Bayar:',
-        width: 8,
-        styles: const PosStyles(bold: true),
-      ),
-      PosColumn(
-        text: currency.format(invoice.remainingDebt * -1),
+        text: currency.format(invoice.totalPaidByIndex(i) == invoice.totalBill
+            ? invoice.payments[i].amountPaid
+            : invoice.payments[i].finalAmountPaid),
         width: 4,
         styles: const PosStyles(bold: true, align: PosAlign.right),
       ),
     ]);
   }
+
+  bytes += generator.hr();
+  bytes += generator.row([
+    PosColumn(
+      text: invoice.remainingDebt <= 0 ? 'Kembalian:' : 'Kurang Bayar:',
+      width: 8,
+      styles: const PosStyles(bold: true),
+    ),
+    PosColumn(
+      text: currency.format(invoice.remainingDebt * -1),
+      width: 4,
+      styles: const PosStyles(bold: true, align: PosAlign.right),
+    ),
+  ]);
+  // if (!invoice.isReturn) {
+  //   // bytes += generator.row([
+  //   //   PosColumn(
+  //   //     text: 'Bayar:',
+  //   //     width: 8,
+  //   //     styles: const PosStyles(bold: true),
+  //   //   ),
+  //   //   PosColumn(
+  //   //     text: currency.format(invoice.totalPaid),
+  //   //     width: 4,
+  //   //     styles: const PosStyles(bold: true, align: PosAlign.right),
+  //   //   ),
+  //   // ]);
+  //   // bytes += generator.hr();
+  //   // bytes += generator.row([
+  //   //   PosColumn(
+  //   //     text: invoice.remainingDebt <= 0 ? 'Kembalian:' : 'Kurang Bayar:',
+  //   //     width: 8,
+  //   //     styles: const PosStyles(bold: true),
+  //   //   ),
+  //   //   PosColumn(
+  //   //     text: currency.format(invoice.remainingDebt * -1),
+  //   //     width: 4,
+  //   //     styles: const PosStyles(bold: true, align: PosAlign.right),
+  //   //   ),
+  //   // ]);
+  // }
 
   bytes += generator.feed(2);
   bytes += generator.text(

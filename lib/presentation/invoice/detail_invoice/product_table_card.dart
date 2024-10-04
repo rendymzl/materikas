@@ -25,12 +25,12 @@ class ProductTableCard extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (invoice.isReturn)
-                    const Text(
-                      'Pesanan Awal:',
-                      style: TextStyle(
-                          color: Colors.grey, fontStyle: FontStyle.italic),
-                    ),
+                  // if (invoice.isReturn)
+                  //   const Text(
+                  //     'Pesanan:',
+                  //     style: TextStyle(
+                  //         color: Colors.grey, fontStyle: FontStyle.italic),
+                  //   ),
                   Container(
                     color: Colors.green[50],
                     child: ListView.builder(
@@ -40,6 +40,7 @@ class ProductTableCard extends StatelessWidget {
                         final purchaseItem =
                             invoice.purchaseList.value.items[index];
 
+                        print('purchase item ${purchaseItem.toJson()}');
                         return RowTable(
                           purchaseItem: purchaseItem,
                           invoice: invoice,

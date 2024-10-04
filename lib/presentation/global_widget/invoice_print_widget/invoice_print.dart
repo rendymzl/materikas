@@ -29,6 +29,9 @@ void printInvoiceDialog(InvoiceModel invoice) {
       height: MediaQuery.of(Get.context!).size.height * (0.7),
       width: MediaQuery.of(Get.context!).size.width * (0.6),
       child: Obx(() {
+        var filteredPurchase = invoice.purchaseList.value.items
+            .where((item) => item.quantity.value > 0)
+            .toList();
         return Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -245,9 +248,9 @@ void printInvoiceDialog(InvoiceModel invoice) {
                                         buildText(
                                             'Alamat: ${invoice.customer.value!.address}'),
                                         const SizedBox(height: 10),
-                                        if (invoice.isReturn)
-                                          buildText('-- Pesanan Awal --',
-                                              bold: true),
+                                        // if (invoice.isReturn)
+                                        //   buildText('-- Pesanan Awal --',
+                                        //       bold: true),
                                         const Divider(thickness: 1),
 
                                         Row(
@@ -268,13 +271,12 @@ void printInvoiceDialog(InvoiceModel invoice) {
                                           ],
                                         ),
                                         const Divider(thickness: 1),
+
                                         ListView.builder(
                                           shrinkWrap: true,
-                                          itemCount: invoice
-                                              .purchaseList.value.items.length,
+                                          itemCount: filteredPurchase.length,
                                           itemBuilder: (context, index) {
-                                            var item = invoice.purchaseList
-                                                .value.items[index];
+                                            var item = filteredPurchase[index];
                                             var price = currency.format(item
                                                 .product
                                                 .getPrice(
@@ -319,7 +321,7 @@ void printInvoiceDialog(InvoiceModel invoice) {
                                                             child:
                                                                 buildText('')),
                                                         buildText(
-                                                            '$price x ${number.format(item.purchaseQuantity)} ${item.product.unit}'),
+                                                            '$price x ${number.format(item.quantity.value)} ${item.product.unit}'),
                                                       ],
                                                     ),
                                                     buildText(currency.format(
@@ -334,58 +336,27 @@ void printInvoiceDialog(InvoiceModel invoice) {
                                           },
                                         ),
                                         const Divider(thickness: 1),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            buildText('Subtotal:'),
-                                            buildText(currency.format(
-                                                invoice.subTotalPurchase)),
-                                          ],
-                                        ),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            buildText('Total diskon:'),
-                                            buildText(invoice.totalDiscount > 0
-                                                ? '-${currency.format(invoice.totalDiscount)}'
-                                                : '0'),
-                                          ],
-                                        ),
-                                        if (invoice.totalOtherCosts > 0)
+                                        if (invoice.isReturn)
                                           Row(
                                             mainAxisAlignment:
                                                 MainAxisAlignment.spaceBetween,
                                             children: [
-                                              buildText('Biaya lainnya:'),
-                                              buildText(invoice
-                                                          .totalOtherCosts >
-                                                      0
-                                                  ? currency.format(
-                                                      invoice.totalOtherCosts)
-                                                  : '0'),
+                                              buildText('Subtotal:',
+                                                  bold: true),
+                                              buildText(
+                                                  currency.format(
+                                                      invoice.subtotalBill),
+                                                  bold: true),
                                             ],
                                           ),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.end,
-                                          children: [
-                                            buildText('----------', bold: true),
-                                          ],
-                                        ),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            buildText('Total tagihan:',
-                                                bold: true),
-                                            buildText(
-                                                currency.format(
-                                                    invoice.totalPurchase),
-                                                bold: true),
-                                          ],
-                                        ),
+                                        // Row(
+                                        //   mainAxisAlignment:
+                                        //       MainAxisAlignment.end,
+                                        //   children: [
+                                        //     buildText('----------', bold: true),
+                                        //   ],
+                                        // ),
+
                                         if (invoice.isReturn)
                                           const SizedBox(height: 20),
                                         if (invoice.isReturn)
@@ -458,7 +429,7 @@ void printInvoiceDialog(InvoiceModel invoice) {
                                             children: [
                                               buildText('Subtotal return:'),
                                               buildText(invoice.totalReturn > 0
-                                                  ? '-${currency.format((invoice.totalReturn + invoice.returnFee.value))}'
+                                                  ? '-${currency.format((invoice.totalReturn))}'
                                                   : '0'),
                                             ],
                                           ),
@@ -490,26 +461,29 @@ void printInvoiceDialog(InvoiceModel invoice) {
                                               buildText('Total return:',
                                                   bold: true),
                                               buildText(
-                                                  '-${currency.format(invoice.totalReturn)}',
+                                                  '-${currency.format(invoice.totalReturnFinal)}',
                                                   bold: true),
                                             ],
                                           ),
+                                        if (invoice.isReturn)
+                                          const SizedBox(height: 20),
                                         // if (invoice.totalReturn > 0)
                                         //   const SizedBox(
                                         //       height: 20), //! RETURN LIST
                                         if (invoice.isReturn)
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              buildText('Total tagihan:',
-                                                  bold: true),
-                                              buildText(
-                                                  currency.format(
-                                                      invoice.totalPurchase),
-                                                  bold: true),
-                                            ],
-                                          ),
+                                          const Divider(thickness: 1),
+                                        // Row(
+                                        //   mainAxisAlignment:
+                                        //       MainAxisAlignment.spaceBetween,
+                                        //   children: [
+                                        //     buildText('Total tagihan:',
+                                        //         bold: true),
+                                        //     buildText(
+                                        //         currency.format(
+                                        //             invoice.totalPurchase),
+                                        //         bold: true),
+                                        //   ],
+                                        // ),
                                         // if (invoice.isReturn &&
                                         //     invoice.totalPaid > 0)
                                         //   Row(
@@ -523,6 +497,45 @@ void printInvoiceDialog(InvoiceModel invoice) {
                                         //           '-${currency.format(invoice.totalPaid)}'),
                                         //     ],
                                         //   ),
+                                        // if (invoice.isReturn)
+                                        //   const Divider(thickness: 1),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            buildText(
+                                                'SUBTOTAL HARGA (${invoice.purchaseList.value.items.length} Barang)',
+                                                bold: true),
+                                            buildText(
+                                                currency.format(
+                                                    invoice.subTotalPurchase),
+                                                bold: true),
+                                          ],
+                                        ),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            buildText('Total diskon:'),
+                                            buildText(invoice.totalDiscount > 0
+                                                ? '-${currency.format(invoice.totalDiscount)}'
+                                                : '0'),
+                                          ],
+                                        ),
+                                        if (invoice.totalOtherCosts > 0)
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              buildText('Biaya lainnya:'),
+                                              buildText(invoice
+                                                          .totalOtherCosts >
+                                                      0
+                                                  ? currency.format(
+                                                      invoice.totalOtherCosts)
+                                                  : '0'),
+                                            ],
+                                          ),
                                         if (invoice.isReturn)
                                           const Divider(thickness: 1),
                                         if (invoice.isReturn)
@@ -530,7 +543,37 @@ void printInvoiceDialog(InvoiceModel invoice) {
                                             mainAxisAlignment:
                                                 MainAxisAlignment.spaceBetween,
                                             children: [
-                                              buildText('Total setelah return:',
+                                              buildText(
+                                                  'Tagihan sebelum return:',
+                                                  bold: true),
+                                              buildText(
+                                                  currency.format(
+                                                      invoice.totalPurchase),
+                                                  bold: true),
+                                            ],
+                                          ),
+
+                                        if (invoice.isReturn)
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              buildText('Total return:'),
+                                              buildText(
+                                                  '-${currency.format(invoice.totalReturnFinal)}'),
+                                            ],
+                                          ),
+                                        if (invoice.isReturn)
+                                          const Divider(thickness: 1),
+                                        if (invoice.isReturn)
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              buildText(
+                                                  invoice.isReturn
+                                                      ? 'Tagihan setelah return:'
+                                                      : 'Total tagihan:',
                                                   bold: true),
                                               buildText(
                                                   currency.format(
@@ -538,6 +581,21 @@ void printInvoiceDialog(InvoiceModel invoice) {
                                                   bold: true),
                                             ],
                                           ),
+
+                                        // if (invoice.isReturn)
+                                        //   Row(
+                                        //     mainAxisAlignment:
+                                        //         MainAxisAlignment.spaceBetween,
+                                        //     children: [
+                                        //       buildText(
+                                        //           'Tagihan setelah return:',
+                                        //           bold: true),
+                                        //       buildText(
+                                        //           currency.format(
+                                        //               invoice.totalBill),
+                                        //           bold: true),
+                                        //     ],
+                                        //   ),
                                         // if (invoice.totalOtherCosts > 0)
                                         //   Row(
                                         //     mainAxisAlignment:
@@ -552,37 +610,73 @@ void printInvoiceDialog(InvoiceModel invoice) {
                                         //           bold: true),
                                         //     ],
                                         //   ),
-                                        if (!invoice.isReturn)
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              buildText('Bayar:', bold: true),
-                                              buildText(
-                                                  currency.format(
-                                                      invoice.totalPaid),
-                                                  bold: true),
-                                            ],
-                                          ),
-                                        if (!invoice.isReturn)
-                                          const Divider(thickness: 1),
-                                        if (!invoice.isReturn)
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              buildText(
-                                                  invoice.remainingDebt <= 0
-                                                      ? 'Kembalian:'
-                                                      : 'Kurang Bayar:',
-                                                  bold: true),
-                                              buildText(
-                                                  currency.format(
-                                                      invoice.remainingDebt *
-                                                          -1),
-                                                  bold: true),
-                                            ],
-                                          ),
+                                        // if (!invoice.isReturn)
+                                        ListView.builder(
+                                          shrinkWrap: true,
+                                          itemCount: invoice.payments.length,
+                                          itemBuilder: (context, index) {
+                                            return Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                buildText(
+                                                    'Pembayaran ${(!invoice.isDebtPaid.value || invoice.payments.length > 1) ? '${index + 1}' ' (${DateFormat('dd MMM y', 'id').format(invoice.payments[index].date!)})' : ''}',
+                                                    bold: true),
+                                                buildText(
+                                                    currency.format(invoice
+                                                                .totalPaidByIndex(
+                                                                    index) ==
+                                                            invoice.totalBill
+                                                        ? invoice
+                                                            .payments[index]
+                                                            .amountPaid
+                                                        : invoice
+                                                            .payments[index]
+                                                            .finalAmountPaid),
+                                                    bold: true),
+                                              ],
+                                            );
+
+                                            // PropertiesRow(
+                                            //   primary: true,
+                                            //   payment: true,
+                                            //   title:
+                                            //       'Pembayaran ${(!invoice.isDebtPaid.value || invoice.payments.length > 1) ? '${index + 1}' ' (${DateFormat('dd MMM y', 'id').format(invoice.payments[index].date!)})' : ''}',
+                                            //   value:
+                                            //       'Rp${currency.format(invoice.payments[index].amountPaid)}',
+                                            // );
+                                          },
+                                        ),
+                                        // Row(
+                                        //   mainAxisAlignment:
+                                        //       MainAxisAlignment.spaceBetween,
+                                        //   children: [
+                                        //     buildText('Bayar:', bold: true),
+                                        //     buildText(
+                                        //         currency
+                                        //             .format(invoice.totalPaid),
+                                        //         bold: true),
+                                        //   ],
+                                        // ),
+                                        // if (!invoice.isReturn)
+                                        const Divider(thickness: 1),
+                                        // if (!invoice.isReturn)
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            buildText(
+                                                invoice.remainingDebt <= 0
+                                                    ? 'Kembalian:'
+                                                    : 'Kurang Bayar:',
+                                                bold: true),
+                                            buildText(
+                                                currency.format(
+                                                    invoice.remainingDebt * -1),
+                                                bold: true),
+                                          ],
+                                        ),
                                         const SizedBox(height: 20),
                                       ],
                                     ),

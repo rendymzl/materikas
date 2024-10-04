@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:material_symbols_icons/material_symbols_icons.dart';
 
 import '../../infrastructure/models/invoice_sales_model.dart';
 import '../../infrastructure/utils/display_format.dart';
@@ -18,7 +19,7 @@ class SelectedSalesInvoice extends StatelessWidget {
     final SalesController controller = Get.find();
 
     return Padding(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(8.0),
       child: Obx(
         () {
           return controller.selectedSales.value != null
@@ -45,12 +46,39 @@ class SelectedSalesCard extends StatelessWidget {
             () => Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  controller.selectedSales.value!.name!,
-                  style: context.textTheme.titleLarge!.copyWith(fontSize: 24),
+                SizedBox(
+                  width: 300,
+                  child: Text(
+                    controller.selectedSales.value!.name!,
+                    style: context.textTheme.titleLarge!.copyWith(fontSize: 24),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
                 ),
                 Row(
                   children: [
+                    Container(
+                      width: 250,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: const BorderRadius.all(
+                          Radius.circular(12),
+                        ),
+                      ),
+                      height: 50,
+                      child: TextField(
+                        controller: controller.invoiceSearchC,
+                        decoration: const InputDecoration(
+                          labelText: "Cari Invoice",
+                          labelStyle: TextStyle(color: Colors.grey),
+                          prefixIcon: Icon(Symbols.search),
+                          border: InputBorder.none,
+                        ),
+                        onChanged: (value) =>
+                            controller.filterSalesInvoice(value),
+                      ),
+                    ),
+                    const SizedBox(width: 24),
                     InkWell(
                       onTap: () => controller.checkBoxHandle('paid'),
                       child: Container(

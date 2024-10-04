@@ -256,7 +256,7 @@ class InvoiceService extends GetxService implements InvoiceRepository {
         // invoice.id,
         invoice.storeId,
         invoice.invoiceId,
-        invoice.account.value,
+        invoice.account.value.toJson(),
         invoice.createdAt.value?.toIso8601String(),
         invoice.customer.value,
         invoice.purchaseList.value.toJson(),
@@ -277,7 +277,6 @@ class InvoiceService extends GetxService implements InvoiceRepository {
   @override
   Future<void> update(InvoiceModel updatedInvoice) async {
     try {
-      print('updateddddddddddddddddddddd');
       await db.execute(
         '''
     UPDATE invoices SET
@@ -302,7 +301,7 @@ class InvoiceService extends GetxService implements InvoiceRepository {
         [
           updatedInvoice.storeId,
           updatedInvoice.invoiceId,
-          updatedInvoice.account.value,
+          updatedInvoice.account.value.toJson(),
           updatedInvoice.createdAt.value?.toIso8601String(),
           updatedInvoice.customer.value?.toJson(),
           updatedInvoice.purchaseList.value.toJson(),
