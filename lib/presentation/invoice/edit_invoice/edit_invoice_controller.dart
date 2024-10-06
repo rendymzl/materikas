@@ -8,6 +8,7 @@ import '../../../infrastructure/models/invoice_model/cart_item_model.dart';
 import '../../../infrastructure/models/invoice_model/cart_model.dart';
 import '../../../infrastructure/models/invoice_model/invoice_model.dart';
 import '../../../infrastructure/models/product_model.dart';
+import '../../global_widget/field_customer_widget/field_customer_widget_controller.dart';
 import '../../global_widget/payment_widget/payment_widget_controller.dart';
 
 class EditInvoiceController extends GetxController {
@@ -16,6 +17,7 @@ class EditInvoiceController extends GetxController {
   late final ProductService _productService = Get.find<ProductService>();
   late final foundProducts = _productService.foundProducts;
   final AuthService accountC = Get.find();
+  late CustomerInputFieldController customerFieldC = Get.find();
 
   final initCartList = <CartItem>[].obs;
   final initAdditionalCartList = <CartItem>[].obs;
@@ -268,7 +270,8 @@ class EditInvoiceController extends GetxController {
       }
 
       await _productService.updateList(productList);
-
+      await customerFieldC.handleSave();
+      await customerFieldC.addCustomer(invoice);
       await _invoiceService.update(invoice);
       print('---selesai updated invoice');
       clear();

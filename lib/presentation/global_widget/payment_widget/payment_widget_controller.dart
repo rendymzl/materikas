@@ -19,7 +19,7 @@ class PaymentController extends GetxController {
   late final HomeController _homeC = Get.find();
   late final InvoiceService _invoiceService = Get.find();
   late final ProductService _productService = Get.find();
-  late final CustomerService _customerService = Get.find();
+  // late final CustomerService _customerService = Get.find();
   final paymentMethod = ['cash', 'transfer'].obs;
   final selectedPaymentMethod = ''.obs;
   final moneyChange = 0.0.obs;

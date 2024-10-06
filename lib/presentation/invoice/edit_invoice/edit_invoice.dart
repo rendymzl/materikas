@@ -23,11 +23,12 @@ void editInvoice(InvoiceModel invoice) {
       Get.put(CustomerInputFieldController());
   datePickerC.asignDateTime(invoice.createdAt.value!);
 
+  InvoiceModel editInvoice = InvoiceModel.fromJson(invoice.toJson());
+
   if (invoice.customer.value != null) {
-    customerInputFieldC.asignCustomer(invoice.customer.value!);
+    customerInputFieldC.asignCustomer(editInvoice.customer.value!);
   }
 
-  InvoiceModel editInvoice = InvoiceModel.fromJson(invoice.toJson());
   editInvoice.returnList.value ??= Cart(items: <CartItem>[].obs);
   showPopupPageWidget(
     title: 'Edit Invoice ${editInvoice.invoiceId}',

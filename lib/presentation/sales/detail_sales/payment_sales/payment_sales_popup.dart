@@ -15,6 +15,7 @@ void paymentSalesPopup(InvoiceSalesModel invoice,
   controller.clear();
   controller.bill.value = invoice.remainingDebt;
   controller.moneyChange.value = invoice.remainingDebt;
+  print(controller.moneyChange.value);
 
   showPopupPageWidget(
     title: 'Pembayaran',

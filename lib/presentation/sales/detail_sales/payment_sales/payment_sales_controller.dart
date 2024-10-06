@@ -90,6 +90,7 @@ class PaymentSalesController extends GetxController {
   void clear() {
     selectedPaymentMethod.value = '';
     paymentTextC.text = '';
+    bill.value = 0;
     moneyChange.value = 0;
   }
 

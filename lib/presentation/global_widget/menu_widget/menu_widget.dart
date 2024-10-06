@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../../../infrastructure/models/menu_model.dart';
+import '../../../infrastructure/utils/display_format.dart';
+import '../activate_popup/activate_account_popup.dart';
 import '../app_dialog_widget.dart';
 import 'menu_controller.dart';
 
@@ -25,13 +27,42 @@ class MenuWidget extends GetView<MenuWidgetController> {
               margin: const EdgeInsets.only(bottom: 12),
               decoration: BoxDecoration(
                   color: Colors.red, borderRadius: BorderRadius.circular(8)),
-              height: 25,
+              height: 35,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  const Text(
+                    'Masa percobaan berakhir pada ',
+                    style: TextStyle(color: Colors.white),
+                  ),
                   Text(
-                    controller.account.value!.accountType,
-                    style: const TextStyle(color: Colors.white),
+                    date.format(controller.account.value!.endDate!),
+                    style: const TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                  const Text(
+                    ' dan tersisa ',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  controller.countdown,
+                  const SizedBox(width: 12),
+                  InkWell(
+                    onTap: () async => activateAccountPopup(),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 4, horizontal: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        'Aktifkan Akun',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),

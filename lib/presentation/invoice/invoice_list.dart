@@ -276,7 +276,7 @@ class BuildListTile extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           Text(
-                            invoice.customer.value!.name,
+                            invoice.customer.value?.name ?? '',
                             style: context.textTheme.titleLarge!
                                 .copyWith(fontSize: 18),
                             overflow: TextOverflow.ellipsis,

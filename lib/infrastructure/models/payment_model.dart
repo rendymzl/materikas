@@ -38,7 +38,7 @@ class PaymentModel {
     data['amount_paid'] = amountPaid;
     data['remain'] = remain;
     data['final_amount_paid'] = finalAmountPaid;
-    data['date'] = date != null ? date!.toIso8601String() : DateTime.now();
+    data['date'] = date?.toIso8601String() ?? DateTime.now().toIso8601String();
     return data;
   }
 }

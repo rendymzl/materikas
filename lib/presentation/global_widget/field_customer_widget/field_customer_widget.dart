@@ -13,6 +13,7 @@ class CustomerInputField extends StatelessWidget {
   Widget build(BuildContext context) {
     late CustomerInputFieldController controller =
         Get.put(CustomerInputFieldController());
+    controller.saveCust.value = false;
     OutlineInputBorder outlineRed =
         const OutlineInputBorder(borderSide: BorderSide(color: Colors.red));
     final GlobalKey textFieldKey = GlobalKey();
@@ -24,9 +25,10 @@ class CustomerInputField extends StatelessWidget {
           Obx(
             () {
               // print(controller.selectedCustomer.value!.customerId);
+              controller.selectedCustomer.value;
               controller.showSuffixClear.value;
               return (controller.customerNameController.text != '' &&
-                      (controller.selectedCustomer.value?.customerId == null))
+                      (controller.selectedCustomer.value?.customerId == ''))
                   ? Expanded(
                       child: SizedBox(
                         width: 200,
@@ -85,13 +87,22 @@ class CustomerInputField extends StatelessWidget {
                           controller: textEditingController,
                           focusNode: focusNode,
                           onChanged: (value) {
+                            // controller.clear();
+                            controller.showSuffixClear.value = false;
                             controller.showSuffixClear.value = value != '';
                             controller.customerNameController.text = value;
                             controller.displayName.value = value;
-                            controller.selectedCustomer.value = null;
+                            CustomerModel customer = CustomerModel(
+                                id: '',
+                                customerId: '',
+                                name: controller.customerNameController.text,
+                                phone: controller.customerPhoneController.text,
+                                address:
+                                    controller.customerAddressController.text);
                             controller.updateSelectedCustomer(
-                              controller.selectedCustomer.value,
+                              customer,
                             );
+                            print(controller.selectedCustomer.toJson());
                           },
                           onSubmitted: (String value) {
                             onFieldSubmitted();
@@ -146,6 +157,8 @@ class CustomerInputField extends StatelessWidget {
                                   title: Text(option.name),
                                   onTap: () {
                                     onSelected(option);
+                                    controller.selectedCustomer.value = option;
+                                    print(controller.selectedCustomer.toJson());
                                   },
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8),

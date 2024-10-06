@@ -32,6 +32,7 @@ class BuyProductController extends GetxController {
 
   @override
   void onInit() async {
+    print('on init');
     invoice = await createInvoice();
     super.onInit();
   }
@@ -305,7 +306,8 @@ class BuyProductController extends GetxController {
   }
 
   //! CLEAR ===
-  void clear() {
+  void clear() async {
+    invoice = await createInvoice();
     cart.value.items.clear();
 
     for (var cart in initCartList) {

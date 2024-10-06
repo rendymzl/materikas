@@ -78,11 +78,13 @@ class CustomerInputFieldController extends GetxController {
     customerNameController.text = '';
     customerPhoneController.text = '';
     customerAddressController.text = '';
-    // CustomerModel customer = CustomerModel(
-    //     name: customerNameController.text,
-    //     phone: customerPhoneController.text,
-    //     address: customerAddressController.text);
-    selectedCustomer.value = null;
+    CustomerModel customer = CustomerModel(
+        id: '',
+        customerId: '',
+        name: customerNameController.text,
+        phone: customerPhoneController.text,
+        address: customerAddressController.text);
+    selectedCustomer.value = customer;
   }
 
   bool validateCustomer() {

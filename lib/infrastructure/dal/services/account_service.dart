@@ -21,10 +21,10 @@ class AccountService extends GetxService implements AccountRepository {
       account.users.map((e) => e.toJson()).toList(),
       account.password,
       account.accountType,
-      account.startDate,
-      account.endDate,
+      account.startDate?.toIso8601String(),
+      account.endDate?.toIso8601String(),
       account.isActive,
-      account.endDate
+      DateTime.now().toIso8601String()
     ]);
   }
 
@@ -44,10 +44,10 @@ class AccountService extends GetxService implements AccountRepository {
       updatedAccount.users.map((e) => e.toJson()).toList(),
       updatedAccount.password,
       updatedAccount.accountType,
-      updatedAccount.startDate,
-      updatedAccount.endDate,
+      updatedAccount.startDate?.toIso8601String(),
+      updatedAccount.endDate?.toIso8601String(),
       updatedAccount.isActive,
-      updatedAccount.endDate,
+      DateTime.now().toIso8601String(),
       updatedAccount.id
     ]);
   }
