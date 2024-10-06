@@ -6,8 +6,8 @@ import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
 class MidtransController extends GetxController {
-  final String _serverKey = 'SB-Mid-server-MYOdrOQCgmToNnPJVWHdjH6C';
-  final String _clientKey = 'SB-Mid-client-GdsheqK_dzgfTgeN';
+  final String _serverKey = '';
+  final String _clientKey = '';
   var isLoading = false.obs;
   var paymentStatus = ''.obs;
   Timer? timer;
