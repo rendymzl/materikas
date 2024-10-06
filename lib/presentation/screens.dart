@@ -7,5 +7,6 @@ export 'package:materikas/presentation/product/product.screen.dart';
 export 'package:materikas/presentation/profile/profile.screen.dart';
 export 'package:materikas/presentation/sales/sales.screen.dart';
 export 'package:materikas/presentation/select_user/select_user.screen.dart';
+export 'package:materikas/presentation/signup/signup.screen.dart';
 export 'package:materikas/presentation/splash/splash.screen.dart';
 export 'package:materikas/presentation/statistic/statistic.screen.dart';

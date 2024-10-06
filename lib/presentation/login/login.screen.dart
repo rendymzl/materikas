@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
+import '../../infrastructure/navigation/routes.dart';
 import 'controllers/login.controller.dart';
 
 class LoginScreen extends GetView<LoginController> {
@@ -12,15 +13,6 @@ class LoginScreen extends GetView<LoginController> {
     OutlineInputBorder outlineRed =
         const OutlineInputBorder(borderSide: BorderSide(color: Colors.red));
     return Scaffold(
-      appBar: AppBar(
-        actions: [
-          // IconButton(
-          //     onPressed: () async {
-          //       controller.signout();
-          //     },
-          //     icon: const Icon(Symbols.body_system)),
-        ],
-      ),
       body: Center(
         child: Container(
           margin: const EdgeInsets.symmetric(vertical: 30),
@@ -66,8 +58,6 @@ class LoginScreen extends GetView<LoginController> {
                             ),
                             onChanged: (value) =>
                                 controller.clickedField['email'] = true,
-                            onSaved: (String? value) =>
-                                controller.clicked.value = false,
                             validator: (value) =>
                                 controller.validatorEmail(value!),
                             onFieldSubmitted: (_) =>
@@ -96,8 +86,8 @@ class LoginScreen extends GetView<LoginController> {
                             ),
                             onChanged: (value) =>
                                 controller.clickedField['password'] = true,
-                            onSaved: (String? value) =>
-                                controller.clicked.value = false,
+                            // onSaved: (String? value) =>
+                            //     controller.clicked.value = false,
                             validator: (value) =>
                                 controller.validatorPassword(value!),
                             obscureText: controller.hidePassword.value,
@@ -124,44 +114,6 @@ class LoginScreen extends GetView<LoginController> {
                       )
                     ],
                   ),
-                  // const Row(children: [
-                  //   Expanded(child: Divider(color: Colors.grey)),
-                  //   Padding(
-                  //     padding: EdgeInsets.symmetric(horizontal: 12),
-                  //     child: Text(
-                  //       'ATAU',
-                  //       style: TextStyle(color: Colors.grey),
-                  //     ),
-                  //   ),
-                  //   Expanded(child: Divider(color: Colors.grey)),
-                  // ]),
-                  // Row(
-                  //   children: [
-                  //     Expanded(
-                  //       child: OutlinedButton.icon(
-                  //         icon: SvgPicture.asset(
-                  //           'assets/logos/google.svg',
-                  //           width: 24,
-                  //           height: 24,
-                  //         ),
-                  //         label: Obx(
-                  //           () => Text(
-                  //             controller.isLoginPage.value
-                  //                 ? 'Masuk dengan akun google'
-                  //                 : 'Daftar dengan akun google',
-                  //             style: const TextStyle(
-                  //                 fontWeight: FontWeight.w400,
-                  //                 color: Colors.black),
-                  //           ),
-                  //         ),
-                  //         onPressed: () {},
-                  //         style: OutlinedButton.styleFrom(
-                  //           side: const BorderSide(color: Colors.grey),
-                  //         ),
-                  //       ),
-                  //     ),
-                  //   ],
-                  // ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -195,7 +147,7 @@ class LoginScreen extends GetView<LoginController> {
                                     color: Colors.red,
                                   ),
                                 ),
-                                // onTap: () => controller.toggleLoginPage(),
+                                onTap: () => Get.offAllNamed(Routes.SIGNUP),
                               ),
                             ),
                           ],

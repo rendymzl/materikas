@@ -24,7 +24,7 @@ class LoginController extends GetxController {
   final passwordFieldC = TextEditingController();
 
   // final formkey = GlobalKey<FormState>();
-  final clicked = false.obs;
+  // final clicked = false.obs;
 
   final clickedField = {'email': false, 'password': false}.obs;
 
@@ -34,7 +34,7 @@ class LoginController extends GetxController {
       return 'Email tidak boleh kosong';
     }
     final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    if (!emailRegex.hasMatch(value) && clicked.value) {
+    if (!emailRegex.hasMatch(value)) {
       return 'Email tidak valid';
     }
     return null;
@@ -48,7 +48,6 @@ class LoginController extends GetxController {
   }
 
   Future<void> signInWithEmail(GlobalKey<FormState> formkey) async {
-    clicked.value = true;
     if (formkey.currentState!.validate()) {
       isLoading.value = true;
       await _authService.login(emailFieldC.text.trim(), passwordFieldC.text);

@@ -81,5 +81,10 @@ class Nav {
       page: () => const OperatingCostScreen(),
       binding: OperatingCostControllerBinding(),
     ),
+    GetPage(
+      name: Routes.SIGNUP,
+      page: () => const SignupScreen(),
+      binding: SignupControllerBinding(),
+    ),
   ];
 }
