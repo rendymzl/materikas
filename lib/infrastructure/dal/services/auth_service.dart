@@ -31,6 +31,22 @@ class AuthService extends GetxService implements AuthRepository {
   var isLogin = false;
   var isOwner = false.obs;
 
+  var countdown = 0.obs; // Untuk countdown resend
+  var isResendDisabled = false.obs; // Disable tombol resend selama countdown
+
+  Future<void> startResendCountdown() async {
+    isResendDisabled.value = true;
+    countdown.value = 60;
+
+    Timer.periodic(const Duration(seconds: 1), (timer) {
+      countdown.value--;
+      if (countdown.value == 0) {
+        isResendDisabled.value = false;
+        timer.cancel();
+      }
+    });
+  }
+
   void checkStats() {
     loadingStatus.value = '${db.currentStatus}';
   }
@@ -68,10 +84,53 @@ class AuthService extends GetxService implements AuthRepository {
       Get.offAllNamed(Routes.SPLASH);
     } on AuthException catch (e) {
       print('AuthException: $e');
-      Get.defaultDialog(
-        title: 'Error',
-        content: const Text('Email atau password yang anda masukkan salah'),
-      );
+      if (e.message.contains('Invalid login credentials')) {
+        Get.defaultDialog(
+          title: 'Error',
+          content: const Text('Email atau password salah'),
+        );
+      } else if (e.message.contains('Email not confirmed')) {
+        Get.defaultDialog(
+          title: 'Error',
+          content: Column(
+            children: [
+              const Text('Email belum dikonfirmasi, silahkan cek email anda'),
+              const SizedBox(height: 10),
+              Obx(() => ElevatedButton(
+                    onPressed: isResendDisabled.value
+                        ? null // Disable jika countdown sedang berjalan
+                        : () async {
+                            await supabaseClient.auth.resend(
+                              email: email,
+                              type: OtpType.signup,
+                            );
+                            startResendCountdown(); // Mulai countdown setelah tombol ditekan
+                            Get.back();
+                            Get.defaultDialog(
+                              title: 'Info',
+                              content:
+                                  const Text('Email konfirmasi telah dikirim'),
+                            );
+                          },
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
+                    ),
+                    child: Text(
+                      isResendDisabled.value
+                          ? 'Kirim Ulang ($countdown)' // Tampilkan countdown
+                          : 'Kirim Ulang Email Konfirmasi',
+                    ),
+                  )),
+            ],
+          ),
+        );
+      } else {
+        Get.defaultDialog(
+          title: 'Error',
+          content: const Text('Terjadi kesalahan, silakan coba lagi'),
+        );
+      }
     }
   }
 

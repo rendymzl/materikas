@@ -132,7 +132,7 @@ class LoginScreen extends GetView<LoginController> {
                                   color: Colors.red,
                                 ),
                               ),
-                              // onTap: () => Get.offAllNamed(Routes.SIGNUP),
+                              onTap: () => Get.offAllNamed(Routes.SIGNUP),
                             ),
                           ),
                         ],

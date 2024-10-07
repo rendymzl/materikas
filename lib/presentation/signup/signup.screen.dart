@@ -82,55 +82,62 @@ class SignupScreen extends GetView<SignupController> {
                               controller.validatorEmail(value!),
                         ),
                         const SizedBox(height: 20),
-                        TextFormField(
-                          controller: controller.passwordFieldC,
-                          decoration: InputDecoration(
-                            labelText: "Password",
-                            prefixIcon: const Icon(Symbols.lock, fill: 1),
-                            suffixIcon: IconButton(
-                              icon: const Icon(Symbols.remove_red_eye, fill: 1),
-                              onPressed: () => controller.toggleHidePassword(),
+                        Obx(
+                          () => TextFormField(
+                            controller: controller.passwordFieldC,
+                            decoration: InputDecoration(
+                              labelText: "Password",
+                              prefixIcon: const Icon(Symbols.lock, fill: 1),
+                              suffixIcon: IconButton(
+                                icon:
+                                    const Icon(Symbols.remove_red_eye, fill: 1),
+                                onPressed: () =>
+                                    controller.toggleHidePassword(),
+                              ),
+                              labelStyle: const TextStyle(color: Colors.grey),
+                              floatingLabelStyle:
+                                  const TextStyle(color: Colors.black),
+                              border: const OutlineInputBorder(),
+                              enabledBorder: const OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.grey)),
+                              focusedErrorBorder: outlineRed,
+                              errorBorder: outlineRed,
                             ),
-                            labelStyle: const TextStyle(color: Colors.grey),
-                            floatingLabelStyle:
-                                const TextStyle(color: Colors.black),
-                            border: const OutlineInputBorder(),
-                            enabledBorder: const OutlineInputBorder(
-                                borderSide: BorderSide(color: Colors.grey)),
-                            focusedErrorBorder: outlineRed,
-                            errorBorder: outlineRed,
+                            obscureText: controller.hidePassword.value,
+                            onChanged: (value) => controller
+                                .clickedField['password']!.value = true,
+                            validator: (value) =>
+                                controller.validatorPassword(value!),
                           ),
-                          obscureText: controller.hidePassword.value,
-                          onChanged: (value) =>
-                              controller.clickedField['password']!.value = true,
-                          validator: (value) =>
-                              controller.validatorPassword(value!),
                         ),
                         const SizedBox(height: 20),
-                        TextFormField(
-                          controller: controller.confirmPasswordFieldC,
-                          decoration: InputDecoration(
-                            labelText: "Konfirmasi Password",
-                            prefixIcon: const Icon(Symbols.lock, fill: 1),
-                            suffixIcon: IconButton(
-                              icon: const Icon(Symbols.remove_red_eye, fill: 1),
-                              onPressed: () =>
-                                  controller.toggleHideConfirmPassword(),
+                        Obx(
+                          () => TextFormField(
+                            controller: controller.confirmPasswordFieldC,
+                            decoration: InputDecoration(
+                              labelText: "Konfirmasi Password",
+                              prefixIcon: const Icon(Symbols.lock, fill: 1),
+                              suffixIcon: IconButton(
+                                icon:
+                                    const Icon(Symbols.remove_red_eye, fill: 1),
+                                onPressed: () =>
+                                    controller.toggleHideConfirmPassword(),
+                              ),
+                              labelStyle: const TextStyle(color: Colors.grey),
+                              floatingLabelStyle:
+                                  const TextStyle(color: Colors.black),
+                              border: const OutlineInputBorder(),
+                              enabledBorder: const OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.grey)),
+                              focusedErrorBorder: outlineRed,
+                              errorBorder: outlineRed,
                             ),
-                            labelStyle: const TextStyle(color: Colors.grey),
-                            floatingLabelStyle:
-                                const TextStyle(color: Colors.black),
-                            border: const OutlineInputBorder(),
-                            enabledBorder: const OutlineInputBorder(
-                                borderSide: BorderSide(color: Colors.grey)),
-                            focusedErrorBorder: outlineRed,
-                            errorBorder: outlineRed,
+                            obscureText: controller.hideConfirmPassword.value,
+                            onChanged: (value) => controller
+                                .clickedField['confirm_password']!.value = true,
+                            validator: (value) =>
+                                controller.validatorConfirmPassword(value!),
                           ),
-                          obscureText: controller.hideConfirmPassword.value,
-                          onChanged: (value) => controller
-                              .clickedField['confirm_password']!.value = true,
-                          validator: (value) =>
-                              controller.validatorConfirmPassword(value!),
                         ),
                       ],
                     ),

@@ -41,6 +41,8 @@ class SplashController extends GetxController {
   void init() async {
     final isLoggedIn = await authService.isLoggedIn();
     print('login in $isLoggedIn');
+    isConnected.value = authService.connected.value;
+    // await signOut();
 
     if (isLoggedIn) {
       // while (!authService.hasSynced.value) {
@@ -54,7 +56,6 @@ class SplashController extends GetxController {
       Get.put(StoreService());
       Get.put(AccountService());
       print('SelectUserController INIT');
-
       print('SelectUserController getAccount');
       account = authService.account.value;
 

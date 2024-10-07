@@ -20,15 +20,15 @@ void main() async {
 
   var initialRoute = await Routes.initialRoute;
 
-  String feedURL = 'https://api.menantikan.com/releases/appcast.xml';
-  await autoUpdater.setFeedURL(feedURL);
-  await autoUpdater.checkForUpdates();
-  await autoUpdater.setScheduledCheckInterval(3600);
+  // String feedURL = 'https://api.menantikan.com/releases/appcast.xml';
+  // await autoUpdater.setFeedURL(feedURL);
+  // await autoUpdater.checkForUpdates();
+  // await autoUpdater.setScheduledCheckInterval(3600);
 
-  windowManager.waitUntilReadyToShow(null, () async {
-    await windowManager.show();
-    await windowManager.focus();
-  });
+  // windowManager.waitUntilReadyToShow(null, () async {
+  //   await windowManager.show();
+  //   await windowManager.focus();
+  // });
 
   await openDatabase();
   await Hive.initFlutter();

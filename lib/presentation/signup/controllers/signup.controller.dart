@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../../domain/core/entities/account.dart';
+import '../../../infrastructure/dal/services/account_service.dart';
 import '../../../infrastructure/dal/services/auth_service.dart';
 import '../../../infrastructure/models/account_model.dart';
 import '../../../infrastructure/models/user_model.dart';
+import '../../../infrastructure/navigation/routes.dart';
 
 class SignupController extends GetxController {
   // Controllers for text fields
-  final AuthService _authService = Get.find<AuthService>();
+  final AccountService _accountService = Get.put(AccountService());
   var nameFieldC = TextEditingController();
   var emailFieldC = TextEditingController();
   var passwordFieldC = TextEditingController();
@@ -95,22 +96,25 @@ class SignupController extends GetxController {
           password: '',
           accountType: 'setup',
           updatedAt: DateTime.now().toLocal(),
-          storeId: _authService.store.value!.id,
+          storeId: '',
+          startDate: DateTime.now(),
+          endDate: DateTime.now(),
+          isActive: false,
         );
+        await _accountService.insert(account);
 
-        _authService.insert(account);
-
+        Get.offNamed(Routes.SPLASH);
         // await account.insert();
         // await sideMenuC.handleInit();
 
-        Get.snackbar(
-          'Pendaftaran Berhasil',
-          'Akun telah berhasil dibuat!',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-        );
-      } on AuthException catch (e) {
+        // Get.snackbar(
+        //   'Pendaftaran Berhasil',
+        //   'Akun telah berhasil dibuat!',
+        //   snackPosition: SnackPosition.BOTTOM,
+        //   backgroundColor: Colors.green,
+        //   colorText: Colors.white,
+        // );
+      } catch (e) {
         Get.snackbar(
           'Pendaftaran Gagal',
           'Mohon periksa kembali isian form!',
@@ -118,7 +122,7 @@ class SignupController extends GetxController {
           backgroundColor: Colors.red,
           colorText: Colors.white,
         );
-        debugPrint(e.message);
+        debugPrint(e.toString());
       }
     }
   }
