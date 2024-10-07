@@ -2,17 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../infrastructure/dal/services/auth_service.dart';
-import '../../../infrastructure/navigation/routes.dart';
 
 class LoginController extends GetxController {
   //! UI ====
-  final isLoginPage = true.obs;
   final hidePassword = true.obs;
   final isLoading = false.obs;
-
-  void toggleLoginPage() {
-    isLoginPage.value = !isLoginPage.value;
-  }
 
   void toggleHidePassword() {
     hidePassword.value = !hidePassword.value;

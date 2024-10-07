@@ -7,6 +7,7 @@ import '../../../infrastructure/models/user_model.dart';
 abstract class AuthRepository {
   Future<bool> isLoggedIn();
   Future<void> login(String email, String password);
+  Future<void> insert(AccountModel account);
   Future<AccountModel> getAccount();
   Future<StoreModel> getStore();
   RxList<Cashier> getCashier();

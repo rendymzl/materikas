@@ -347,14 +347,35 @@ void detailDialog(InvoiceModel invoice) {
                     payment: !(invoice.totalPaid < invoice.totalBill),
                     title: invoice.totalPaid < invoice.totalBill
                         ? 'SISA TAGIHAN'
-                        : '',
+                        : 'Kembalian',
                     value: invoice.totalPaid < invoice.totalBill
-                        ? 'Rp${currency.format((invoice.totalBill - invoice.totalPaid))}'
-                        : 'LUNAS',
+                        ? 'Rp${currency.format((invoice.remainingDebt))}'
+                        : 'Rp${currency.format((invoice.remainingDebt * -1))}',
                   ),
                 ),
               ],
             ),
+            if (invoice.totalPaid >= invoice.totalBill)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  const SizedBox(),
+                  Container(
+                    color: invoice.totalPaid < invoice.totalBill
+                        ? Colors.red[50]
+                        : invoice.isReturn
+                            ? Colors.yellow[50]
+                            : Colors.green[50],
+                    width: 500,
+                    child: PropertiesRow(
+                      primary: true,
+                      subtraction: invoice.totalPaid < invoice.totalBill,
+                      payment: !(invoice.totalPaid < invoice.totalBill),
+                      value: 'LUNAS',
+                    ),
+                  ),
+                ],
+              ),
           ],
         ),
       ),

@@ -8,7 +8,7 @@ import 'user_model.dart';
 
 class AccountModel extends Account {
   AccountModel({
-    required super.id,
+    super.id,
     required super.email,
     required super.role,
     required super.accountId,

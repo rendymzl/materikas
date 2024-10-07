@@ -135,4 +135,10 @@ class AuthService extends GetxService implements AuthRepository {
 
     return selectedUser.value;
   }
+
+  @override
+  Future<void> insert(AccountModel account) {
+    // TODO: implement insert
+    throw UnimplementedError();
+  }
 }

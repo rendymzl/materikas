@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../../../domain/core/entities/account.dart';
+import '../../../infrastructure/dal/services/auth_service.dart';
+import '../../../infrastructure/models/account_model.dart';
+import '../../../infrastructure/models/user_model.dart';
 
 class SignupController extends GetxController {
   // Controllers for text fields
+  final AuthService _authService = Get.find<AuthService>();
   var nameFieldC = TextEditingController();
   var emailFieldC = TextEditingController();
   var passwordFieldC = TextEditingController();
@@ -69,23 +76,50 @@ class SignupController extends GetxController {
   }
 
   // Sign up function
-  void signUpWithEmail(GlobalKey<FormState> formKey) {
+  Future<void> signUpWithEmail(GlobalKey<FormState> formKey) async {
     if (formKey.currentState!.validate()) {
-      Get.snackbar(
-        'Pendaftaran Berhasil',
-        'Akun telah berhasil dibuat!',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-      );
-    } else {
-      Get.snackbar(
-        'Pendaftaran Gagal',
-        'Mohon periksa kembali isian form!',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      try {
+        final AuthResponse userCredential =
+            await Supabase.instance.client.auth.signUp(
+          email: emailFieldC.text.trim(),
+          password: passwordFieldC.text,
+        );
+
+        AccountModel account = AccountModel(
+          accountId: userCredential.user!.id,
+          name: nameFieldC.text.trim(),
+          email: emailFieldC.text.trim(),
+          role: 'owner',
+          createdAt: DateTime.now().toLocal(),
+          users: <Cashier>[].obs,
+          password: '',
+          accountType: 'setup',
+          updatedAt: DateTime.now().toLocal(),
+          storeId: _authService.store.value!.id,
+        );
+
+        _authService.insert(account);
+
+        // await account.insert();
+        // await sideMenuC.handleInit();
+
+        Get.snackbar(
+          'Pendaftaran Berhasil',
+          'Akun telah berhasil dibuat!',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+      } on AuthException catch (e) {
+        Get.snackbar(
+          'Pendaftaran Gagal',
+          'Mohon periksa kembali isian form!',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        debugPrint(e.message);
+      }
     }
   }
 

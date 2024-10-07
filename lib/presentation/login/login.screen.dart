@@ -26,14 +26,9 @@ class LoginScreen extends GetView<LoginController> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Obx(
-                    () => Text(
-                      controller.isLoginPage.value
-                          ? 'Selamat datang'
-                          : 'Daftar',
-                      style: const TextStyle(
-                          fontSize: 24, fontWeight: FontWeight.w600),
-                    ),
+                  const Text(
+                    'Selamat datang',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
                   ),
                   Obx(
                     () => Form(
@@ -100,18 +95,14 @@ class LoginScreen extends GetView<LoginController> {
                   ),
                   Row(
                     children: [
-                      Obx(
-                        () => Expanded(
-                          child: ElevatedButton(
-                            onPressed: () => controller.isLoginPage.value
-                                ? controller.signInWithEmail(formkey)
-                                : controller.signUpWithEmail(),
-                            child: Text(
-                              controller.isLoginPage.value ? 'Masuk' : 'Daftar',
-                            ),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () => controller.signInWithEmail(formkey),
+                          child: const Text(
+                            'Masuk',
                           ),
                         ),
-                      )
+                      ),
                     ],
                   ),
                   Row(
@@ -124,34 +115,27 @@ class LoginScreen extends GetView<LoginController> {
                         ),
                         onTap: () {},
                       ),
-                      Obx(
-                        () => Row(
-                          children: [
-                            Text(
-                              controller.isLoginPage.value
-                                  ? 'Belum punya akun? '
-                                  : 'Sudah punya akun? ',
-                              style: const TextStyle(
-                                  fontSize: 12, color: Colors.grey),
-                            ),
-                            // const SizedBox(width: 12),
-                            MouseRegion(
-                              cursor: SystemMouseCursors.click,
-                              child: GestureDetector(
-                                child: Text(
-                                  controller.isLoginPage.value
-                                      ? 'Daftar'
-                                      : 'Masuk',
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.red,
-                                  ),
+                      Row(
+                        children: [
+                          const Text(
+                            'Belum punya akun? ',
+                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
+                          // const SizedBox(width: 12),
+                          MouseRegion(
+                            cursor: SystemMouseCursors.click,
+                            child: GestureDetector(
+                              child: const Text(
+                                'Daftar',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.red,
                                 ),
-                                onTap: () => Get.offAllNamed(Routes.SIGNUP),
                               ),
+                              // onTap: () => Get.offAllNamed(Routes.SIGNUP),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ],
                   )

@@ -402,13 +402,15 @@ class InvoiceModel {
   }
 
   void addPayment(double amount, {String? method, DateTime? date}) {
+    // print(totalPaid);
+    // print(amount);
     payments.add(PaymentModel(
         method: method,
         amountPaid: amount,
         remain: totalBill - (totalPaid + amount),
-        finalAmountPaid: (totalPaid + amount) >= totalBill
-            ? amount + (totalBill - (totalPaid + amount))
-            : (totalPaid + amount),
+        finalAmountPaid: totalPaid + amount >= totalBill
+            ? totalBill - (totalPaid + amount)
+            : amount,
         date: date));
     updateIsDebtPaid();
   }
@@ -419,7 +421,7 @@ class InvoiceModel {
   }
 
   void updateIsDebtPaid() {
-    debtAmount.value = totalBill - totalPaid;
+    debtAmount.value = remainingDebt;
     isDebtPaid.value = remainingDebt <= 0;
   }
 

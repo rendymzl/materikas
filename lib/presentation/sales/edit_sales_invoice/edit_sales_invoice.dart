@@ -12,7 +12,7 @@ import 'cart_list_invoice_sales.dart';
 import 'payment_list_sales.dart';
 
 void editSalesInvoice(InvoiceSalesModel invoice) {
-  final BuyProductController controller = Get.find();
+  final BuyProductController controller = Get.put(BuyProductController());
   Get.lazyPut(() => DatePickerController());
   late DatePickerController datePickerC = Get.find();
   datePickerC.asignDateTime(invoice.createdAt.value!);
