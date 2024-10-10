@@ -3,7 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 class ActivateAccountController extends GetxController {
   var selectedCardIndex = 0.obs;
-  var selectedCardType = ''.obs;
+  var selectedCardType = 'monthly'.obs;
   final url =
       'https://app.sandbox.midtrans.com/payment-links/1728117263496'.obs;
 

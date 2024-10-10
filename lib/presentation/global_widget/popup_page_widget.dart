@@ -72,7 +72,7 @@ class PopupPageWidget extends StatelessWidget {
   }
 }
 
-void showPopupPageWidget({
+Future<void> showPopupPageWidget({
   required String title,
   IconButton? iconButton,
   required Widget content,
@@ -80,9 +80,10 @@ void showPopupPageWidget({
   double width = 300,
   double height = 400,
   FocusNode? focusNode,
+  bool barrierDismissible = false,
   VoidCallback? onClose,
-}) {
-  Get.dialog(
+}) async {
+  await Get.dialog(
     PopupPageWidget(
       title: title,
       iconButton: iconButton,
@@ -93,5 +94,6 @@ void showPopupPageWidget({
       focusNode: focusNode,
       onClose: onClose,
     ),
+    barrierDismissible: !barrierDismissible,
   );
 }

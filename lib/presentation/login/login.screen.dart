@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../../infrastructure/navigation/routes.dart';
+import '../global_widget/app_dialog_widget.dart';
 import 'controllers/login.controller.dart';
 
 class LoginScreen extends GetView<LoginController> {
@@ -13,6 +14,24 @@ class LoginScreen extends GetView<LoginController> {
     OutlineInputBorder outlineRed =
         const OutlineInputBorder(borderSide: BorderSide(color: Colors.red));
     return Scaffold(
+      appBar: AppBar(
+        actions: [
+          IconButton(
+              onPressed: () async {
+                AppDialog.show(
+                  title: 'Refresh',
+                  content: 'Bersihkan data?',
+                  confirmText: "Ya",
+                  cancelText: "Tidak",
+                  confirmColor: Colors.grey,
+                  cancelColor: Get.theme.primaryColor,
+                  onConfirm: () => controller.clearDb(),
+                  onCancel: () => Get.back(),
+                );
+              },
+              icon: const Icon(Symbols.refresh))
+        ],
+      ),
       body: Center(
         child: Container(
           margin: const EdgeInsets.symmetric(vertical: 30),

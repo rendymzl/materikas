@@ -63,10 +63,10 @@ class SignupScreen extends GetView<SignupController> {
                         ),
                         const SizedBox(height: 20),
                         TextFormField(
-                          controller: controller.emailFieldC,
+                          controller: controller.phoneFieldC,
                           decoration: InputDecoration(
-                            labelText: "Email",
-                            prefixIcon: const Icon(Symbols.email, fill: 1),
+                            labelText: "Nomor WhatsApp",
+                            prefixIcon: const Icon(Symbols.smartphone, fill: 1),
                             labelStyle: const TextStyle(color: Colors.grey),
                             floatingLabelStyle:
                                 const TextStyle(color: Colors.black),
@@ -77,10 +77,29 @@ class SignupScreen extends GetView<SignupController> {
                             errorBorder: outlineRed,
                           ),
                           onChanged: (value) =>
-                              controller.clickedField['email']!.value = true,
+                              controller.clickedField['phone']!.value = true,
                           validator: (value) =>
-                              controller.validatorEmail(value!),
+                              controller.validatorPhone(value!),
                         ),
+                        // TextFormField(
+                        //   controller: controller.emailFieldC,
+                        //   decoration: InputDecoration(
+                        //     labelText: "Email",
+                        //     prefixIcon: const Icon(Symbols.email, fill: 1),
+                        //     labelStyle: const TextStyle(color: Colors.grey),
+                        //     floatingLabelStyle:
+                        //         const TextStyle(color: Colors.black),
+                        //     border: const OutlineInputBorder(),
+                        //     enabledBorder: const OutlineInputBorder(
+                        //         borderSide: BorderSide(color: Colors.grey)),
+                        //     focusedErrorBorder: outlineRed,
+                        //     errorBorder: outlineRed,
+                        //   ),
+                        //   onChanged: (value) =>
+                        //       controller.clickedField['email']!.value = true,
+                        //   validator: (value) =>
+                        //       controller.validatorEmail(value!),
+                        // ),
                         const SizedBox(height: 20),
                         Obx(
                           () => TextFormField(

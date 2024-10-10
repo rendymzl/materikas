@@ -26,7 +26,11 @@ class PaymentListSalesWidget extends StatelessWidget {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
-            color: Colors.green[50],
+            color: editInvoice.payments[index].method == 'cash'
+                ? editInvoice.payments[index].method == 'cash'
+                    ? Colors.green[50]
+                    : Colors.blue[50]
+                : Colors.blue[50],
             child: ListTile(
               dense: true,
               title: Row(
@@ -36,7 +40,11 @@ class PaymentListSalesWidget extends StatelessWidget {
                       style: Theme.of(Get.context!)
                           .textTheme
                           .titleSmall!
-                          .copyWith(color: Colors.green),
+                          .copyWith(
+                              color:
+                                  editInvoice.payments[index].method == 'cash'
+                                      ? Colors.green
+                                      : Colors.blue),
                       textAlign: TextAlign.left),
                   Container(
                     height: 28,
@@ -67,7 +75,11 @@ class PaymentListSalesWidget extends StatelessWidget {
                           style: Theme.of(Get.context!)
                               .textTheme
                               .titleSmall!
-                              .copyWith(color: Colors.green),
+                              .copyWith(
+                                  color: editInvoice.payments[index].method ==
+                                          'cash'
+                                      ? Colors.green
+                                      : Colors.blue),
                           textAlign: TextAlign.left)),
                   Expanded(
                       flex: 3,
@@ -76,7 +88,11 @@ class PaymentListSalesWidget extends StatelessWidget {
                           style: Theme.of(Get.context!)
                               .textTheme
                               .titleSmall!
-                              .copyWith(color: Colors.green),
+                              .copyWith(
+                                  color: editInvoice.payments[index].method ==
+                                          'cash'
+                                      ? Colors.green
+                                      : Colors.blue),
                           textAlign: TextAlign.end)),
                 ],
               ),

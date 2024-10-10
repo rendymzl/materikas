@@ -5,11 +5,12 @@ import '../../domain/core/entities/store.dart';
 
 class StoreModel extends Stores {
   StoreModel({
+    super.ownerId,
     required super.name,
     required super.address,
     required super.phone,
     required super.telp,
-    required super.id,
+    super.id,
     required super.createdAt,
     super.promo,
   });
@@ -17,18 +18,20 @@ class StoreModel extends Stores {
   factory StoreModel.fromJson(Map<String, dynamic> json) {
     return StoreModel(
       id: json['id'],
+      ownerId: json['owner_id'],
       createdAt: DateTime.parse(json['created_at']),
-      name: json['name'],
-      address: json['address'],
-      phone: json['phone'],
-      telp: json['telp'],
-      promo: json['promo'] ?? '',
+      name: RxString(json['name']),
+      address: RxString(json['address']),
+      phone: RxString(json['phone']),
+      telp: RxString(json['telp']),
+      promo: RxString(json['promo'] ?? ''),
     );
   }
 
   Map<String, dynamic> toJson() {
     final data = <String, dynamic>{};
     data['id'] = id;
+    data['owner_id'] = ownerId;
     data['created_at'] = createdAt.toIso8601String();
     data['name'] = name.value;
     data['address'] = address.value;
@@ -41,6 +44,7 @@ class StoreModel extends Stores {
   factory StoreModel.fromRow(sqlite.Row row) {
     return StoreModel(
       id: row['id'],
+      ownerId: row['owner_id'],
       createdAt: row['created_at'] != null
           ? DateTime.parse(row['created_at'])
           : DateTime.now(),

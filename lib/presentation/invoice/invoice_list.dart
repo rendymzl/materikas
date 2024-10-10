@@ -249,13 +249,21 @@ class BuildListTile extends StatelessWidget {
                 return const SizedBox.shrink();
               }
             }
-
+            String paymentMethod =
+                inv[index].payments.map((e) => e.method).join(', ');
             final invoice = inv[index];
             return Container(
               // color: index % 2 == 0 ? Colors.white : Colors.grey[100],
               child: ListTile(
                 tileColor: index % 2 == 0 ? Colors.white : Colors.grey[100],
-                hoverColor: isDebt ? Colors.red[100] : Colors.green[100],
+                hoverColor: (!paymentMethod.contains('cash') &&
+                        !paymentMethod.contains('transfer'))
+                    ? Colors.red[100]
+                    : !paymentMethod.contains('cash')
+                        ? Colors.blue[100]
+                        : !paymentMethod.contains('transfer')
+                            ? Colors.green[100]
+                            : Colors.teal[100],
                 dense: true,
                 title: Row(
                   children: [
@@ -301,11 +309,26 @@ class BuildListTile extends StatelessWidget {
                             horizontal: 8, vertical: 2),
                         margin: const EdgeInsets.only(left: 50),
                         decoration: BoxDecoration(
+                          gradient: (paymentMethod.contains('cash') &&
+                                  paymentMethod.contains('transfer'))
+                              ? const LinearGradient(
+                                  begin: Alignment.topRight,
+                                  end: Alignment.bottomLeft,
+                                  colors: [
+                                    Colors.blue,
+                                    Colors.green,
+                                  ],
+                                )
+                              : null,
                           color: isDebt
                               ? Colors.red
                               : invoice.totalReturnFinal > 0
                                   ? Colors.amber
-                                  : Colors.green,
+                                  : !paymentMethod.contains('transfer')
+                                      ? Colors.green
+                                      : !paymentMethod.contains('cash')
+                                          ? Colors.blue
+                                          : null,
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(

@@ -11,6 +11,8 @@ class ProfileController extends GetxController {
   final AuthService _authService = Get.find<AuthService>();
   final AccountService _accountService = Get.find<AccountService>();
 
+  final setup = false.obs;
+
   late final account = _authService.account;
   late final store = _authService.store;
   late final cashiers = _authService.cashiers;
@@ -38,6 +40,7 @@ class ProfileController extends GetxController {
 
   @override
   void onInit() async {
+    setup.value = account.value!.accountType == 'setup';
     _authService.getCashier();
     print('cashiers.length ${cashiers}');
     super.onInit();
@@ -163,14 +166,14 @@ class ProfileController extends GetxController {
 
   String? validateOldPin(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Password tidak boleh kosong';
+      return 'PIN tidak boleh kosong';
     }
     return null;
   }
 
   String? validateNewPin(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Password tidak boleh kosong';
+      return 'PIN tidak boleh kosong';
     }
     return null;
   }

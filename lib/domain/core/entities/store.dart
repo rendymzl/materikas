@@ -1,7 +1,8 @@
 import 'package:get/get.dart';
 
 class Stores {
-  String id;
+  String? id;
+  String? ownerId;
   DateTime createdAt;
   RxString name;
   RxString address;
@@ -10,7 +11,8 @@ class Stores {
   RxString? promo;
 
   Stores({
-    required this.id,
+    this.id,
+    this.ownerId,
     required this.createdAt,
     required this.name,
     required this.address,

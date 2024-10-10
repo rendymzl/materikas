@@ -15,14 +15,19 @@ class MenuWidget extends GetView<MenuWidgetController> {
 
   @override
   Widget build(BuildContext context) {
+    bool trial = controller.account.value!.accountType == 'free_trial';
+    bool almostExpired = false;
+    if (controller.account.value!.endDate != null) {
+      almostExpired = controller.account.value!.endDate!
+          .isBefore(DateTime.now().add(const Duration(days: 7)));
+    }
     return Container(
       // padding: const EdgeInsets.all(8),
       margin: const EdgeInsets.all(8),
-      height:
-          60 + (controller.account.value!.accountType == 'free_trial' ? 40 : 0),
+      height: 60 + ((trial || almostExpired) ? 40 : 0),
       child: Column(
         children: [
-          if (controller.account.value!.accountType == 'free_trial')
+          if (trial || almostExpired)
             Container(
               margin: const EdgeInsets.only(bottom: 12),
               decoration: BoxDecoration(
@@ -31,9 +36,11 @@ class MenuWidget extends GetView<MenuWidgetController> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
-                    'Masa percobaan berakhir pada ',
-                    style: TextStyle(color: Colors.white),
+                  Text(
+                    trial
+                        ? 'Masa percobaan berakhir pada '
+                        : 'Akun anda akan berakhir pada ',
+                    style: const TextStyle(color: Colors.white),
                   ),
                   Text(
                     date.format(controller.account.value!.endDate!),
@@ -56,7 +63,7 @@ class MenuWidget extends GetView<MenuWidgetController> {
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
-                        'Aktifkan Akun',
+                        trial ? 'Aktifkan Akun' : 'Perpanjang Akun',
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.primary,
                           fontWeight: FontWeight.bold,
@@ -78,6 +85,11 @@ class MenuWidget extends GetView<MenuWidgetController> {
                       Obx(
                         () {
                           var data = controller.menuData;
+                          if (controller.expired.value) {
+                            Future.delayed(const Duration(seconds: 2), () {
+                              activateAccountPopup(expired: true);
+                            });
+                          }
                           return ListView.separated(
                             separatorBuilder: (context, index) =>
                                 const SizedBox(width: 8),

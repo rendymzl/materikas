@@ -24,6 +24,7 @@ class MenuWidgetController extends GetxController {
   // final selectedIndex = 0.obs;
   // final selectedUser = ''.obs;
   final menuData = <MenuModel>[].obs;
+  final expired = false.obs;
 
   @override
   void onInit() async {
@@ -35,7 +36,8 @@ class MenuWidgetController extends GetxController {
       widgetBuilder: (_, CurrentRemainingTime? time) {
         // Pastikan 'time' nullable
         if (time == null) {
-          return const Text('Masa percobaan sudah berakhir!');
+          expired.value = true;
+          return const Text('Masa percobaan telah berakhir!');
         }
         // Gunakan nilai default jika null
         return Text(

@@ -37,11 +37,11 @@ class SelectUserController extends GetxController {
     // authService.loadingStatus.value = 'Menghubungkan Akun...';
     await authService.getAccount();
     await authService.getStore();
-    isLoading.value = false;
+    if (account.value!.users.isEmpty) selectedUser.value = 'owner';
+    // isLoading.value = false;
     // print('SelectUserController : ${account.value}');
     String? user = await isSelectedUser();
     if (user?.isNotEmpty ?? false) {
-      print('usernya $user');
       selectedUser.value = user!;
       authService.getSelectedCashier(user);
       authService.selectedIndexMenu.value = 0;
@@ -66,7 +66,7 @@ class SelectUserController extends GetxController {
   }
 
   void loginUserHandle() {
-    if (selectedUser.isNotEmpty && passwordController.text.isNotEmpty) {
+    if (selectedUser.isNotEmpty) {
       // Implementasi logika login
       if (account.value!.role == selectedUser.value) {
         if (account.value!.password == passwordController.text) {

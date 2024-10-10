@@ -97,6 +97,7 @@ class SupabaseConnector extends PowerSyncBackendConnector {
       try {
         // Note: If transactional consistency is important, use database functions
         // or edge functions to process the entire transaction in a single call.
+        // debugPrint('HAHAHAHAHAHAHAHA');
         for (var op in transaction.crud) {
           lastOp = op;
           final table = rest.from(op.table);

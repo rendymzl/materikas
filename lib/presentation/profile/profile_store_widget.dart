@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 
+import '../../infrastructure/utils/display_format.dart';
 import '../global_widget/popup_page_widget.dart';
 import 'controllers/profile.controller.dart';
 import 'detail_profile_store.dart';
@@ -12,8 +13,14 @@ class ProfileStoreWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ProfileController controller = Get.find();
-    return Obx(
-      () => Padding(
+    return Obx(() {
+      var package = '';
+      if (controller.account.value!.endDate != null) {
+        package = date.format(controller.account.value!.endDate!);
+      } else {
+        package = 'Selamanya';
+      }
+      return Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -90,6 +97,17 @@ class ProfileStoreWidget extends StatelessWidget {
                     ],
                   ),
                 ),
+                ListTile(
+                  title: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const SizedBox(width: 100, child: Text('Aktif sampai')),
+                      Expanded(
+                        child: Text(package),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
             TextButton(
@@ -115,13 +133,14 @@ class ProfileStoreWidget extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
+      );
+    });
   }
 }
 
 class ChangePinWidget extends StatelessWidget {
-  const ChangePinWidget({super.key});
+  const ChangePinWidget({super.key, this.setup = false});
+  final bool setup;
 
   @override
   Widget build(BuildContext context) {
@@ -140,36 +159,37 @@ class ChangePinWidget extends StatelessWidget {
             autovalidateMode: AutovalidateMode.always,
             child: Column(
               children: [
-                Obx(
-                  () => TextFormField(
-                    controller: controller.oldPinController,
-                    decoration: InputDecoration(
-                      border: const OutlineInputBorder(),
-                      labelText: 'PIN Sekarang',
-                      prefixIcon: const Icon(Symbols.lock, fill: 1),
-                      suffixIcon: IconButton(
-                        icon: const Icon(Symbols.remove_red_eye, fill: 1),
-                        onPressed: () =>
-                            controller.toggleHidePassword('oldPin'),
+                if (!setup)
+                  Obx(
+                    () => TextFormField(
+                      controller: controller.oldPinController,
+                      decoration: InputDecoration(
+                        border: const OutlineInputBorder(),
+                        labelText: 'PIN Sekarang',
+                        prefixIcon: const Icon(Symbols.lock, fill: 1),
+                        suffixIcon: IconButton(
+                          icon: const Icon(Symbols.remove_red_eye, fill: 1),
+                          onPressed: () =>
+                              controller.toggleHidePassword('oldPin'),
+                        ),
+                        labelStyle: const TextStyle(color: Colors.grey),
+                        floatingLabelStyle: TextStyle(
+                            color: Theme.of(Get.context!).colorScheme.primary),
+                        focusedErrorBorder: outlineRed,
+                        errorBorder: outlineRed,
                       ),
-                      labelStyle: const TextStyle(color: Colors.grey),
-                      floatingLabelStyle: TextStyle(
-                          color: Theme.of(Get.context!).colorScheme.primary),
-                      focusedErrorBorder: outlineRed,
-                      errorBorder: outlineRed,
+                      obscureText: controller.hideOldPassword.value,
+                      validator: (value) => controller.validateOldPin(value!),
+                      onFieldSubmitted: (_) => controller.changePinHandle(),
                     ),
-                    obscureText: controller.hideOldPassword.value,
-                    validator: (value) => controller.validateOldPin(value!),
-                    onFieldSubmitted: (_) => controller.changePinHandle(),
                   ),
-                ),
-                const SizedBox(height: 20),
+                if (!setup) const SizedBox(height: 20),
                 Obx(
                   () => TextFormField(
                     controller: controller.newPinController,
                     decoration: InputDecoration(
                       border: const OutlineInputBorder(),
-                      labelText: 'PIN Baru',
+                      labelText: setup ? 'Masukkan PIN' : 'PIN Baru',
                       prefixIcon: const Icon(Symbols.lock, fill: 1),
                       suffixIcon: IconButton(
                         icon: const Icon(Symbols.remove_red_eye, fill: 1),

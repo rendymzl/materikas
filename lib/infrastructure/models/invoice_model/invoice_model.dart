@@ -408,8 +408,8 @@ class InvoiceModel {
         method: method,
         amountPaid: amount,
         remain: totalBill - (totalPaid + amount),
-        finalAmountPaid: totalPaid + amount >= totalBill
-            ? totalBill - (totalPaid + amount)
+        finalAmountPaid: totalPaid + amount > totalBill
+            ? (amount + (totalBill - (totalPaid + amount)))
             : amount,
         date: date));
     updateIsDebtPaid();

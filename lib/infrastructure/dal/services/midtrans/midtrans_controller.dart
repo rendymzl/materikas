@@ -5,19 +5,36 @@ import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../presentation/global_widget/menu_widget/menu_controller.dart';
+import '../../../models/account_model.dart';
+import '../../../navigation/routes.dart';
+import '../account_service.dart';
+import '../auth_service.dart';
+
 class MidtransController extends GetxController {
-  final String _serverKey = '';
-  final String _clientKey = '';
+  final AuthService authC = Get.find();
+  final AccountService accountSecvice = Get.find();
+  final MenuWidgetController menuC = Get.find();
+  final String _serverKey = 'SB-Mid-server-MYOdrOQCgmToNnPJVWHdjH6C';
+  final String _clientKey = 'SB-Mid-client-GdsheqK_dzgfTgeN';
   var isLoading = false.obs;
   var paymentStatus = ''.obs;
+  var selectedPackage = 'monthly'.obs;
   Timer? timer;
+  // late final box = Hive.openBox('midtrans').obs;
+
+  final packages = {
+    'monthly': 99000,
+    'yearly': 990000,
+    'full': 2990000,
+  };
 
   // Fungsi untuk mendapatkan Snap Token dari Midtrans
   Future<String> getMidtransSnapToken({
     required String orderId,
-    required double grossAmount,
+    required int grossAmount,
     required String customerName,
-    required String customerEmail,
+    // required String customerEmail,
   }) async {
     const String midtransUrl =
         'https://app.sandbox.midtrans.com/snap/v1/transactions';
@@ -35,9 +52,9 @@ class MidtransController extends GetxController {
       },
       "customer_details": {
         "first_name": customerName,
-        "email": customerEmail,
+        // "email": customerEmail,
       },
-      "enabled_payments": ["credit_card", "gopay", "bank_transfer"],
+      "enabled_payments": ["credit_card", "gopay", "bank_transfer", "qris"],
     });
 
     final response = await http.post(
@@ -45,7 +62,7 @@ class MidtransController extends GetxController {
       headers: headers,
       body: body,
     );
-
+    print('response ${response.body}');
     if (response.statusCode == 201) {
       final responseData = jsonDecode(response.body);
       return responseData['token'];
@@ -78,11 +95,11 @@ class MidtransController extends GetxController {
       switch (transactionStatus) {
         case 'settlement':
           paymentStatus.value = 'Pembayaran berhasil.';
-          stopTimer();
+          await onSuccess();
           print('selamat berhasil');
           break;
         case 'pending':
-          paymentStatus.value = 'Pembayaran sedang menunggu konfirmasi.';
+          paymentStatus.value = 'Menunggu pembayaran.';
           break;
         case 'deny':
           paymentStatus.value = 'Pembayaran ditolak.';
@@ -99,24 +116,30 @@ class MidtransController extends GetxController {
   }
 
   // Fungsi untuk memulai pembayaran
-  Future<void> initiatePayment() async {
+  Future<void> initiatePayment(String selectedCard) async {
     isLoading.value = true;
-    var box = await Hive.openBox('midtrans');
-    var orderId = box.get('order_id');
-    var snapToken = box.get('snap_token');
+    selectedPackage.value = selectedCard;
+
+    var orderId = await authC.box.get('order_id');
+    var snapToken = await authC.box.get('snap_token');
+    String? package = await authC.box.get('package');
     try {
-      if (!(orderId?.isNotEmpty ?? false)) {
+      print('orderId $orderId');
+      print('selectedCard $selectedCard');
+      print('package $package');
+      print('selectedCard $selectedCard');
+      if (orderId == null || ((package ?? '') != selectedCard)) {
         orderId = 'order-id-${DateTime.now().millisecondsSinceEpoch}';
         // Mengambil Snap Token
         snapToken = await getMidtransSnapToken(
           orderId: orderId,
-          grossAmount: 3999000,
-          customerName: 'John Doe',
-          customerEmail: 'johndoe@example.com',
+          grossAmount: packages[selectedCard]!,
+          customerName: authC.account.value!.name,
+          // customerEmail: 'johndoe@example.com',
         );
-
-        box.put('snap_token', snapToken);
-        box.put('order_id', orderId);
+        authC.box.put('snap_token', snapToken);
+        authC.box.put('order_id', orderId);
+        authC.box.put('package', selectedCard.toString());
       }
       // URL Snap Midtrans
       final Uri snapUrl = Uri.parse(
@@ -136,7 +159,42 @@ class MidtransController extends GetxController {
     }
   }
 
-  Future<void> goToPaymentUrl() async {}
+  Future<void> onSuccess() async {
+    stopTimer();
+    String? package = await authC.box.get('package');
+    // var updatedAccount = AccountModel.fromJson(authC.account.value!.toJson());
+    menuC.expired.value = false;
+    authC.account.value!.accountType = package!;
+    authC.account.value!.isActive = true;
+    if (package == 'monthly') {
+      if (authC.account.value!.endDate!.isBefore(DateTime.now())) {
+        authC.account.value!.startDate = DateTime.now();
+        authC.account.value!.endDate =
+            DateTime.now().add(const Duration(days: 31));
+      } else {
+        authC.account.value!.startDate = authC.account.value!.endDate;
+        authC.account.value!.endDate =
+            authC.account.value!.endDate!.add(const Duration(days: 31));
+      }
+    } else if (package == 'yearly') {
+      if (authC.account.value!.endDate!.isBefore(DateTime.now())) {
+        authC.account.value!.startDate = DateTime.now();
+        authC.account.value!.endDate =
+            DateTime.now().add(const Duration(days: 365));
+      } else {
+        authC.account.value!.startDate = authC.account.value!.endDate;
+        authC.account.value!.endDate =
+            authC.account.value!.endDate!.add(const Duration(days: 365));
+      }
+    } else if (package == 'full') {
+      authC.account.value!.endDate = null;
+    }
+    accountSecvice.update(authC.account.value!);
+    await authC.box.delete('order_id');
+    await authC.box.delete('snap_token');
+    await authC.box.delete('package');
+    Get.offAllNamed(Routes.SPLASH);
+  }
 
   void startTimer(String orderId) {
     timer = Timer.periodic(const Duration(seconds: 3), (Timer t) {

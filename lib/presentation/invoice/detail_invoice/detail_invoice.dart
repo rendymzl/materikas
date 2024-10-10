@@ -309,6 +309,7 @@ void detailDialog(InvoiceModel invoice) {
                             return PropertiesRow(
                               primary: true,
                               payment: true,
+                              paymentMethod: invoice.payments[index].method!,
                               title:
                                   'Pembayaran ${(!invoice.isDebtPaid.value || invoice.payments.length > 1) ? '${index + 1}' ' (${DateFormat('dd MMM y', 'id').format(invoice.payments[index].date!)})' : ''}',
                               value:

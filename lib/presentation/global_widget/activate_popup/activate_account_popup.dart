@@ -1,20 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
+import 'package:material_symbols_icons/material_symbols_icons.dart';
 
+import '../../../infrastructure/dal/services/auth_service.dart';
 import '../../../infrastructure/dal/services/midtrans/midtrans_controller.dart';
+import '../../../infrastructure/utils/display_format.dart';
+import '../menu_widget/menu_controller.dart';
 import '../popup_page_widget.dart';
 import 'activate_account_controller.dart';
 
-void activateAccountPopup() async {
+void activateAccountPopup({bool expired = false}) async {
   final ActivateAccountController controller =
       Get.put(ActivateAccountController());
   final MidtransController midtransC = Get.put(MidtransController());
-
+  final AuthService authService = Get.find();
   // late final Box<dynamic> box;
-  final box = await Hive.openBox('midtrans');
-  var orderId = box.get('order_id');
-  if ((orderId?.isNotEmpty ?? false)) {
+  // await Future.delayed(const Duration(seconds: 2));
+  // final box = midtransC.box;
+  var orderId = authService.box.get('order_id');
+  var package = authService.box.get('package');
+  if (package != null) {
+    midtransC.selectedPackage.value = package;
+  }
+  if (orderId != null) {
     midtransC.startTimer(orderId);
   }
   Color getStatusColor(String status) {
@@ -33,7 +42,15 @@ void activateAccountPopup() async {
   }
 
   showPopupPageWidget(
+    barrierDismissible: expired,
     title: 'Aktivasi Akun',
+    // iconButton: IconButton(
+    //     onPressed: () async {
+    //       await authService.box.delete('order_id');
+    //       await authService.box.delete('snap_token');
+    //       await authService.box.delete('package');
+    //     },
+    //     icon: const Icon(Symbols.body_system)),
     height: MediaQuery.of(Get.context!).size.height * (5 / 7),
     width: MediaQuery.of(Get.context!).size.width * (8 / 11),
     content: Column(
@@ -46,6 +63,14 @@ void activateAccountPopup() async {
             style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
           ),
         ),
+        // const SizedBox(height: 10),
+        // const Padding(
+        //   padding: EdgeInsets.all(8.0),
+        //   child: Text(
+        //     "Langganan sebelum masa percobaan berakhir untuk mendapatkan potongan harga!",
+        //     style: TextStyle(fontStyle: FontStyle.italic),
+        //   ),
+        // ),
         const SizedBox(height: 10),
         // Menggunakan Row dan Expanded untuk kartu langganan
         Padding(
@@ -57,7 +82,9 @@ void activateAccountPopup() async {
                 child: buildSubscriptionCard(
                   icon: Icons.calendar_today,
                   title: 'Langganan Bulanan',
-                  price: 'Rp 100.000 per bulan',
+                  price:
+                      'Rp ${currency.format(midtransC.packages['monthly'])} per bulan',
+                  subPrice: 'Rp 150.000',
                   benefits: [
                     'Fitur full akses',
                     'Support 24/7',
@@ -70,10 +97,12 @@ void activateAccountPopup() async {
                 child: buildSubscriptionCard(
                   icon: Icons.calendar_month,
                   title: 'Langganan Tahunan',
-                  price: 'Rp 1.000.000 per tahun',
+                  price:
+                      'Rp ${currency.format(midtransC.packages['yearly'])}  per tahun',
+                  subPrice: 'Rp 1.800.000',
                   benefits: [
                     'Fitur full akses',
-                    'Diskon 10%',
+                    'Cukup bayar untuk 10 bulan',
                     'Support prioritas'
                   ],
                   index: 1,
@@ -83,8 +112,10 @@ void activateAccountPopup() async {
               Expanded(
                 child: buildSubscriptionCard(
                   icon: Icons.access_time,
-                  title: 'Langganan Selamanya',
-                  price: 'Rp 2.500.000 sekali bayar',
+                  title: 'Selamanya',
+                  price:
+                      'Rp ${currency.format(midtransC.packages['full'])}  sekali bayar',
+                  subPrice: 'Rp 3.500.000',
                   benefits: [
                     'Fitur full akses selamanya',
                     'Sekali bayar akses selamanya',
@@ -118,7 +149,7 @@ void activateAccountPopup() async {
             else
               ElevatedButton(
                 onPressed: () {
-                  midtransC.initiatePayment();
+                  midtransC.initiatePayment(controller.selectedCardType.value);
                 },
                 child: const Text('Bayar dengan Midtrans'),
               ),
@@ -135,11 +166,13 @@ Widget buildSubscriptionCard({
   required IconData icon,
   required String title,
   required String price,
+  required String subPrice,
   required List<String> benefits,
   required int index,
   // required SubscriptionController controller,
 }) {
-  final ActivateAccountController controller = Get.find();
+  final ActivateAccountController controller =
+      Get.put(ActivateAccountController());
   return Obx(() {
     // Mengubah warna jika dipilih
     bool isSelected = controller.selectedCardIndex.value == index;
@@ -180,6 +213,14 @@ Widget buildSubscriptionCard({
                         fontWeight: FontWeight.bold,
                         color: textColor)),
                 Text(price, style: TextStyle(fontSize: 18, color: textColor)),
+                Text(
+                  subPrice,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: textColor,
+                    decoration: TextDecoration.lineThrough,
+                  ),
+                ),
                 const SizedBox(height: 10),
                 // Menampilkan detail benefit
                 Column(

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../infrastructure/dal/database/powersync.dart';
@@ -17,6 +18,11 @@ import '../../../infrastructure/models/account_model.dart';
 import '../../../infrastructure/models/store_model.dart';
 import '../../../infrastructure/navigation/routes.dart';
 import '../../global_widget/app_dialog_widget.dart';
+import '../../global_widget/popup_page_widget.dart';
+import '../../profile/controllers/profile.controller.dart';
+import '../../profile/detail_profile_store.dart';
+import '../../profile/detail_store.controller.dart';
+import '../../profile/profile_store_widget.dart';
 
 class SplashController extends GetxController {
   final SyncAppBar syncController = Get.put(SyncAppBar());
@@ -33,7 +39,7 @@ class SplashController extends GetxController {
       Get.put(PurchaseOrderService());
 
   late final AccountModel? account;
-  late final StoreModel? store;
+  // late final StoreModel? store;
 
   late final isConnected = false.obs;
   late final loadingStatus = authService.loadingStatus;
@@ -49,28 +55,66 @@ class SplashController extends GetxController {
       await Future.delayed(const Duration(seconds: 2));
       // }
       await authService.getAccount();
+
       authService.loadingStatus.value = 'menghubungkan toko';
       await authService.getStore();
       authService.loadingStatus.value = 'mengambil data toko';
       await authService.getCashier();
       Get.put(StoreService());
-      Get.put(AccountService());
+      var accountService = Get.put(AccountService());
       print('SelectUserController INIT');
       print('SelectUserController getAccount');
       account = authService.account.value;
+      if (account!.accountType != 'setup') {
+        // store = await _storeService.getStore(account!.storeId!);
+        await _invoiceService.subscribe(account!.storeId!);
+        await _productService.subscribe(account!.storeId!);
+        await _customerService.subscribe(account!.storeId!);
+        await _salesService.subscribe(account!.storeId!);
+        await _invoiceSalesService.subscribe(account!.storeId!);
+        await _operatingCostService.subscribe(account!.storeId!);
+        await _purchaseOrderService.subscribe(account!.storeId!);
+        print('SelectUserController FINISH INIT');
+        authService.loadingStatus.value = 'selesai';
+        isConnected.value = authService.connected.value;
+        Get.offAllNamed(Routes.SELECT_USER);
+      } else {
+        Get.put(DetailStoreController());
+        final profileC = Get.put(ProfileController());
+        await detailStore(foundStore: authService.store.value, setup: true);
+        await showPopupPageWidget(
+          title: 'Pasang PIN',
+          content: const ChangePinWidget(setup: true),
+          buttonList: [
+            // Expanded(
+            //   child: OutlinedButton(
+            //     onPressed: () => Get.back(),
+            //     child: const Text('Batal'),
+            //   ),
+            // ),
+            // const SizedBox(width: 12),
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () => profileC.changePinHandle(),
+                child: const Text('Simpan'),
+              ),
+            ),
+          ],
+          barrierDismissible: true,
+        );
 
-      // store = await _storeService.getStore(account!.storeId!);
-      await _invoiceService.subscribe(account!.storeId!);
-      await _productService.subscribe(account!.storeId!);
-      await _customerService.subscribe(account!.storeId!);
-      await _salesService.subscribe(account!.storeId!);
-      await _invoiceSalesService.subscribe(account!.storeId!);
-      await _operatingCostService.subscribe(account!.storeId!);
-      await _purchaseOrderService.subscribe(account!.storeId!);
-      print('SelectUserController FINISH INIT');
-      authService.loadingStatus.value = 'selesai';
-      isConnected.value = authService.connected.value;
-      Get.offAllNamed(Routes.SELECT_USER);
+        print(authService.account.value!.toJson());
+        AccountModel updatedAccount =
+            AccountModel.fromJson(authService.account.value!.toJson());
+
+        updatedAccount.endDate =
+            DateTime.now().add(const Duration(days: 7)).toLocal();
+        updatedAccount.updatedAt = DateTime.now().toLocal();
+        updatedAccount.accountType = 'free_trial';
+        await accountService.update(updatedAccount);
+
+        Get.offAllNamed(Routes.SPLASH);
+      }
     } else {
       Get.offAllNamed(Routes.LOGIN);
     }

@@ -86,5 +86,10 @@ class Nav {
       page: () => const SignupScreen(),
       binding: SignupControllerBinding(),
     ),
+    GetPage(
+      name: Routes.SETUP,
+      page: () => const SetupScreen(),
+      binding: SetupControllerBinding(),
+    ),
   ];
 }

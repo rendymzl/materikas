@@ -100,7 +100,7 @@ class DetailStoreController extends GetxController {
       confirmColor: Colors.grey,
       cancelColor: Get.theme.primaryColor,
       onConfirm: () async {
-        _storeService.delete(store.id);
+        _storeService.delete(store.id!);
         Get.back();
         Get.back();
       },

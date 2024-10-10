@@ -6,7 +6,7 @@ import '../../infrastructure/models/store_model.dart';
 import '../global_widget/popup_page_widget.dart';
 import 'detail_store.controller.dart';
 
-void detailStore({StoreModel? foundStore}) {
+Future<void> detailStore({StoreModel? foundStore, bool setup = false}) async {
   DetailStoreController controller = Get.put(DetailStoreController());
 
   controller.bindingEditData(foundStore);
@@ -18,8 +18,10 @@ void detailStore({StoreModel? foundStore}) {
   const outlineRed =
       OutlineInputBorder(borderSide: BorderSide(color: Colors.red));
 
-  showPopupPageWidget(
-      title: foundStore != null ? 'Edit toko' : 'Tambah toko',
+  await showPopupPageWidget(
+      title: (foundStore != null)
+          ? (!setup ? 'Edit Toko' : 'Detail Toko')
+          : 'Tambah Toko',
       // iconButton: foundStore != null
       //     ? IconButton(
       //         onPressed: () => controller.destroyHandle(foundStore),
@@ -30,6 +32,7 @@ void detailStore({StoreModel? foundStore}) {
       //     : null,
       height: MediaQuery.of(Get.context!).size.height * (3 / 4),
       width: MediaQuery.of(Get.context!).size.width * (3 / 10),
+      barrierDismissible: setup,
       content: ListView(
         shrinkWrap: true,
         padding: const EdgeInsets.all(16),
@@ -77,7 +80,7 @@ void detailStore({StoreModel? foundStore}) {
                   controller: controller.storePhoneController,
                   decoration: InputDecoration(
                     border: const OutlineInputBorder(),
-                    labelText: 'No.Telp',
+                    labelText: 'No Handphone',
                     labelStyle: const TextStyle(color: Colors.grey),
                     floatingLabelStyle: TextStyle(
                         color: Theme.of(Get.context!).colorScheme.primary),
@@ -97,7 +100,7 @@ void detailStore({StoreModel? foundStore}) {
                   controller: controller.storeTelpController,
                   decoration: InputDecoration(
                     border: const OutlineInputBorder(),
-                    labelText: 'No.Telp',
+                    labelText: 'No.Telp (Opsional)',
                     labelStyle: const TextStyle(color: Colors.grey),
                     floatingLabelStyle: TextStyle(
                         color: Theme.of(Get.context!).colorScheme.primary),
@@ -118,13 +121,14 @@ void detailStore({StoreModel? foundStore}) {
         ],
       ),
       buttonList: [
-        Expanded(
-          child: OutlinedButton(
-            onPressed: () => Get.back(),
-            child: const Text('Batal'),
+        if (!setup)
+          Expanded(
+            child: OutlinedButton(
+              onPressed: () => Get.back(),
+              child: const Text('Batal'),
+            ),
           ),
-        ),
-        const SizedBox(width: 8),
+        if (!setup) const SizedBox(width: 8),
         Expanded(
           child: ElevatedButton(
             onPressed: () async => await controller.handleSave(foundStore),

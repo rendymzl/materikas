@@ -42,6 +42,48 @@ class InvoiceController extends GetxController {
   final paymentInvoice = true.obs;
   final destroyInvoice = true.obs;
 
+  void fixPayment() async {
+    print(invoiceService.paidInv.length);
+    var i = 1;
+    for (var inv in invoiceService.paidInv) {
+      print('==i $i');
+      var index = 1;
+
+      for (var payment in inv.payments) {
+        double aaa(int idx) {
+          var sublist = inv.payments.sublist(0, idx + 1);
+
+          double finalAmountPaid = 0;
+          double prevAmount = 0;
+
+          for (var sub in sublist) {
+            finalAmountPaid = prevAmount + sub.amountPaid > inv.totalBill
+                ? (sub.amountPaid +
+                    (inv.totalBill - (prevAmount + sub.amountPaid)))
+                : sub.amountPaid;
+          }
+
+          prevAmount = sublist.fold(
+              0,
+              (prev, payment) =>
+                  prev +
+                  ((prev + payment.amountPaid) < inv.totalBill
+                      ? payment.finalAmountPaid
+                      : payment.amountPaid));
+          print('---prevAmount $prevAmount');
+          return finalAmountPaid;
+        }
+
+        print('--index $index');
+        var sss = aaa(inv.payments.indexOf(payment));
+        print('awdawdawdawdwawda $sss');
+        // payment.finalAmountPaid = sss;
+        index++;
+      }
+      i++;
+    }
+  }
+
   @override
   void onInit() async {
     super.onInit();
@@ -72,7 +114,6 @@ class InvoiceController extends GetxController {
     //   loadMore();
     // });
     // ever(dateRangePicked, (_) => invoiceService.applyFilters());
-
     editInvoice.value = await _authService.checkAccess('editInvoice');
     returnInvoice.value = await _authService.checkAccess('returnInvoice');
     paymentInvoice.value = await _authService.checkAccess('paymentInvoice');

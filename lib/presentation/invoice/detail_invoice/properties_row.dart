@@ -9,6 +9,7 @@ class PropertiesRow extends StatelessWidget {
     this.primary = false,
     this.subtraction = false,
     this.payment = false,
+    this.paymentMethod = 'cash',
     this.titleTextAlign = TextAlign.right,
     this.valueTextAlign = TextAlign.right,
     super.key,
@@ -20,6 +21,7 @@ class PropertiesRow extends StatelessWidget {
   final bool primary;
   final bool subtraction;
   final bool payment;
+  final String paymentMethod;
   final TextAlign titleTextAlign;
   final TextAlign valueTextAlign;
   @override
@@ -34,26 +36,30 @@ class PropertiesRow extends StatelessWidget {
               title,
               style: primary
                   ? subtraction
-                      ? Theme.of(Get.context!)
-                          .textTheme
-                          .titleLarge!
-                          .copyWith(color: Colors.red)
+                      ? Theme.of(Get.context!).textTheme.titleLarge!.copyWith(
+                          color: Colors.red)
                       : payment
                           ? Theme.of(Get.context!)
                               .textTheme
                               .titleLarge!
-                              .copyWith(color: Colors.green)
+                              .copyWith(
+                                  color: paymentMethod ==
+                                          'cash'
+                                      ? Colors.green
+                                      : Colors.blue)
                           : Theme.of(Get.context!).textTheme.titleLarge
                   : subtraction
-                      ? Theme.of(Get.context!)
-                          .textTheme
-                          .bodyMedium!
-                          .copyWith(color: Colors.red)
+                      ? Theme.of(Get.context!).textTheme.bodyMedium!.copyWith(
+                          color: Colors.red)
                       : payment
-                          ? Theme.of(Get.context!)
+                          ? Theme
+                                  .of(Get.context!)
                               .textTheme
                               .bodyMedium!
-                              .copyWith(color: Colors.green)
+                              .copyWith(
+                                  color: paymentMethod == 'cash'
+                                      ? Colors.green
+                                      : Colors.blue)
                           : Theme.of(Get.context!).textTheme.bodyMedium,
               textAlign: titleTextAlign,
             ),
@@ -69,10 +75,10 @@ class PropertiesRow extends StatelessWidget {
                         .titleLarge!
                         .copyWith(color: Colors.red)
                     : payment
-                        ? Theme.of(Get.context!)
-                            .textTheme
-                            .titleLarge!
-                            .copyWith(color: Colors.green)
+                        ? Theme.of(Get.context!).textTheme.titleLarge!.copyWith(
+                            color: paymentMethod == 'cash'
+                                ? Colors.green
+                                : Colors.blue)
                         : Theme.of(Get.context!).textTheme.titleLarge
                 : subtraction
                     ? Theme.of(Get.context!)
@@ -80,10 +86,10 @@ class PropertiesRow extends StatelessWidget {
                         .bodyMedium!
                         .copyWith(color: Colors.red)
                     : payment
-                        ? Theme.of(Get.context!)
-                            .textTheme
-                            .bodyMedium!
-                            .copyWith(color: Colors.green)
+                        ? Theme.of(Get.context!).textTheme.bodyMedium!.copyWith(
+                            color: paymentMethod == 'cash'
+                                ? Colors.green
+                                : Colors.blue)
                         : Theme.of(Get.context!).textTheme.bodyMedium,
             textAlign: valueTextAlign,
           )),

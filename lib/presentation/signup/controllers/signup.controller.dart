@@ -4,15 +4,20 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../infrastructure/dal/services/account_service.dart';
 import '../../../infrastructure/dal/services/auth_service.dart';
+import '../../../infrastructure/dal/services/store_service.dart';
 import '../../../infrastructure/models/account_model.dart';
+import '../../../infrastructure/models/store_model.dart';
 import '../../../infrastructure/models/user_model.dart';
 import '../../../infrastructure/navigation/routes.dart';
+import '../../global_widget/otp/otp_popup.dart';
 
 class SignupController extends GetxController {
   // Controllers for text fields
   final AccountService _accountService = Get.put(AccountService());
+  final StoreService _storeService = Get.put(StoreService());
+  final AuthService _authService = Get.put(AuthService());
   var nameFieldC = TextEditingController();
-  var emailFieldC = TextEditingController();
+  var phoneFieldC = TextEditingController();
   var passwordFieldC = TextEditingController();
   var confirmPasswordFieldC = TextEditingController();
 
@@ -23,7 +28,7 @@ class SignupController extends GetxController {
   // Observable map to track if a field has been clicked
   var clickedField = {
     'name': false.obs,
-    'email': false.obs,
+    'phone': false.obs,
     'password': false.obs,
     'confirm_password': false.obs,
   };
@@ -45,15 +50,24 @@ class SignupController extends GetxController {
     return null;
   }
 
-  String? validatorEmail(String value) {
-    if (clickedField['email']!.value && value.isEmpty) {
-      return 'Email tidak boleh kosong';
+  String? validatorPhone(String value) {
+    if (clickedField['phone']!.value && value.isEmpty) {
+      return 'Nomor WhatsApp tidak boleh kosong';
     }
-    if (clickedField['email']!.value && !GetUtils.isEmail(value)) {
-      return 'Email tidak valid';
+    if (clickedField['phone']!.value && !GetUtils.isPhoneNumber(value)) {
+      return 'Nomor WhatsApp tidak valid';
     }
     return null;
   }
+  // String? validatorEmail(String value) {
+  //   if (clickedField['email']!.value && value.isEmpty) {
+  //     return 'Email tidak boleh kosong';
+  //   }
+  //   if (clickedField['email']!.value && !GetUtils.isEmail(value)) {
+  //     return 'Email tidak valid';
+  //   }
+  //   return null;
+  // }
 
   String? validatorPassword(String value) {
     if (clickedField['password']!.value && value.isEmpty) {
@@ -80,30 +94,70 @@ class SignupController extends GetxController {
   Future<void> signUpWithEmail(GlobalKey<FormState> formKey) async {
     if (formKey.currentState!.validate()) {
       try {
-        final AuthResponse userCredential =
-            await Supabase.instance.client.auth.signUp(
-          email: emailFieldC.text.trim(),
-          password: passwordFieldC.text,
+        Get.defaultDialog(
+          title: 'Membuat akun...',
+          content: const CircularProgressIndicator(),
+          barrierDismissible: false,
         );
 
         AccountModel account = AccountModel(
-          accountId: userCredential.user!.id,
+          // id: ,
+          accountId: '',
           name: nameFieldC.text.trim(),
-          email: emailFieldC.text.trim(),
+          email: '${phoneFieldC.text.trim()}@materikas.com',
           role: 'owner',
           createdAt: DateTime.now().toLocal(),
           users: <Cashier>[].obs,
           password: '',
           accountType: 'setup',
           updatedAt: DateTime.now().toLocal(),
-          storeId: '',
           startDate: DateTime.now(),
           endDate: DateTime.now(),
           isActive: false,
         );
-        await _accountService.insert(account);
 
-        Get.offNamed(Routes.SPLASH);
+        Get.back();
+
+        bool verivied = await otpPopup(phoneFieldC.text);
+
+        if (verivied) {
+          Get.defaultDialog(
+            title: 'Mendaftarkan akun...',
+            content: const CircularProgressIndicator(),
+            barrierDismissible: false,
+          );
+          final AuthResponse userCredential =
+              await Supabase.instance.client.auth.signUp(
+            email: '${phoneFieldC.text.trim()}@materikas.com',
+            password: passwordFieldC.text,
+          );
+
+          StoreModel newStore = StoreModel(
+            ownerId: userCredential.user?.id ?? '',
+            name: RxString(''),
+            address: RxString(''),
+            phone: RxString(phoneFieldC.text.trim()),
+            telp: RxString(''),
+            promo: RxString(''),
+            createdAt: DateTime.now().toLocal(),
+          );
+          print('menambahkan store');
+          await _storeService.insert(newStore);
+
+          // var store = await _authService.getStore();
+          print('mengambil store: ${userCredential.user?.id}');
+          var store = await _storeService.getStore(userCredential.user!.id);
+
+          print('store ${store.toJson()}');
+          account.id = userCredential.user?.id ?? '';
+          account.storeId = store.id;
+          account.accountId = userCredential.user?.id ?? '';
+
+          await _accountService.insert(account);
+          Get.back();
+          Get.offNamed(Routes.SPLASH);
+        }
+
         // await account.insert();
         // await sideMenuC.handleInit();
 
@@ -115,6 +169,7 @@ class SignupController extends GetxController {
         //   colorText: Colors.white,
         // );
       } catch (e) {
+        Get.back();
         Get.snackbar(
           'Pendaftaran Gagal',
           'Mohon periksa kembali isian form!',
@@ -130,7 +185,7 @@ class SignupController extends GetxController {
   @override
   void onClose() {
     nameFieldC.dispose();
-    emailFieldC.dispose();
+    phoneFieldC.dispose();
     passwordFieldC.dispose();
     confirmPasswordFieldC.dispose();
     super.onClose();

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../infrastructure/dal/database/powersync.dart';
 import '../../../infrastructure/dal/services/auth_service.dart';
+import '../../global_widget/app_dialog_widget.dart';
 
 class LoginController extends GetxController {
   //! UI ====
@@ -27,10 +29,10 @@ class LoginController extends GetxController {
     if (value.isEmpty && clickedField['email'] == true) {
       return 'Email tidak boleh kosong';
     }
-    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    if (!emailRegex.hasMatch(value)) {
-      return 'Email tidak valid';
-    }
+    // final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    // if (!emailRegex.hasMatch(value)) {
+    //   return 'Email tidak valid';
+    // }
     return null;
   }
 
@@ -44,32 +46,19 @@ class LoginController extends GetxController {
   Future<void> signInWithEmail(GlobalKey<FormState> formkey) async {
     if (formkey.currentState!.validate()) {
       isLoading.value = true;
-      await _authService.login(emailFieldC.text.trim(), passwordFieldC.text);
+      String email = emailFieldC.text.trim();
+      if (int.tryParse(email) != null && !email.contains('@')) {
+        email += '@materikas.com';
+      }
+      await _authService.login(email, passwordFieldC.text);
     }
   }
 
-  Future<void> signUpWithEmail() async {
-    // try {
-    //   final AuthResponse userCredential =
-    //       await Supabase.instance.client.auth.signUp(
-    //     email: emailFieldC.text.trim(),
-    //     password: passwordFieldC.text,
-    //   );
-
-    //   Account account = Account(
-    //       accountId: userCredential.user!.id,
-    //       name: '',
-    //       email: emailFieldC.text.trim(),
-    //       role: 'owner',
-    //       createdAt: DateTime.now().toLocal());
-
-    //   await account.insert();
-    //   // await Account.insert(account);
-    //   await sideMenuC.handleInit();
-
-    //   debugPrint('daftar berhasil: ${account.name}');
-    // } on AuthException catch (e) {
-    //   debugPrint(e.message);
-    // }
+  Future<void> clearDb() async {
+    Get.defaultDialog(
+      content: const CircularProgressIndicator(),
+    );
+    await db.disconnectAndClear();
+    Get.back();
   }
 }

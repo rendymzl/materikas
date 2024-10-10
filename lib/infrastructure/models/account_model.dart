@@ -14,7 +14,7 @@ class AccountModel extends Account {
     required super.accountId,
     required super.createdAt,
     required super.name,
-    required super.storeId,
+    super.storeId,
     required super.users,
     required super.password,
     required super.accountType,

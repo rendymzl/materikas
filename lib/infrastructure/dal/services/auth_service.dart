@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:hive/hive.dart';
 import 'package:materikas/infrastructure/models/user_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -31,21 +32,7 @@ class AuthService extends GetxService implements AuthRepository {
   var isLogin = false;
   var isOwner = false.obs;
 
-  var countdown = 0.obs; // Untuk countdown resend
-  var isResendDisabled = false.obs; // Disable tombol resend selama countdown
-
-  Future<void> startResendCountdown() async {
-    isResendDisabled.value = true;
-    countdown.value = 60;
-
-    Timer.periodic(const Duration(seconds: 1), (timer) {
-      countdown.value--;
-      if (countdown.value == 0) {
-        isResendDisabled.value = false;
-        timer.cancel();
-      }
-    });
-  }
+  late final Box<dynamic> box;
 
   void checkStats() {
     loadingStatus.value = '${db.currentStatus}';
@@ -58,6 +45,7 @@ class AuthService extends GetxService implements AuthRepository {
 
   @override
   void onInit() async {
+    box = await Hive.openBox('midtrans');
     connectivitySubs = Connectivity()
         .onConnectivityChanged
         .listen((List<ConnectivityResult> result) {
@@ -90,41 +78,31 @@ class AuthService extends GetxService implements AuthRepository {
           content: const Text('Email atau password salah'),
         );
       } else if (e.message.contains('Email not confirmed')) {
-        Get.defaultDialog(
-          title: 'Error',
-          content: Column(
-            children: [
-              const Text('Email belum dikonfirmasi, silahkan cek email anda'),
-              const SizedBox(height: 10),
-              Obx(() => ElevatedButton(
-                    onPressed: isResendDisabled.value
-                        ? null // Disable jika countdown sedang berjalan
-                        : () async {
-                            await supabaseClient.auth.resend(
-                              email: email,
-                              type: OtpType.signup,
-                            );
-                            startResendCountdown(); // Mulai countdown setelah tombol ditekan
-                            Get.back();
-                            Get.defaultDialog(
-                              title: 'Info',
-                              content:
-                                  const Text('Email konfirmasi telah dikirim'),
-                            );
-                          },
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 8),
-                    ),
-                    child: Text(
-                      isResendDisabled.value
-                          ? 'Kirim Ulang ($countdown)' // Tampilkan countdown
-                          : 'Kirim Ulang Email Konfirmasi',
-                    ),
-                  )),
-            ],
-          ),
-        );
+        // Get.defaultDialog(
+        //   title: 'Error',
+        //   content: Column(
+        //     children: [
+        //       const Text('Kode OTP telah dikirim ke WhatsApp Anda'),
+        //       const SizedBox(height: 10),
+        //       Obx(() => ElevatedButton(
+        //             onPressed: isResendDisabled.value
+        //                 ? null // Disable jika countdown sedang berjalan
+        //                 : () async {
+        //                     await sendOtp('6281802127920');
+        //                   },
+        //             style: ElevatedButton.styleFrom(
+        //               padding: const EdgeInsets.symmetric(
+        //                   horizontal: 16, vertical: 8),
+        //             ),
+        //             child: Text(
+        //               isResendDisabled.value
+        //                   ? 'Kirim Ulang ($countdown)' // Tampilkan countdown
+        //                   : 'Kirim Ulang Email Konfirmasi',
+        //             ),
+        //           )),
+        //     ],
+        //   ),
+        // );
       } else {
         Get.defaultDialog(
           title: 'Error',
@@ -151,25 +129,28 @@ class AuthService extends GetxService implements AuthRepository {
     final row = await db.get('SELECT * FROM accounts WHERE account_id = ?',
         [supabaseClient.auth.currentUser!.id]);
     account.value = AccountModel.fromRow(row);
-    print('AuthService: ${account.value}');
     hasSynced.value = true;
     return account.value!;
   }
 
   @override
   Future<StoreModel> getStore() async {
-    loadingStatus.value =
-        'Menghubungkan Toko, ${db.currentStatus.lastSyncedAt}';
-    // while (db.currentStatus.lastSyncedAt == null) {
-    await Future.delayed(const Duration(seconds: 2));
-    print(db.currentStatus);
-    print('menunggu koneksi');
-    // if (db.currentStatus.lastSyncedAt == null) {
-    //   print('mencoba koneksi ulang');
-    // }
-    // }
+    if (db.currentStatus.connecting == false) {
+      while (db.currentStatus.lastSyncedAt == null) {
+        await Future.delayed(const Duration(seconds: 2));
+        print(db.currentStatus);
+        print('Menunggu koneksi, ${db.currentStatus.lastSyncedAt}');
+        loadingStatus.value = 'Menunggu koneksi ${db.currentStatus.anyError}';
+        if (db.currentStatus.lastSyncedAt == null) {
+          print('Mencoba koneksi ulang, ${db.currentStatus.downloadError}');
+          loadingStatus.value = 'Mencoba koneksi ulang, ${db.currentStatus}';
+        }
+      }
+    }
+    // await Future.delayed(const Duration(seconds: 10));
+    print('MENGAMBIL DATA STORE : ${supabaseClient.auth.currentUser!.id}');
     final row = await db
-        .get('SELECT * FROM stores WHERE id = ?', [account.value!.storeId!]);
+        .get('SELECT * FROM stores WHERE id = ?', [account.value!.storeId]);
     store.value = StoreModel.fromRow(row);
     return store.value!;
   }

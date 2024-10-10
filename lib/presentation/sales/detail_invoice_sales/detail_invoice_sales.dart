@@ -174,34 +174,35 @@ void detailSalesInvoice(InvoiceSalesModel invoice) {
                 ),
               ],
             ),
-            if (invoice.totalPaid > 0 && !invoice.isDebtPaid.value)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  const SizedBox(),
-                  SizedBox(
-                    width: 500,
-                    child: Obx(
-                      () {
-                        return ListView.builder(
-                          shrinkWrap: true,
-                          itemCount: invoice.payments.length,
-                          itemBuilder: (context, index) {
-                            return PropertiesRow(
-                              primary: true,
-                              payment: true,
-                              title:
-                                  'Pembayaran ${(!invoice.isDebtPaid.value || invoice.payments.length > 1) ? '${index + 1}' ' (${DateFormat('dd MMM y', 'id').format(invoice.payments[index].date!)})' : ''}',
-                              value:
-                                  'Rp${currency.format(invoice.payments[index].amountPaid)}',
-                            );
-                          },
-                        );
-                      },
-                    ),
+            // if (invoice.totalPaid > 0 && !invoice.isDebtPaid.value)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                const SizedBox(),
+                SizedBox(
+                  width: 500,
+                  child: Obx(
+                    () {
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: invoice.payments.length,
+                        itemBuilder: (context, index) {
+                          return PropertiesRow(
+                            primary: true,
+                            payment: true,
+                            paymentMethod: invoice.payments[index].method!,
+                            title:
+                                'Pembayaran ${(!invoice.isDebtPaid.value || invoice.payments.length > 1) ? '${index + 1}' ' (${DateFormat('dd MMM y', 'id').format(invoice.payments[index].date!)})' : ''}',
+                            value:
+                                'Rp${currency.format(invoice.payments[index].amountPaid)}',
+                          );
+                        },
+                      );
+                    },
                   ),
-                ],
-              ),
+                ),
+              ],
+            ),
             if (invoice.totalPaid > 0)
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
