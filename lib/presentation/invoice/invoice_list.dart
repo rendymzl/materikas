@@ -65,7 +65,74 @@ class InvoiceList extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 80),
+                  const SizedBox(width: 40),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Obx(
+                        () => InkWell(
+                          onTap: () =>
+                              controller.paymentMethodHandleCheckBox('cash'),
+                          child: SizedBox(
+                            child: Row(
+                              children: [
+                                Checkbox(
+                                  value: controller
+                                          .invoiceService.methodPayment.value ==
+                                      'cash',
+                                  onChanged: (value) => controller
+                                      .paymentMethodHandleCheckBox('cash'),
+                                ),
+                                Text(
+                                  'Pembayaran Cash',
+                                  style: controller.invoiceService.methodPayment
+                                              .value ==
+                                          'cash'
+                                      ? context.textTheme.bodySmall!.copyWith(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary)
+                                      : context.textTheme.bodySmall,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 20),
+                      Obx(
+                        () => InkWell(
+                          onTap: () => controller
+                              .paymentMethodHandleCheckBox('transfer'),
+                          child: SizedBox(
+                            child: Row(
+                              children: [
+                                Checkbox(
+                                  value: controller
+                                          .invoiceService.methodPayment.value ==
+                                      'transfer',
+                                  onChanged: (value) => controller
+                                      .paymentMethodHandleCheckBox('transfer'),
+                                ),
+                                Text(
+                                  'Pembayaran Transfer',
+                                  style: controller.invoiceService.methodPayment
+                                              .value ==
+                                          'transfer'
+                                      ? context.textTheme.bodySmall!.copyWith(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary)
+                                      : context.textTheme.bodySmall,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(width: 40),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
@@ -222,7 +289,8 @@ class BuildListTile extends StatelessWidget {
         }
 
         final inv = (controller.invoiceService.searchQuery.isEmpty &&
-                controller.invoiceService.searchDateQuery.value == null)
+                controller.invoiceService.searchDateQuery.value == null &&
+                controller.invoiceService.methodPayment.value.isEmpty)
             ? isDebt
                 ? controller.invoiceService.debtInv
                 : controller.displayedItems
@@ -235,7 +303,8 @@ class BuildListTile extends StatelessWidget {
           shrinkWrap: true,
           controller: isDebt ? null : scrollC,
           itemCount: (controller.invoiceService.searchQuery.isEmpty &&
-                  controller.invoiceService.searchDateQuery.value == null)
+                  controller.invoiceService.searchDateQuery.value == null &&
+                  controller.invoiceService.methodPayment.value.isEmpty)
               ? isDebt
                   ? inv.length
                   : inv.length + 1

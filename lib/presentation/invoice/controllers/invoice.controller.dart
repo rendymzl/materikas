@@ -100,6 +100,8 @@ class InvoiceController extends GetxController {
   void onInit() async {
     super.onInit();
     invoiceService.searchQuery.value = '';
+    invoiceService.methodPayment.value = '';
+    invoiceService.searchDateQuery.value = null;
     // invoiceService.applyFilters();
     loadMore();
 
@@ -108,9 +110,11 @@ class InvoiceController extends GetxController {
       invoiceService.searchQuery,
       invoiceService.searchDateQuery,
       invoiceService.changeCount,
+      invoiceService.methodPayment,
     ], (_) async {
       if (invoiceService.searchQuery.value.isNotEmpty ||
-          invoiceService.searchDateQuery.value != null) {
+          invoiceService.searchDateQuery.value != null ||
+          invoiceService.methodPayment.value.isNotEmpty) {
         print('ondone: ${invoiceService.changeCount.value}');
         print('search value from everAll: ${invoiceService.searchQuery.value}');
         print('paidInv.length after updated: ${invoiceService.paidInv.length}');
@@ -198,6 +202,12 @@ class InvoiceController extends GetxController {
   final displayFilteredDate = ''.obs;
   final dateIsSelected = false.obs;
   final selectedFilteredDate = DateTime.now().obs;
+
+  void paymentMethodHandleCheckBox(String method) async {
+    invoiceService.methodPayment.value == method
+        ? invoiceService.methodPayment.value = ''
+        : invoiceService.methodPayment.value = method;
+  }
 
   handleFilteredDate(BuildContext context) {
     startFilteredDate.value = '';

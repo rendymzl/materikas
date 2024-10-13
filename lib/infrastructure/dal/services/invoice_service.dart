@@ -23,6 +23,7 @@ class InvoiceService extends GetxService implements InvoiceRepository {
 
   var searchQuery = ''.obs;
   var searchDateQuery = Rx<PickerDateRange?>(null);
+  var methodPayment = ''.obs;
   var changeCount = 0.obs;
 
   late Stream<List<InvoiceModel>> stream;
@@ -75,11 +76,68 @@ class InvoiceService extends GetxService implements InvoiceRepository {
           await getByCreatedDate(searchDateQuery.value!, paid: false);
     }
 
+    if (methodPayment.value.isNotEmpty && searchDateQuery.value == null) {
+      paidInvResult.value =
+          await searchByPaymentMethod(methodPayment.value, true);
+      debtInvResult.value =
+          await searchByPaymentMethod(methodPayment.value, false);
+    }
+
     // Filter berdasarkan pencarian (misal mencari berdasarkan nama produk)
     if (searchQuery.value.isNotEmpty) {
-      if (searchDateQuery.value != null) {
-              paidInvResult.where((invoice) => invoice.in.toLowerCase().contains(searchQuery.value.toLowerCase()) || invoice.invoiceId.toLowerCase().contains(searchQuery.value.toLowerCase())).toList();
-
+      if (searchDateQuery.value != null || methodPayment.value.isNotEmpty) {
+        // List<InvoiceModel> paid;
+        // List<InvoiceModel> debt;
+        if (searchDateQuery.value != null) {
+          var paid = paidInvResult
+              .where((invoice) =>
+                  invoice.customer.value!.name
+                      .toLowerCase()
+                      .contains(searchQuery.value.toLowerCase()) ||
+                  invoice.invoiceId!
+                      .toLowerCase()
+                      .contains(searchQuery.value.toLowerCase()))
+              .toList();
+          var debt = debtInvResult
+              .where((invoice) =>
+                  invoice.customer.value!.name
+                      .toLowerCase()
+                      .contains(searchQuery.value.toLowerCase()) ||
+                  invoice.invoiceId!
+                      .toLowerCase()
+                      .contains(searchQuery.value.toLowerCase()))
+              .toList();
+          paidInvResult.value = paid;
+          debtInvResult.value = debt;
+        }
+        if (methodPayment.value.isNotEmpty) {
+          var paid = paidInvResult
+              .where((invoice) =>
+                  (invoice.customer.value!.name
+                          .toLowerCase()
+                          .contains(searchQuery.value.toLowerCase()) ||
+                      invoice.invoiceId!
+                          .toLowerCase()
+                          .contains(searchQuery.value.toLowerCase())) &&
+                  invoice.payments.any((payment) => payment.method!
+                      .toLowerCase()
+                      .contains(methodPayment.value.toLowerCase())))
+              .toList();
+          var debt = debtInvResult
+              .where((invoice) =>
+                  (invoice.customer.value!.name
+                          .toLowerCase()
+                          .contains(searchQuery.value.toLowerCase()) ||
+                      invoice.invoiceId!
+                          .toLowerCase()
+                          .contains(searchQuery.value.toLowerCase())) &&
+                  invoice.payments.any((payment) => payment.method!
+                      .toLowerCase()
+                      .contains(methodPayment.value.toLowerCase())))
+              .toList();
+          paidInvResult.value = paid;
+          debtInvResult.value = debt;
+        }
       } else {
         paidInvResult.value = await searchInv(searchQuery.value, true);
         debtInvResult.value = await searchInv(searchQuery.value, false);
@@ -104,6 +162,20 @@ class InvoiceService extends GetxService implements InvoiceRepository {
         ''';
     List<Map<String, dynamic>> results = await db.getAll(query, [
       '%${searchTerm.toLowerCase()}%',
+      '%${searchTerm.toLowerCase()}%',
+      paid,
+    ]);
+    return results.map((e) => InvoiceModel.fromJson(e)).toList();
+  }
+
+  Future<List<InvoiceModel>> searchByPaymentMethod(
+      String searchTerm, bool paid) async {
+    String query = '''
+        SELECT * FROM invoices WHERE
+        payments LIKE ? AND
+        is_debt_paid = ?
+        ''';
+    List<Map<String, dynamic>> results = await db.getAll(query, [
       '%${searchTerm.toLowerCase()}%',
       paid,
     ]);

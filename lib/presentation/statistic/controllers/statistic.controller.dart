@@ -173,8 +173,8 @@ class StatisticController extends GetxController {
 
 //! daily ======================================================
   Future<List<Chart>> groupDailyInvoices(DateTime selectedDate) async {
-    PickerDateRange pickerDateRange =
-        PickerDateRange(selectedDate, selectedDate);
+    PickerDateRange pickerDateRange = PickerDateRange(
+        selectedDate, selectedDate.add(const Duration(days: 1)));
     currentInvoices = await _invoiceService.getByCreatedDate(pickerDateRange);
 
     byPaymentDateInvoices =
@@ -208,7 +208,8 @@ class StatisticController extends GetxController {
     DateTime prevStartOfWeek = await getStartofWeek(prevWeekPickedDay);
 
     PickerDateRange pickerDateRange = PickerDateRange(
-        selectedDate, selectedDate.add(const Duration(days: 7)));
+        currentStartOfWeek.subtract(const Duration(days: 1)),
+        currentStartOfWeek.add(const Duration(days: 7)));
 
     currentInvoices = await _invoiceService.getByCreatedDate(pickerDateRange);
     // await _invoiceService.getByPaymentDate(selectedDate);
@@ -266,12 +267,18 @@ class StatisticController extends GetxController {
     final startOfPrevMonth = DateTime(currentYear, prevMonth, 1);
     final endOfMonth = DateTime(currentYear, currentMonth + 1, 0);
 
-    currentInvoices = _invoiceService.paidInv.where((invoice) {
-      return invoice.createdAt.value!
-              .isAfter(startOfPrevMonth.subtract(const Duration(days: 1))) &&
-          invoice.createdAt.value!
-              .isBefore(endOfMonth.add(const Duration(days: 1)));
-    }).toList();
+    PickerDateRange pickerDateRange = PickerDateRange(
+        startOfCurrentMonth.subtract(const Duration(days: 1)),
+        endOfMonth.add(const Duration(days: 1)));
+
+    currentInvoices = await _invoiceService.getByCreatedDate(pickerDateRange);
+
+    // currentInvoices = _invoiceService.paidInv.where((invoice) {
+    //   return invoice.createdAt.value!
+    //           .isAfter(startOfPrevMonth.subtract(const Duration(days: 1))) &&
+    //       invoice.createdAt.value!
+    //           .isBefore(endOfMonth.add(const Duration(days: 1)));
+    // }).toList();
 
     currentFilteredSalesInvoices =
         _invoiceSalesService.invoices.where((invoice) {
@@ -312,12 +319,18 @@ class StatisticController extends GetxController {
     final startOfPrevYear = DateTime(prevYear, 1);
     final endOfYear = DateTime(currentYear, 12);
 
-    currentInvoices = _invoiceService.paidInv.where((invoice) {
-      return invoice.createdAt.value!
-              .isAfter(startOfPrevYear.subtract(const Duration(days: 1))) &&
-          invoice.createdAt.value!
-              .isBefore(endOfYear.add(const Duration(days: 1)));
-    }).toList();
+    PickerDateRange pickerDateRange = PickerDateRange(
+        startOfCurrentYear.subtract(const Duration(days: 1)),
+        endOfYear.add(const Duration(days: 1)));
+
+    currentInvoices = await _invoiceService.getByCreatedDate(pickerDateRange);
+
+    // currentInvoices = _invoiceService.paidInv.where((invoice) {
+    //   return invoice.createdAt.value!
+    //           .isAfter(startOfPrevYear.subtract(const Duration(days: 1))) &&
+    //       invoice.createdAt.value!
+    //           .isBefore(endOfYear.add(const Duration(days: 1)));
+    // }).toList();
 
     currentFilteredSalesInvoices =
         _invoiceSalesService.invoices.where((invoice) {

@@ -34,9 +34,9 @@ class StatisticScreen extends GetView<StatisticController> {
                         Expanded(child: Card(child: ReportMoneyWidget())),
                       ],
                     )),
-                    // Card(
-                    //   child: SectionMenuBar(),
-                    // ),
+                    Card(
+                      child: SectionMenuBar(),
+                    ),
                   ],
                 )),
                 // Obx(
