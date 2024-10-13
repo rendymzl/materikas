@@ -72,8 +72,8 @@ class InvoiceList extends StatelessWidget {
                       const Text('Tampilkan berdasarkan tanggal:'),
                       const SizedBox(width: 12),
                       InkWell(
-                        // onTap: () async =>
-                        //     controller.handleFilteredDate(context),
+                        onTap: () async =>
+                            controller.handleFilteredDate(context),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                               vertical: 4, horizontal: 8),
@@ -221,7 +221,8 @@ class BuildListTile extends StatelessWidget {
                   CircularProgressIndicator()); // Tampilkan loading jika pertama kali
         }
 
-        final inv = controller.invoiceService.searchQuery.isEmpty
+        final inv = (controller.invoiceService.searchQuery.isEmpty &&
+                controller.invoiceService.searchDateQuery.value == null)
             ? isDebt
                 ? controller.invoiceService.debtInv
                 : controller.displayedItems
@@ -233,7 +234,8 @@ class BuildListTile extends StatelessWidget {
           //     Divider(color: Colors.grey[200]),
           shrinkWrap: true,
           controller: isDebt ? null : scrollC,
-          itemCount: controller.invoiceService.searchQuery.isEmpty
+          itemCount: (controller.invoiceService.searchQuery.isEmpty &&
+                  controller.invoiceService.searchDateQuery.value == null)
               ? isDebt
                   ? inv.length
                   : inv.length + 1

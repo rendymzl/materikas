@@ -1,11 +1,9 @@
 import 'package:get/get.dart';
-import 'package:url_launcher/url_launcher.dart';
+// import 'package:url_launcher/url_launcher.dart';
 
 class ActivateAccountController extends GetxController {
   var selectedCardIndex = 0.obs;
   var selectedCardType = 'monthly'.obs;
-  final url =
-      'https://app.sandbox.midtrans.com/payment-links/1728117263496'.obs;
 
   void handleSelectCard(int index) {
     selectedCardIndex.value = index;
@@ -24,9 +22,9 @@ class ActivateAccountController extends GetxController {
     }
   }
 
-  Future<void> handleLaunchUrl() async {
-    if (!await launchUrl(Uri.parse(url.value))) {
-      throw Exception('Could not launch ${url.value}');
-    }
-  }
+  // Future<void> handleLaunchUrl() async {
+  //   if (!await launchUrl(Uri.parse(url.value))) {
+  //     throw Exception('Could not launch ${url.value}');
+  //   }
+  // }
 }

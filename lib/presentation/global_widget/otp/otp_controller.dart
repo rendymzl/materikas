@@ -51,14 +51,9 @@ class OtpController extends GetxController {
               'Kode OTP Anda adalah: $otp,\n\n\nSimpan nomor ini untuk menghubungi kami. \nJika ada pertanyaan silahkan tanyakan dinomor ini',
         }),
       );
-      // print(response.body);
-      // Get.back();
+
       if (response.statusCode == 200) {
         startResendCountdown();
-        // Get.defaultDialog(
-        //   title: 'Info',
-        //   content: const Text('OTP telah dikirim'),
-        // );
       } else {
         Get.defaultDialog(
           title: 'Info',
@@ -69,6 +64,69 @@ class OtpController extends GetxController {
       Get.defaultDialog(
         title: 'Error',
         content: const Text('Gagal mengirim OTP'),
+      );
+    }
+
+    try {
+      final response = await http.post(
+        Uri.parse(endpoint),
+        headers: {
+          'accept': '*/*',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'chatId': '081802127920@c.us',
+          'contentType': 'string',
+          'content': '$chatId sedang mendaftar',
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        startResendCountdown();
+      } else {
+        Get.defaultDialog(
+          title: 'Info',
+          content: const Text('Gagal mengirim OTP'),
+        );
+      }
+    } catch (e) {
+      Get.defaultDialog(
+        title: 'Error',
+        content: const Text('Gagal mengirim OTP'),
+      );
+    }
+  }
+
+  Future<void> successMessage(String chatId) async {
+    chatId = chatId.startsWith('0') ? chatId.replaceFirst('0', '62') : chatId;
+    const String endpoint = 'http://82.112.236.54:3000/client/sendMessage/ABCD';
+    try {
+      await http.post(
+        Uri.parse(endpoint),
+        headers: {
+          'accept': '*/*',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'chatId': '$chatId@c.us',
+          'contentType': 'string',
+          'content':
+              'Pembayaran berhasil! Terima kasih telah berlangganan.\n\n\nSimpan nomor ini untuk menghubungi kami. \nJika ada pertanyaan silahkan tanyakan dinomor ini',
+        }),
+      );
+
+      // if (response.statusCode == 200) {
+      //   startResendCountdown();
+      // } else {
+      //   Get.defaultDialog(
+      //     title: 'Info',
+      //     content: const Text('Gagal mengirim OTP'),
+      //   );
+      // }
+    } catch (e) {
+      Get.defaultDialog(
+        title: 'Error',
+        content: const Text('Gagal mengirim pesan'),
       );
     }
   }

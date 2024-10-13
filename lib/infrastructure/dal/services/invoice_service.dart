@@ -22,42 +22,13 @@ class InvoiceService extends GetxService implements InvoiceRepository {
   // var displayedInvoices = <InvoiceModel>[].obs;
 
   var searchQuery = ''.obs;
+  var searchDateQuery = Rx<PickerDateRange?>(null);
   var changeCount = 0.obs;
 
   late Stream<List<InvoiceModel>> stream;
 
   @override
   Future<void> subscribe(String storeId) async {
-    // var streamcashInv = db.watch('''
-    //   SELECT * FROM invoices
-    //   WHERE EXISTS (
-    //     SELECT *
-    //     FROM json_each(payments) AS payment
-    //     WHERE payment.value LIKE '%transfer%'
-    //   )
-    //   ORDER BY created_at DESC;
-    // ''').map((datas) {
-    //   print(datas);
-    //   var payments = datas.expand((data) {
-    //     List<dynamic> paymentList = jsonDecode(jsonDecode(data['payments']));
-    //     print('paymentList dynamic: $paymentList');
-    //     return paymentList.map((payment) => PaymentModel.fromJson(payment));
-    //   }).toList();
-    //   return payments;
-    // });
-
-    // streamcashInv.listen((payments) {
-    //   var transferPayments =
-    //       payments.where((payment) => payment.method == 'transfer').toList();
-
-    //   print('Pembayaran Transfer: ${transferPayments.length}');
-
-    //   // Proses lebih lanjut untuk masing-masing kelompok pembayaran
-    //   for (var payment in transferPayments) {
-    //     print('Transfer Payment: ${payment.toJson()}');
-    //   }
-    // });
-
     //! paid invoice
     var streamPaidInv = db.watch('''
       SELECT * FROM invoices WHERE store_id = ? AND is_debt_paid = true ORDER BY created_at DESC LIMIT 100
@@ -90,48 +61,6 @@ class InvoiceService extends GetxService implements InvoiceRepository {
           DateTime.parse(b.createdAt.value!.toIso8601String())
               .compareTo(DateTime.parse(a.createdAt.value!.toIso8601String())));
     });
-
-    // var streamPaymentCash = db.watch('''
-    //   SELECT * FROM invoices WHERE store_id = ? AND json_extract(data, '\$.method.city') = 'cash'
-    //   ''', parameters: [
-    //   storeId
-    // ]).map((data) => data.map((json) => InvoiceModel.fromJson(json)).toList());
-
-    // streamPaymentCash.listen((datas) {
-    //   paidInv.clear();
-    //   debtInv.clear();
-    //   for (var invoice in datas) {
-    //     if (invoice.totalPaid >= invoice.totalBill) {
-    //       paidInv.add(InvoiceModel.fromJson(invoice.toJson()));
-    //     } else {
-    //       debtInv.add(InvoiceModel.fromJson(invoice.toJson()));
-    //     }
-    //   }
-
-    //   // invoices.value = data;
-    //   applyFilters();
-    // });
-
-    // var stream = db
-    //     .watch('SELECT * FROM invoices WHERE store_id = ?', parameters: [
-    //   storeId
-    // ]).map((data) => data.map((json) => InvoiceModel.fromJson(json)).toList());
-
-    // stream.listen((datas) {
-    //   paidInv.clear();
-    //   debtInv.clear();
-    //   for (var invoice in datas) {
-    //     if (invoice.isDebtPaid.value) {
-    //       paidInv.add(InvoiceModel.fromJson(invoice.toJson()));
-    //     } else {
-    //       debtInv.add(InvoiceModel.fromJson(invoice.toJson()));
-    //     }
-    //   }
-    //   print('paidInv ${paidInv.length}');
-    //   print('debtInv ${debtInv.length}');
-    //   // invoices.value = data;
-    //   // applyFilters();
-    // });
   }
 
   // Fungsi untuk menerapkan filter dan pencarian
@@ -139,39 +68,22 @@ class InvoiceService extends GetxService implements InvoiceRepository {
     var paidInvResult = <InvoiceModel>[].obs;
     var debtInvResult = <InvoiceModel>[].obs;
 
-    // Filter berdasarkan kategori jika ada yang dipilih
-    // if (selectedCategory.value.isNotEmpty) {
-    //   result = result.where((product) {
-    //     return product['category'] == selectedCategory.value;
-    //   }).toList().obs;
-    // }
+    if (searchDateQuery.value != null) {
+      paidInvResult.value =
+          await getByCreatedDate(searchDateQuery.value!, paid: true);
+      debtInvResult.value =
+          await getByCreatedDate(searchDateQuery.value!, paid: false);
+    }
 
     // Filter berdasarkan pencarian (misal mencari berdasarkan nama produk)
     if (searchQuery.value.isNotEmpty) {
-      paidInvResult.value = await searchInv(searchQuery.value, true);
-      debtInvResult.value = await searchInv(searchQuery.value, false);
-      // paidInvResult = paidInv
-      //     .where((inv) {
-      //       return inv.invoiceId!
-      //               .toLowerCase()
-      //               .contains(searchQuery.toLowerCase()) ||
-      //           inv.customer.value!.name
-      //               .toLowerCase()
-      //               .contains(searchQuery.toLowerCase());
-      //     })
-      //     .toList()
-      //     .obs;
-      // debtInvResult = debtInv
-      //     .where((inv) {
-      //       return inv.invoiceId!
-      //               .toLowerCase()
-      //               .contains(searchQuery.toLowerCase()) ||
-      //           inv.customer.value!.name
-      //               .toLowerCase()
-      //               .contains(searchQuery.toLowerCase());
-      //     })
-      //     .toList()
-      //     .obs;
+      if (searchDateQuery.value != null) {
+              paidInvResult.where((invoice) => invoice.in.toLowerCase().contains(searchQuery.value.toLowerCase()) || invoice.invoiceId.toLowerCase().contains(searchQuery.value.toLowerCase())).toList();
+
+      } else {
+        paidInvResult.value = await searchInv(searchQuery.value, true);
+        debtInvResult.value = await searchInv(searchQuery.value, false);
+      }
     }
 
     // Update produk yang sudah difilter
@@ -185,32 +97,60 @@ class InvoiceService extends GetxService implements InvoiceRepository {
 
   Future<List<InvoiceModel>> searchInv(String searchTerm, bool paid) async {
     String query = '''
-      SELECT * FROM invoices WHERE
-      (customer LIKE ? OR
-      invoice_id LIKE ?) AND
-      is_debt_paid = ?
-      ''';
+        SELECT * FROM invoices WHERE
+        (customer LIKE ? OR
+        invoice_id LIKE ?) AND
+        is_debt_paid = ?
+        ''';
     List<Map<String, dynamic>> results = await db.getAll(query, [
       '%${searchTerm.toLowerCase()}%',
       '%${searchTerm.toLowerCase()}%',
-      paid
+      paid,
     ]);
     return results.map((e) => InvoiceModel.fromJson(e)).toList();
   }
 
   @override
-  Future<List<InvoiceModel>> getByCreatedDate(DateTime startOfDate) async {
-    String query = '''
+  Future<List<InvoiceModel>> getByCreatedDate(PickerDateRange pickerDateRange,
+      {bool? paid}) async {
+    if (paid != null) {
+      String query = '''
       SELECT * FROM invoices WHERE
-      DATE(created_at) LIKE ?
+      is_debt_paid = ? AND
+      created_at BETWEEN ? AND ?
       ''';
-    List<Map<String, dynamic>> results = await db.getAll(query, [
-      '%${DateFormat('yyyy-MM-dd').format(startOfDate)}%',
-    ]);
-    var invoiceList = results.map((e) => InvoiceModel.fromJson(e)).toList();
-    print('created at ${invoiceList.length}');
-    return invoiceList;
+      List<Map<String, dynamic>> results = await db.getAll(query, [
+        paid,
+        DateFormat('yyyy-MM-dd').format(pickerDateRange.startDate!),
+        DateFormat('yyyy-MM-dd').format(pickerDateRange.endDate!),
+      ]);
+      var invoiceList = results.map((e) => InvoiceModel.fromJson(e)).toList();
+      return invoiceList;
+    } else {
+      String query = '''
+      SELECT * FROM invoices WHERE
+      created_at BETWEEN ? AND ?
+      ''';
+      List<Map<String, dynamic>> results = await db.getAll(query, [
+        DateFormat('yyyy-MM-dd').format(pickerDateRange.startDate!),
+        DateFormat('yyyy-MM-dd').format(pickerDateRange.endDate!),
+      ]);
+      var invoiceList = results.map((e) => InvoiceModel.fromJson(e)).toList();
+      return invoiceList;
+    }
   }
+  // @override
+  // Future<List<InvoiceModel>> getByCreatedDate(DateTime startOfDate) async {
+  //   String query = '''
+  //     SELECT * FROM invoices WHERE
+  //     DATE(created_at) LIKE ?
+  //     ''';
+  //   List<Map<String, dynamic>> results = await db.getAll(query, [
+  //     '%${DateFormat('yyyy-MM-dd').format(startOfDate)}%',
+  //   ]);
+  //   var invoiceList = results.map((e) => InvoiceModel.fromJson(e)).toList();
+  //   return invoiceList;
+  // }
 
   //   @override
   // Future<List<InvoiceModel>> getByCreatedDate(DateTime startOfDate) async {

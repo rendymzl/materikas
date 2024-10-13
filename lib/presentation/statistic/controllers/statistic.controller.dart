@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
@@ -174,7 +173,9 @@ class StatisticController extends GetxController {
 
 //! daily ======================================================
   Future<List<Chart>> groupDailyInvoices(DateTime selectedDate) async {
-    currentInvoices = await _invoiceService.getByCreatedDate(selectedDate);
+    PickerDateRange pickerDateRange =
+        PickerDateRange(selectedDate, selectedDate);
+    currentInvoices = await _invoiceService.getByCreatedDate(pickerDateRange);
 
     byPaymentDateInvoices =
         await _invoiceService.getByPaymentDate(selectedDate);
@@ -206,7 +207,10 @@ class StatisticController extends GetxController {
     DateTime currentStartOfWeek = await getStartofWeek(selectedDate);
     DateTime prevStartOfWeek = await getStartofWeek(prevWeekPickedDay);
 
-    currentInvoices = await _invoiceService.getByCreatedDate(prevStartOfWeek);
+    PickerDateRange pickerDateRange = PickerDateRange(
+        selectedDate, selectedDate.add(const Duration(days: 7)));
+
+    currentInvoices = await _invoiceService.getByCreatedDate(pickerDateRange);
     // await _invoiceService.getByPaymentDate(selectedDate);
     //     _invoiceService.paidInv.where((invoice) {
     //   return invoice.createdAt.value!.isAfter(prevStartOfWeek);

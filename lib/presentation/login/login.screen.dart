@@ -59,7 +59,7 @@ class LoginScreen extends GetView<LoginController> {
                           TextFormField(
                             controller: controller.emailFieldC,
                             decoration: InputDecoration(
-                              labelText: "Email",
+                              labelText: "Email / Whatsapp",
                               prefixIcon: const Icon(Symbols.email, fill: 1),
                               labelStyle: const TextStyle(color: Colors.grey),
                               floatingLabelStyle:

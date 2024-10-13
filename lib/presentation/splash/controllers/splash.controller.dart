@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../infrastructure/dal/database/powersync.dart';
-import '../../../infrastructure/dal/database/sync_controller.dart.dart';
 import '../../../infrastructure/dal/database/sync_status.dart';
 import '../../../infrastructure/dal/services/account_service.dart';
 import '../../../infrastructure/dal/services/auth_service.dart';
@@ -15,7 +14,6 @@ import '../../../infrastructure/dal/services/purchase_order_service.dart';
 import '../../../infrastructure/dal/services/sales_service.dart';
 import '../../../infrastructure/dal/services/store_service.dart';
 import '../../../infrastructure/models/account_model.dart';
-import '../../../infrastructure/models/store_model.dart';
 import '../../../infrastructure/navigation/routes.dart';
 import '../../global_widget/app_dialog_widget.dart';
 import '../../global_widget/popup_page_widget.dart';

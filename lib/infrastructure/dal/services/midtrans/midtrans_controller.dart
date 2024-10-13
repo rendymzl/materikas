@@ -1,26 +1,31 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:get/get.dart';
-import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
+import 'package:webview_windows/webview_windows.dart';
 
 import '../../../../presentation/global_widget/menu_widget/menu_controller.dart';
-import '../../../models/account_model.dart';
+
+import '../../../../presentation/global_widget/otp/otp_controller.dart';
 import '../../../navigation/routes.dart';
 import '../account_service.dart';
 import '../auth_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class MidtransController extends GetxController {
   final AuthService authC = Get.find();
+  final OtpController otpC = Get.put(OtpController());
   final AccountService accountSecvice = Get.find();
   final MenuWidgetController menuC = Get.find();
-  final String _serverKey = 'SB-Mid-server-MYOdrOQCgmToNnPJVWHdjH6C';
-  final String _clientKey = 'SB-Mid-client-GdsheqK_dzgfTgeN';
+  final String _serverKey = dotenv.env['MIDTRANS_SERVER']!;
+  final String _clientKey = dotenv.env['MIDTRANS_CLIENT']!;
   var isLoading = false.obs;
   var paymentStatus = ''.obs;
   var selectedPackage = 'monthly'.obs;
+  var snap = ''.obs;
   Timer? timer;
+  final webviewController = WebviewController().obs;
   // late final box = Hive.openBox('midtrans').obs;
 
   final packages = {
@@ -33,11 +38,11 @@ class MidtransController extends GetxController {
   Future<String> getMidtransSnapToken({
     required String orderId,
     required int grossAmount,
+    required String packageName,
     required String customerName,
-    // required String customerEmail,
+    required String customerPhone,
   }) async {
-    const String midtransUrl =
-        'https://app.sandbox.midtrans.com/snap/v1/transactions';
+    const String midtransUrl = 'https://app.midtrans.com/snap/v1/transactions';
 
     final headers = {
       'Authorization': 'Basic ${base64Encode(utf8.encode(_serverKey))}',
@@ -52,8 +57,21 @@ class MidtransController extends GetxController {
       },
       "customer_details": {
         "first_name": customerName,
+        "phone": customerPhone,
         // "email": customerEmail,
       },
+      "item_details": [
+        {
+          "id": "1",
+          "name": packageName,
+          "price": grossAmount,
+          "quantity": 1,
+          "brand": "Materikas",
+          "category": "App Cashier",
+          "created_at": DateTime.now().toLocal().toIso8601String(),
+          "updated_at": DateTime.now().toLocal().toIso8601String(),
+        }
+      ],
       "enabled_payments": ["credit_card", "gopay", "bank_transfer", "qris"],
     });
 
@@ -74,8 +92,7 @@ class MidtransController extends GetxController {
   // late final Box<dynamic> box;
 
   Future<void> checkPaymentStatus(String orderId) async {
-    final String midtransUrl =
-        'https://api.sandbox.midtrans.com/v2/$orderId/status';
+    final String midtransUrl = 'https://api.midtrans.com/v2/$orderId/status';
 
     final headers = {
       'Authorization': 'Basic ${base64Encode(utf8.encode(_serverKey))}',
@@ -96,7 +113,6 @@ class MidtransController extends GetxController {
         case 'settlement':
           paymentStatus.value = 'Pembayaran berhasil.';
           await onSuccess();
-          print('selamat berhasil');
           break;
         case 'pending':
           paymentStatus.value = 'Menunggu pembayaran.';
@@ -108,7 +124,7 @@ class MidtransController extends GetxController {
           paymentStatus.value = 'Pembayaran dibatalkan.';
           break;
         default:
-          paymentStatus.value = 'Menunggu pembayaran.';
+          paymentStatus.value = 'Pilih metode pembayaran.';
       }
     } else {
       paymentStatus.value = 'Gagal memeriksa status pembayaran.';
@@ -133,25 +149,54 @@ class MidtransController extends GetxController {
         // Mengambil Snap Token
         snapToken = await getMidtransSnapToken(
           orderId: orderId,
+          packageName: selectedCard,
           grossAmount: packages[selectedCard]!,
           customerName: authC.account.value!.name,
+          customerPhone: authC.store.value!.phone.value,
           // customerEmail: 'johndoe@example.com',
         );
         authC.box.put('snap_token', snapToken);
         authC.box.put('order_id', orderId);
         authC.box.put('package', selectedCard.toString());
+        startTimer(orderId);
       }
       // URL Snap Midtrans
-      final Uri snapUrl = Uri.parse(
-          'https://app.sandbox.midtrans.com/snap/v2/vtweb/$snapToken');
+      final String snapUrl =
+          'https://app.midtrans.com/snap/v2/vtweb/$snapToken';
+
+      // final Uri snapUrl =
+      //     Uri.parse('https://app.midtrans.com/snap/v2/vtweb/$snapToken');
+
+      await webviewController.value.initialize();
+      webviewController.value.url.listen((url) {
+        // debugPrint();
+        // // Deteksi URL yang digunakan Midtrans untuk redirect status transaksi
+        // if (url.contains('transaction_status=settlement')) {
+        //   // Transaksi berhasil
+        //   paymentController.onTransactionSuccess();
+        // } else if (url.contains('transaction_status=pending')) {
+        //   // Transaksi pending
+        //   paymentController.onTransactionPending();
+        // } else if (url.contains('transaction_status=deny') ||
+        //     url.contains('transaction_status=cancel') ||
+        //     url.contains('transaction_status=expire')) {
+        //   // Transaksi gagal atau dibatalkan
+        //   paymentController.onTransactionFailed();
+        // }
+      });
+
+      print('load webview');
+      // print(getWebViewVersion());
+      webviewController.value.loadUrl(snapUrl);
 
       // Membuka URL di browser
-      if (await canLaunchUrl(snapUrl)) {
-        await launchUrl(snapUrl);
-        startTimer(orderId);
-      } else {
-        throw 'Could not launch $snapUrl';
-      }
+      // if (await canLaunchUrl(snapUrl)) {
+      //   await launchUrl(snapUrl);
+      //   startTimer(orderId);
+      // } else {
+      //   throw 'Could not launch $snapUrl';
+      // }
+      snap.value = 'https://app.midtrans.com/snap/v2/vtweb/$snapToken';
     } catch (e) {
       paymentStatus.value = 'Pembayaran gagal: $e';
     } finally {
@@ -164,6 +209,7 @@ class MidtransController extends GetxController {
     String? package = await authC.box.get('package');
     // var updatedAccount = AccountModel.fromJson(authC.account.value!.toJson());
     menuC.expired.value = false;
+
     authC.account.value!.accountType = package!;
     authC.account.value!.isActive = true;
     if (package == 'monthly') {
@@ -189,11 +235,21 @@ class MidtransController extends GetxController {
     } else if (package == 'full') {
       authC.account.value!.endDate = null;
     }
+
     accountSecvice.update(authC.account.value!);
+    await otpC.successMessage(authC.store.value!.phone.value);
     await authC.box.delete('order_id');
     await authC.box.delete('snap_token');
     await authC.box.delete('package');
     Get.offAllNamed(Routes.SPLASH);
+  }
+
+  void cancelPayment() async {
+    snap.value = '';
+    await authC.box.delete('order_id');
+    await authC.box.delete('snap_token');
+    await authC.box.delete('package');
+    stopTimer();
   }
 
   void startTimer(String orderId) {

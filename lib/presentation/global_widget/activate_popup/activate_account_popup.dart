@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
+import 'package:webview_windows/webview_windows.dart';
 
 import '../../../infrastructure/dal/services/auth_service.dart';
 import '../../../infrastructure/dal/services/midtrans/midtrans_controller.dart';
@@ -30,7 +31,7 @@ void activateAccountPopup({bool expired = false}) async {
     switch (status) {
       case 'Pembayaran berhasil.':
         return Colors.green;
-      case 'Pembayaran sedang menunggu konfirmasi.':
+      case 'Menunggu pembayaran.':
         return Colors.orange;
       case 'Pembayaran ditolak.':
         return Colors.red;
@@ -51,110 +52,135 @@ void activateAccountPopup({bool expired = false}) async {
     //       await authService.box.delete('package');
     //     },
     //     icon: const Icon(Symbols.body_system)),
-    height: MediaQuery.of(Get.context!).size.height * (5 / 7),
+    height: MediaQuery.of(Get.context!).size.height * (6 / 7),
     width: MediaQuery.of(Get.context!).size.width * (8 / 11),
-    content: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Padding(
-          padding: EdgeInsets.all(8.0),
-          child: Text(
-            "Pilih Langganan:",
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-          ),
-        ),
-        // const SizedBox(height: 10),
-        // const Padding(
-        //   padding: EdgeInsets.all(8.0),
-        //   child: Text(
-        //     "Langganan sebelum masa percobaan berakhir untuk mendapatkan potongan harga!",
-        //     style: TextStyle(fontStyle: FontStyle.italic),
-        //   ),
-        // ),
-        const SizedBox(height: 10),
-        // Menggunakan Row dan Expanded untuk kartu langganan
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Expanded(
-                child: buildSubscriptionCard(
-                  icon: Icons.calendar_today,
-                  title: 'Langganan Bulanan',
-                  price:
-                      'Rp ${currency.format(midtransC.packages['monthly'])} per bulan',
-                  subPrice: 'Rp 150.000',
-                  benefits: [
-                    'Fitur full akses',
-                    'Support 24/7',
-                  ],
-                  index: 0,
+    content: Obx(
+      () => midtransC.snap.isEmpty
+          ? Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Text(
+                    "Pilih Langganan:",
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                // const SizedBox(height: 10),
+                // const Padding(
+                //   padding: EdgeInsets.all(8.0),
+                //   child: Text(
+                //     "Langganan sebelum masa percobaan berakhir untuk mendapatkan potongan harga!",
+                //     style: TextStyle(fontStyle: FontStyle.italic),
+                //   ),
+                // ),
+                const SizedBox(height: 10),
+                // Menggunakan Row dan Expanded untuk kartu langganan
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Expanded(
+                        child: buildSubscriptionCard(
+                          icon: Icons.calendar_today,
+                          title: 'Langganan Bulanan',
+                          price:
+                              'Rp ${currency.format(midtransC.packages['monthly'])} per bulan',
+                          subPrice: 'Rp 150.000',
+                          benefits: [
+                            'Fitur full akses',
+                            'Support 24/7',
+                          ],
+                          index: 0,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: buildSubscriptionCard(
+                          icon: Icons.calendar_month,
+                          title: 'Langganan Tahunan',
+                          price:
+                              'Rp ${currency.format(midtransC.packages['yearly'])}  per tahun',
+                          subPrice: 'Rp 1.800.000',
+                          benefits: [
+                            'Fitur full akses',
+                            'Cukup bayar untuk 10 bulan',
+                            'Support prioritas'
+                          ],
+                          index: 1,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: buildSubscriptionCard(
+                          icon: Icons.access_time,
+                          title: 'Selamanya',
+                          price:
+                              'Rp ${currency.format(midtransC.packages['full'])}  sekali bayar',
+                          subPrice: 'Rp 3.500.000',
+                          benefits: [
+                            'Fitur full akses selamanya',
+                            'Sekali bayar akses selamanya',
+                            'Support prioritas'
+                          ],
+                          index: 2,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 10),
+              ],
+            )
+          : Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: SizedBox(
+                height: MediaQuery.of(Get.context!).size.height * 0.9,
+                child: Webview(
+                  midtransC.webviewController.value,
                 ),
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: buildSubscriptionCard(
-                  icon: Icons.calendar_month,
-                  title: 'Langganan Tahunan',
-                  price:
-                      'Rp ${currency.format(midtransC.packages['yearly'])}  per tahun',
-                  subPrice: 'Rp 1.800.000',
-                  benefits: [
-                    'Fitur full akses',
-                    'Cukup bayar untuk 10 bulan',
-                    'Support prioritas'
-                  ],
-                  index: 1,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: buildSubscriptionCard(
-                  icon: Icons.access_time,
-                  title: 'Selamanya',
-                  price:
-                      'Rp ${currency.format(midtransC.packages['full'])}  sekali bayar',
-                  subPrice: 'Rp 3.500.000',
-                  benefits: [
-                    'Fitur full akses selamanya',
-                    'Sekali bayar akses selamanya',
-                    'Support prioritas'
-                  ],
-                  index: 2,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(width: 10),
-        Obx(
-          () => Text(
-            midtransC.paymentStatus.value,
-            style: TextStyle(
-              color: getStatusColor(midtransC.paymentStatus.value),
-              fontSize: 24,
             ),
-          ),
-        ),
-      ],
     ),
     buttonList: [
       Obx(() {
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (midtransC.isLoading.value)
-              const CircularProgressIndicator()
-            else
-              ElevatedButton(
-                onPressed: () {
-                  midtransC.initiatePayment(controller.selectedCardType.value);
-                },
-                child: const Text('Bayar dengan Midtrans'),
-              ),
-          ],
-        );
+        return midtransC.snap.isEmpty
+            ? Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (midtransC.isLoading.value)
+                    const CircularProgressIndicator()
+                  else
+                    ElevatedButton(
+                      onPressed: () {
+                        midtransC
+                            .initiatePayment(controller.selectedCardType.value);
+                      },
+                      child: const Text('Bayar dengan Midtrans'),
+                    ),
+                ],
+              )
+            : Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      midtransC.paymentStatus.value,
+                      style: TextStyle(
+                        color: getStatusColor(midtransC.paymentStatus.value),
+                        fontSize: 24,
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        midtransC.cancelPayment();
+                      },
+                      child: const Text('Batalkan Pesanan'),
+                    ),
+                  ],
+                ),
+              );
       }),
     ],
     onClose: () => midtransC.stopTimer(),

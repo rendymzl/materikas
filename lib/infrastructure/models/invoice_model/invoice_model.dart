@@ -284,7 +284,6 @@ class InvoiceModel {
   }
 
   double get totalBill {
-    print('berubah');
     return purchaseList.value.items
             .fold(0.0, (prev, item) => prev + (item.getBill(priceType.value))) -
         purchaseList.value.bundleDiscount.value +
@@ -387,31 +386,45 @@ class InvoiceModel {
     return total;
   }
 
+  double get subtotalPaid {
+    return payments.asMap().entries.fold(0, (prev, entry) {
+      int index = entry.key;
+      PaymentModel payment = entry.value;
+
+      if (index == payments.length - 1) {
+        return prev +
+            (prev + payment.amountPaid > totalBill
+                ? payment.amountPaid
+                : payment.finalAmountPaid);
+      } else {
+        return prev + payment.finalAmountPaid;
+      }
+    });
+  }
+
   double get totalPaid {
-    return payments.fold(
-        0,
-        (prev, payment) =>
-            prev +
-            ((prev + payment.amountPaid) < totalBill
-                ? payment.finalAmountPaid
-                : payment.amountPaid));
+    return payments.fold(0, (prev, payment) => prev + payment.finalAmountPaid);
   }
 
   double get remainingDebt {
-    return totalBill - totalPaid;
+    return totalBill - subtotalPaid;
   }
 
   void addPayment(double amount, {String? method, DateTime? date}) {
-    // print(totalPaid);
-    // print(amount);
+    double finalAmountPaid = amount;
+    double remaining = totalBill - totalPaid;
+
+    if (finalAmountPaid > remaining) {
+      finalAmountPaid = remaining;
+    }
+
     payments.add(PaymentModel(
-        method: method,
-        amountPaid: amount,
-        remain: totalBill - (totalPaid + amount),
-        finalAmountPaid: totalPaid + amount > totalBill
-            ? (amount + (totalBill - (totalPaid + amount)))
-            : amount,
-        date: date));
+      method: method,
+      amountPaid: amount,
+      remain: totalBill - (totalPaid + amount),
+      finalAmountPaid: finalAmountPaid,
+      date: date,
+    ));
     updateIsDebtPaid();
   }
 

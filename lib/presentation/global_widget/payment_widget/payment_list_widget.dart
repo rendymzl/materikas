@@ -82,7 +82,7 @@ class PaymentListWidget extends StatelessWidget {
                   Expanded(
                       flex: 3,
                       child: Text(
-                          'Rp${currency.format(editInvoice.totalPaidByIndex(index) == editInvoice.totalBill ? editInvoice.payments[index].amountPaid : editInvoice.payments[index].finalAmountPaid)}',
+                          'Rp${currency.format(editInvoice.totalPaidByIndex(index) > editInvoice.totalBill ? editInvoice.payments[index].amountPaid : editInvoice.payments[index].finalAmountPaid)}',
                           style: Theme.of(Get.context!)
                               .textTheme
                               .titleSmall!

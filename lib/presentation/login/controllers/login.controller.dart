@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 
 import '../../../infrastructure/dal/database/powersync.dart';
 import '../../../infrastructure/dal/services/auth_service.dart';
-import '../../global_widget/app_dialog_widget.dart';
 
 class LoginController extends GetxController {
   //! UI ====

@@ -42,47 +42,59 @@ class InvoiceController extends GetxController {
   final paymentInvoice = true.obs;
   final destroyInvoice = true.obs;
 
-  void fixPayment() async {
-    print(invoiceService.paidInv.length);
-    var i = 1;
-    for (var inv in invoiceService.paidInv) {
-      print('==i $i');
-      var index = 1;
+  // void fixPayment() async {
+  //   print(invoiceService.paidInv.length);
+  //   var i = 1;
+  //   for (var inv in invoiceService.paidInv) {
+  //     print('========== $i ${inv.invoiceId}');
+  //     var index = 1;
 
-      for (var payment in inv.payments) {
-        double aaa(int idx) {
-          var sublist = inv.payments.sublist(0, idx + 1);
+  //     double totalPaid = 0;
+  //     // double prevAmount = 0;
+  //     // double prevFinalAmountPaid = 0;
 
-          double finalAmountPaid = 0;
-          double prevAmount = 0;
+  //     for (var payment in inv.payments) {
+  //       print('------------index $index');
+  //       print('TOTAL TAGIHAN ${inv.totalBill}');
+  //       print('TOTAL PEMBAYARAN SEBELUMNYA $totalPaid');
+  //       print('PEMBAYARAN SEKARANG ${payment.amountPaid}');
+  //       var finalAmountPaid = totalPaid + payment.amountPaid > inv.totalBill
+  //           ? (payment.amountPaid +
+  //               (inv.totalBill - (totalPaid + payment.amountPaid)) + inv.totalReturnFinal)
+  //           : payment.amountPaid;
+  //       print('finalAmountPaid $finalAmountPaid');
+  //       // payment.finalAmountPaid = finalAmountPaid;
 
-          for (var sub in sublist) {
-            finalAmountPaid = prevAmount + sub.amountPaid > inv.totalBill
-                ? (sub.amountPaid +
-                    (inv.totalBill - (prevAmount + sub.amountPaid)))
-                : sub.amountPaid;
-          }
+  //       totalPaid += ((totalPaid + payment.amountPaid) < inv.totalBill
+  //           ? finalAmountPaid
+  //           : payment.amountPaid);
+  //       // prevAmount = payment.amountPaid;
+  //       // prevFinalAmountPaid = finalAmountPaid;
+  //       index++;
+  //     }
+  //     i++;
+  //     print('');
+  //   }
+  // }
 
-          prevAmount = sublist.fold(
-              0,
-              (prev, payment) =>
-                  prev +
-                  ((prev + payment.amountPaid) < inv.totalBill
-                      ? payment.finalAmountPaid
-                      : payment.amountPaid));
-          print('---prevAmount $prevAmount');
-          return finalAmountPaid;
-        }
+  // for (var sub in sublist) {
+  //   print('---TAGIHAN ${inv.totalBill}');
+  //   print('---TOTAL PEMBAYARAN SEBELUMNYA $totalPaid');
+  //   print('---PEMBAYARAN SEKARANG ${sub.amountPaid}');
+  //   print('---prevFinalAmountPaid $prevFinalAmountPaid');
 
-        print('--index $index');
-        var sss = aaa(inv.payments.indexOf(payment));
-        print('awdawdawdawdwawda $sss');
-        // payment.finalAmountPaid = sss;
-        index++;
-      }
-      i++;
-    }
-  }
+  //   finalAmountPaid = totalPaid + sub.amountPaid > inv.totalBill
+  //       ? (sub.amountPaid +
+  //           (inv.totalBill - (totalPaid + sub.amountPaid)))
+  //       : sub.amountPaid;
+
+  //   totalPaid += ((totalPaid + prevAmount) < inv.totalBill
+  //       ? prevFinalAmountPaid
+  //       : prevAmount);
+
+  //   prevAmount = sub.amountPaid;
+  //   prevFinalAmountPaid = finalAmountPaid;
+  // }
 
   @override
   void onInit() async {
@@ -94,9 +106,11 @@ class InvoiceController extends GetxController {
     // Listen perubahan searchQuery atau selectedCategory
     everAll([
       invoiceService.searchQuery,
+      invoiceService.searchDateQuery,
       invoiceService.changeCount,
     ], (_) async {
-      if (invoiceService.searchQuery.value.isNotEmpty) {
+      if (invoiceService.searchQuery.value.isNotEmpty ||
+          invoiceService.searchDateQuery.value != null) {
         print('ondone: ${invoiceService.changeCount.value}');
         print('search value from everAll: ${invoiceService.searchQuery.value}');
         print('paidInv.length after updated: ${invoiceService.paidInv.length}');
@@ -165,10 +179,10 @@ class InvoiceController extends GetxController {
           invoiceService.searchQuery.value = searchValue;
         }
       });
+    } else if (searchValue is PickerDateRange) {
+      invoiceService.searchDateQuery.value = searchValue;
+      // invoiceService.searchInvoicesByPickerDateRange(searchValue);
     }
-    // else if (searchValue is PickerDateRange) {
-    //   invoiceService.searchInvoicesByPickerDateRange(searchValue);
-    // }
     // if (searchValue is String) {
     //   if (debounceTimer?.isActive ?? false) debounceTimer?.cancel();
     //   debounceTimer = Timer(const Duration(milliseconds: 500), () {
@@ -246,19 +260,22 @@ class InvoiceController extends GetxController {
               onCancel: () => Get.back(),
               onSubmit: (value) {
                 if (value is PickerDateRange) {
-                  if (value.endDate != null) {
-                    final newSelectedPickerRange = PickerDateRange(
-                        value.startDate,
-                        value.endDate!.add(const Duration(days: 1)));
+                  // if (value.endDate != null) {
+                  final newSelectedPickerRange = PickerDateRange(
+                      value.startDate,
+                      value.endDate != null
+                          ? value.endDate!.add(const Duration(days: 1))
+                          : value.startDate!.add(const Duration(days: 1)));
 
-                    selectedFilteredDate.value =
-                        newSelectedPickerRange.startDate!;
-                    displayFilteredDate.value =
-                        '$startFilteredDate sampai $endFilteredDate';
-                    filterInvoices(newSelectedPickerRange);
-                    dateIsSelected.value = true;
-                    Get.back();
-                  }
+                  selectedFilteredDate.value =
+                      newSelectedPickerRange.startDate!;
+                  displayFilteredDate.value = value.endDate != null
+                      ? '$startFilteredDate sampai $endFilteredDate'
+                      : '$startFilteredDate';
+                  filterInvoices(newSelectedPickerRange);
+                  dateIsSelected.value = true;
+                  Get.back();
+                  // }
                 }
                 // if (value is PickerDateRange) {
                 //   if (value.endDate != null) {
@@ -288,7 +305,8 @@ class InvoiceController extends GetxController {
     endFilteredDate.value = '';
     displayFilteredDate.value = '';
     dateIsSelected.value = false;
-    filterInvoices('');
+    invoiceService.searchDateQuery.value = null;
+    // filterInvoices('');
   }
 
   destroyHandle(InvoiceModel invoice) async {

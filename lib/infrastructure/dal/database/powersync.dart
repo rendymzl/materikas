@@ -2,15 +2,14 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:get/get.dart';
+
 import 'package:logging/logging.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:powersync/powersync.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-import '../../navigation/routes.dart';
-import 'app_config.dart';
 import 'scheme.dart';
 import 'supabase.dart';
 
@@ -58,7 +57,7 @@ class SupabaseConnector extends PowerSyncBackendConnector {
     //     ? null
     //     : DateTime.fromMillisecondsSinceEpoch(session.expiresAt! * 1000);
     return PowerSyncCredentials(
-      endpoint: AppConfig.powersyncUrl,
+      endpoint: dotenv.get('POWERSYNC_URL'),
       token: token,
       // userId: userId,
       // expiresAt: expiresAt
