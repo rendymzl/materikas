@@ -155,10 +155,14 @@ class CustomerInputField extends StatelessWidget {
                                     options.elementAt(index);
                                 return ListTile(
                                   title: Text(option.name),
+                                  subtitle: Text(
+                                    option.address ?? '',
+                                    style: TextStyle(
+                                        color: Colors.grey, fontSize: 11),
+                                  ),
                                   onTap: () {
                                     onSelected(option);
                                     controller.selectedCustomer.value = option;
-                                    print(controller.selectedCustomer.toJson());
                                   },
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8),

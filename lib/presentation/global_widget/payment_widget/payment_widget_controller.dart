@@ -3,13 +3,13 @@ import 'package:get/get.dart';
 
 import '../../../core/util/generate_invoice_id.dart';
 import '../../../infrastructure/dal/services/auth_service.dart';
-import '../../../infrastructure/dal/services/customer_service.dart';
 import '../../../infrastructure/dal/services/invoice_service.dart';
 import '../../../infrastructure/dal/services/product_service.dart';
 import '../../../infrastructure/models/invoice_model/invoice_model.dart';
 import '../../../infrastructure/models/product_model.dart';
 import '../../../infrastructure/utils/display_format.dart';
 import '../../home/controllers/home.controller.dart';
+import '../date_picker_widget/date_picker_widget_controller.dart';
 import '../field_customer_widget/field_customer_widget_controller.dart';
 import '../invoice_print_widget/invoice_print.dart';
 
@@ -19,6 +19,7 @@ class PaymentController extends GetxController {
   late final HomeController _homeC = Get.find();
   late final InvoiceService _invoiceService = Get.find();
   late final ProductService _productService = Get.find();
+  late final DatePickerController _datePickerC = Get.find();
   // late final CustomerService _customerService = Get.find();
   final paymentMethod = ['cash', 'transfer'].obs;
   final selectedPaymentMethod = ''.obs;
@@ -201,8 +202,17 @@ class PaymentController extends GetxController {
     final isNewInvoice = invoice.invoiceId == null;
     await customerFieldC.addCustomer(invoice);
     if (isNewInvoice) {
+      DateTime dateTime = DateTime(
+        _datePickerC.selectedDate.value.year,
+        _datePickerC.selectedDate.value.month,
+        _datePickerC.selectedDate.value.day,
+        _datePickerC.selectedTime.value.hour,
+        _datePickerC.selectedTime.value.minute,
+      );
+
       invoice.invoiceId = await generateInvoiceId(invoice.customer.value!);
       invoice.purchaseList.value.bundleDiscount.value = bundleDiscount;
+      invoice.createdAt.value = dateTime;
       invoice.updateIsDebtPaid();
     }
     await addPayment(invoice);

@@ -9,6 +9,7 @@ class CustomerModel extends Customer {
     required super.name,
     super.phone,
     super.address,
+    super.noteAddress,
     super.storeId,
   });
 
@@ -22,6 +23,7 @@ class CustomerModel extends Customer {
       name: json['name'],
       phone: json['phone'],
       address: json['address'],
+      noteAddress: json['note_address'],
       storeId: json['store_id'],
     );
   }
@@ -34,6 +36,7 @@ class CustomerModel extends Customer {
     data['name'] = name;
     data['phone'] = phone;
     data['address'] = address;
+    data['note_address'] = noteAddress;
     if (storeId != null) data['store_id'] = storeId;
     return data;
   }
@@ -48,6 +51,7 @@ class CustomerModel extends Customer {
       name: row['name'],
       phone: row['phone'],
       address: row['address'],
+      noteAddress: row['note_address'],
       storeId: row['store_id'],
     );
   }

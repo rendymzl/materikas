@@ -11,10 +11,10 @@ class CustomerService extends GetxService implements CustomerRepository {
   late final foundCustomers = <CustomerModel>[].obs;
   late final lastCustomersId = 'CST0'.obs;
 
-  @override
-  void onInit() async {
-    super.onInit();
-  }
+  // @override
+  // void onInit() async {
+  //   super.onInit();
+  // }
 
   void search(String searchValue) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -56,7 +56,7 @@ class CustomerService extends GetxService implements CustomerRepository {
         search('');
       });
     } on PostgrestException catch (e) {
-      print(e.message);
+      debugPrint(e.message);
       rethrow;
     }
   }
@@ -66,8 +66,8 @@ class CustomerService extends GetxService implements CustomerRepository {
     await db.execute(
       '''
     INSERT INTO customers(
-      id, customer_id, created_at, name, phone, address, store_id
-    ) VALUES(uuid(), ?, ?, ?, ?, ?, ?)
+      id, customer_id, created_at, name, phone, address, note_address, store_id
+    ) VALUES(uuid(), ?, ?, ?, ?, ?, ?, ?)
     ''',
       [
         customer.customerId,
@@ -75,6 +75,7 @@ class CustomerService extends GetxService implements CustomerRepository {
         customer.name,
         customer.phone,
         customer.address,
+        customer.noteAddress,
         customer.storeId,
       ],
     );
@@ -90,6 +91,7 @@ class CustomerService extends GetxService implements CustomerRepository {
       name = ?, 
       phone = ?, 
       address = ?, 
+      note_address = ?, 
       store_id = ?
     WHERE id = ?
     ''',
@@ -99,6 +101,7 @@ class CustomerService extends GetxService implements CustomerRepository {
         customer.name,
         customer.phone,
         customer.address,
+        customer.noteAddress,
         customer.storeId,
         customer.id,
       ],

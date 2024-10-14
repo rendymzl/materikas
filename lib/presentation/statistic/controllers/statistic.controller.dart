@@ -320,7 +320,7 @@ class StatisticController extends GetxController {
     final endOfYear = DateTime(currentYear, 12);
 
     PickerDateRange pickerDateRange = PickerDateRange(
-        startOfCurrentYear.subtract(const Duration(days: 1)),
+        startOfCurrentYear.add(const Duration(milliseconds: 1)),
         endOfYear.add(const Duration(days: 1)));
 
     currentInvoices = await _invoiceService.getByCreatedDate(pickerDateRange);
@@ -354,7 +354,7 @@ class StatisticController extends GetxController {
   Future<List<Chart>> getChartData(DateTime? selectedDate) async {
     final List<Chart> listChartData = [];
 
-    final startingMonth = selectedDate!.month;
+    var startingMonth = selectedDate!.month;
     final startingYear = selectedDate.year;
 
     final formatter = DateFormat('EEEE, dd/MM', 'id');
@@ -369,35 +369,42 @@ class StatisticController extends GetxController {
           currentDate = DateTime(startingYear, startingMonth, i + 1);
           break;
         case 'yearly':
-          currentDate = DateTime(startingYear, startingMonth + i);
+          currentDate = currentDate = DateTime(startingYear, startingMonth, i);
           break;
+        // case 'yearly':
+        //   currentDate = DateTime(startingYear, startingMonth + i);
+        //   break;
       }
 
-      var invoicesGroup = selectedSection.value == 'yearly'
-          ? currentInvoices.where((invoice) {
-              DateTime localDate = invoice.createdAt.value!;
-              return localDate.year == currentDate.year &&
-                  localDate.month == currentDate.month;
-            }).toList()
-          : currentInvoices.where((invoice) {
-              DateTime localDate = invoice.createdAt.value!;
-              return localDate.year == currentDate.year &&
-                  localDate.month == currentDate.month &&
-                  localDate.day == currentDate.day;
-            }).toList();
+      var invoicesGroup =
+          // selectedSection.value == 'yearly'
+          //     ? currentInvoices.where((invoice) {
+          //         DateTime localDate = invoice.createdAt.value!;
+          //         return localDate.year == currentDate.year &&
+          //             localDate.month == currentDate.month;
+          //       }).toList()
+          //     :
+          currentInvoices.where((invoice) {
+        DateTime localDate = invoice.createdAt.value!;
+        return localDate.year == currentDate.year &&
+            localDate.month == currentDate.month &&
+            localDate.day == currentDate.day;
+      }).toList();
 
-      final operatingCostsGroup = selectedSection.value == 'yearly'
-          ? currentFilteredOperatingCosts.where((invoice) {
-              DateTime localDate = invoice.createdAt!;
-              return localDate.year == currentDate.year &&
-                  localDate.month == currentDate.month;
-            }).toList()
-          : currentFilteredOperatingCosts.where((invoice) {
-              DateTime localDate = invoice.createdAt!;
-              return localDate.year == currentDate.year &&
-                  localDate.month == currentDate.month &&
-                  localDate.day == currentDate.day;
-            }).toList();
+      final operatingCostsGroup =
+          // selectedSection.value == 'yearly'
+          //     ? currentFilteredOperatingCosts.where((invoice) {
+          //         DateTime localDate = invoice.createdAt!;
+          //         return localDate.year == currentDate.year &&
+          //             localDate.month == currentDate.month;
+          //       }).toList()
+          //     :
+          currentFilteredOperatingCosts.where((invoice) {
+        DateTime localDate = invoice.createdAt!;
+        return localDate.year == currentDate.year &&
+            localDate.month == currentDate.month &&
+            localDate.day == currentDate.day;
+      }).toList();
 
       DateTime date = currentDate;
       final dateString = formatter.format(date);
@@ -407,12 +414,6 @@ class StatisticController extends GetxController {
       double totalChargeReturn = 0;
       double totalDiscount = 0;
       double totalOtherCost = 0;
-
-      // double totalCash = 0;
-      // double totalTransfer = 0;
-
-      // double totalSalesCash = 0;
-      // double totalSalesTransfer = 0;
 
       double totalCostPrice = 0;
 
@@ -428,12 +429,6 @@ class StatisticController extends GetxController {
         double discount = inv.totalDiscount;
         double otherCost = inv.totalOtherCosts;
 
-        // double cashPay = inv.getTotalByMethod("cash");
-        // double transferPay = inv.getTotalByMethod("transfer");
-
-        // int salesCash = invoice.getTotalByMethod("cash");
-        // int salesTransfer = invoice.getTotalByMethod("transfer");
-
         double costPrice = inv.purchaseList.value.subtotalCost;
 
         totalSellPrice += sellPrice;
@@ -441,8 +436,6 @@ class StatisticController extends GetxController {
         totalChargeReturn += returnFee;
         totalDiscount += discount;
         totalOtherCost += otherCost;
-        // totalCash += cashPay;
-        // totalTransfer += transferPay;
         totalCostPrice += costPrice;
       }
 
@@ -456,49 +449,29 @@ class StatisticController extends GetxController {
         cash += invoice.getTotalPayByMethod('cash', selectedDate: date);
         transfer += invoice.getTotalPayByMethod('transfer', selectedDate: date);
       }
+
+      Future.delayed(const Duration(seconds: 1), () {
+        print(date);
+      });
+
       for (var invoice in byPaymentDateInvoices) {
         debtCash += invoice.getTotalDebtByMethod('cash', selectedDate: date);
         debtTransfer +=
             invoice.getTotalDebtByMethod('transfer', selectedDate: date);
       }
 
-      // for (var invoice in _invoiceService.debtInv) {
-      //   cash += invoice.getTotalPayByMethod('cash', selectedDate: date);
-      //   transfer += invoice.getTotalPayByMethod('transfer', selectedDate: date);
-
-      //   debtCash += invoice.getTotalDebtByMethod('cash', selectedDate: date);
-      //   debtTransfer +=
-      //       invoice.getTotalDebtByMethod('transfer', selectedDate: date);
-      // }
       for (var invoice in _invoiceSalesService.invoices) {
         salesCash += invoice.getTotalByMethod('cash', selectedDate: date);
         salesTransfer +=
             invoice.getTotalByMethod('transfer', selectedDate: date);
       }
-      // chart.cash = cash;
-      // chart.transfer = transfer;
-      // chart.salesCash = salesCash;
-      // chart.salesTransfer = salesTransfer;
-      // print('---- cash $cash');
-      // print('---- transfer $transfer');
-      // print('---- salesCash $salesCash');
-      // print('---- salesTransfer $salesTransfer');
-      // print('-----salesInvoicesGroup lenght ${salesInvoicesGroup.length}');
-      // for (var inv in salesInvoicesGroup) {
-      //   double salesCashPay = inv.getTotalByMethod("cash");
-      //   double salesTransferPay = inv.getTotalByMethod("transfer");
-
-      //   totalSalesCash += salesCashPay;
-      //   totalSalesTransfer += salesTransferPay;
-      //   // print('-----in sales pay transfer $totalSalesTransfer');
-      // }
 
       for (var op in operatingCostsGroup) {
         int operatingCost = op.amount!;
 
         totalOperatingCost += operatingCost;
       }
-      // print('-----out sales pay transfer $totalSalesTransfer');
+
       final chartData = Chart(
         date: date,
         dateString: dateString,
@@ -525,19 +498,32 @@ class StatisticController extends GetxController {
     maxTotalProfit = 0;
     maxTotalInvoice = 0;
 
-    int totalDays;
+    int totalDays = 1;
+    int totalMonth = 12;
     if (selectedSection.value == 'weekly') {
       totalDays = 7;
     } else if (selectedSection.value == 'monthly') {
       totalDays = DateTime(startingYear, startingMonth + 1, 0).day;
-    } else if (selectedSection.value == 'yearly') {
-      totalDays = 12;
-    } else {
-      totalDays = 1;
     }
 
-    for (var day = 0; day < totalDays; day++) {
-      dayValueLooping(day);
+    if (selectedSection.value == 'yearly') {
+      for (var month = 1; month <= totalMonth; month++) {
+        startingMonth = month;
+
+        totalDays = DateTime(startingYear, startingMonth + 1, 0).day;
+
+        for (var day = 0; day < totalDays; day++) {
+          Future.delayed(const Duration(seconds: 1), () {
+            print(startingYear);
+            print(day);
+          });
+          dayValueLooping(day);
+        }
+      }
+    } else {
+      for (var day = 0; day < totalDays; day++) {
+        dayValueLooping(day);
+      }
     }
 
     return listChartData;

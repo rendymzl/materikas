@@ -21,8 +21,14 @@ Future main() async {
 
   String feedURL = 'https://api.menantikan.com/releases/appcast.xml';
   await autoUpdater.setFeedURL(feedURL);
-  await autoUpdater.checkForUpdates();
+  await autoUpdater.checkForUpdates(inBackground: true);
   await autoUpdater.setScheduledCheckInterval(3600);
+
+  //   await autoUpdater.checkForUpdates().then((value) {
+  //   if (value) {
+  //     autoUpdater.setScheduledCheckInterval(3600);
+  //   }
+  // });
 
   windowManager.waitUntilReadyToShow(null, () async {
     await windowManager.show();

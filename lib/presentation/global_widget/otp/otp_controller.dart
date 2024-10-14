@@ -75,25 +75,19 @@ class OtpController extends GetxController {
           'Content-Type': 'application/json',
         },
         body: jsonEncode({
-          'chatId': '081802127920@c.us',
+          'chatId': '6281802127920@c.us',
           'contentType': 'string',
           'content': '$chatId sedang mendaftar',
         }),
       );
 
       if (response.statusCode == 200) {
-        startResendCountdown();
+        debugPrint('Berhasil');
       } else {
-        Get.defaultDialog(
-          title: 'Info',
-          content: const Text('Gagal mengirim OTP'),
-        );
+        debugPrint(e.toString());
       }
     } catch (e) {
-      Get.defaultDialog(
-        title: 'Error',
-        content: const Text('Gagal mengirim OTP'),
-      );
+      debugPrint(e.toString());
     }
   }
 

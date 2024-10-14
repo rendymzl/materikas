@@ -108,10 +108,9 @@ class SelectUserController extends GetxController {
     // try {
     if (authService.connected.value) {
       await logout();
+      // box.delete('user');
       Get.offNamed(Routes.LOGIN);
     } else {
-      print('ga ada inet');
-
       await Get.defaultDialog(
         title: 'Error',
         content:

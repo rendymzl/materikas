@@ -323,111 +323,163 @@ class BuildListTile extends StatelessWidget {
             String paymentMethod =
                 inv[index].payments.map((e) => e.method).join(', ');
             final invoice = inv[index];
-            return Container(
-              // color: index % 2 == 0 ? Colors.white : Colors.grey[100],
-              child: ListTile(
-                tileColor: index % 2 == 0 ? Colors.white : Colors.grey[100],
-                hoverColor: (!paymentMethod.contains('cash') &&
-                        !paymentMethod.contains('transfer'))
-                    ? Colors.red[100]
-                    : !paymentMethod.contains('cash')
-                        ? Colors.blue[100]
-                        : !paymentMethod.contains('transfer')
-                            ? Colors.green[100]
-                            : Colors.teal[100],
-                dense: true,
-                title: Row(
-                  children: [
-                    Expanded(child: Text('${index + 1}.')),
-                    Expanded(
-                        flex: 4,
-                        child: Text(
-                          invoice.invoiceId!,
-                          style: context.textTheme.titleLarge!
-                              .copyWith(fontSize: 15),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 2,
-                        )),
-                    Expanded(
-                      flex: 3,
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Text(
-                            invoice.customer.value?.name ?? '',
-                            style: context.textTheme.titleLarge!
-                                .copyWith(fontSize: 18),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                            textAlign: TextAlign.end,
+            final isHover = false.obs;
+            return MouseRegion(
+              onHover: (event) {
+                isHover.value = true;
+                // Change the background color on hover
+                // You can customize the color as needed
+                // Example: Colors.grey[200]
+                // print('Hovered');
+              },
+              onExit: (event) {
+                isHover.value = false;
+                // Reset the background color on exit
+                // print('Exited');
+              },
+              child: Obx(
+                () => Container(
+                  decoration: BoxDecoration(
+                    gradient: isHover.value
+                        ? (paymentMethod.contains('cash') &&
+                                paymentMethod.contains('transfer'))
+                            ? LinearGradient(
+                                begin: Alignment.topRight,
+                                end: Alignment.bottomLeft,
+                                colors: [
+                                  Colors.blue[100]!,
+                                  Colors.green[100]!,
+                                ],
+                              )
+                            : null
+                        : null,
+                    color: isHover.value
+                        ? isDebt
+                            ? Colors.red[100]
+                            : invoice.totalReturnFinal > 0
+                                ? Colors.amber[100]
+                                : !paymentMethod.contains('transfer')
+                                    ? Colors.green[100]
+                                    : !paymentMethod.contains('cash')
+                                        ? Colors.blue[100]
+                                        : null
+                        : index % 2 == 0
+                            ? Colors.white
+                            : Colors.grey[100],
+                  ),
+                  child: ListTile(
+                    // tileColor: index % 2 == 0 ? Colors.white : Colors.grey[100],
+                    // hoverColor: (!paymentMethod.contains('cash') &&
+                    //     !paymentMethod.contains('transfer'))
+                    // ? Colors.red[100]
+                    // : !paymentMethod.contains('cash')
+                    //     ? Colors.blue[100]
+                    //     : !paymentMethod.contains('transfer')
+                    //         ? Colors.green[100]
+                    //         : Colors.teal[100],
+                    // hoverColor: (!paymentMethod.contains('cash') &&
+                    //         !paymentMethod.contains('transfer'))
+                    //     ? Colors.red[100]
+                    //     : !paymentMethod.contains('cash')
+                    //         ? Colors.blue[100]
+                    //         : !paymentMethod.contains('transfer')
+                    //             ? Colors.green[100]
+                    //             : Colors.teal[100],
+                    dense: true,
+                    title: Row(
+                      children: [
+                        Expanded(child: Text('${index + 1}.')),
+                        Expanded(
+                            flex: 4,
+                            child: Text(
+                              invoice.invoiceId!,
+                              style: context.textTheme.titleLarge!
+                                  .copyWith(fontSize: 15),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 2,
+                            )),
+                        Expanded(
+                          flex: 3,
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Text(
+                                invoice.customer.value?.name ?? '',
+                                style: context.textTheme.titleLarge!
+                                    .copyWith(fontSize: 18),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                                textAlign: TextAlign.end,
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
+                        Expanded(
+                            flex: 4,
+                            child: Text(
+                              'Rp${number.format(invoice.totalBill)}',
+                              style: context.textTheme.titleLarge!
+                                  .copyWith(fontSize: 15),
+                              textAlign: TextAlign.end,
+                            )),
+                        Expanded(
+                          flex: 5,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 2),
+                            margin: const EdgeInsets.only(left: 50),
+                            decoration: BoxDecoration(
+                              gradient: (paymentMethod.contains('cash') &&
+                                      paymentMethod.contains('transfer'))
+                                  ? const LinearGradient(
+                                      begin: Alignment.topRight,
+                                      end: Alignment.bottomLeft,
+                                      colors: [
+                                        Colors.blue,
+                                        Colors.green,
+                                      ],
+                                    )
+                                  : null,
+                              color: isDebt
+                                  ? Colors.red
+                                  : invoice.totalReturnFinal > 0
+                                      ? Colors.amber
+                                      : !paymentMethod.contains('transfer')
+                                          ? Colors.green
+                                          : !paymentMethod.contains('cash')
+                                              ? Colors.blue
+                                              : null,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              isDebt
+                                  ? 'Rp${number.format(invoice.remainingDebt)}'
+                                  : 'Lunas',
+                              textAlign: TextAlign.end,
+                              style: const TextStyle(
+                                  color: Colors.white, fontSize: 15),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(left: 32),
+                      child: Text(
+                        DateFormat('dd/MM HH:mm', 'id')
+                            .format(invoice.createdAt.value!),
+                        style: const TextStyle(fontSize: 15),
+                        // textAlign: TextAlign.end,
                       ),
                     ),
-                    Expanded(
-                        flex: 4,
-                        child: Text(
-                          'Rp${number.format(invoice.totalBill)}',
-                          style: context.textTheme.titleLarge!
-                              .copyWith(fontSize: 15),
-                          textAlign: TextAlign.end,
-                        )),
-                    Expanded(
-                      flex: 5,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 2),
-                        margin: const EdgeInsets.only(left: 50),
-                        decoration: BoxDecoration(
-                          gradient: (paymentMethod.contains('cash') &&
-                                  paymentMethod.contains('transfer'))
-                              ? const LinearGradient(
-                                  begin: Alignment.topRight,
-                                  end: Alignment.bottomLeft,
-                                  colors: [
-                                    Colors.blue,
-                                    Colors.green,
-                                  ],
-                                )
-                              : null,
-                          color: isDebt
-                              ? Colors.red
-                              : invoice.totalReturnFinal > 0
-                                  ? Colors.amber
-                                  : !paymentMethod.contains('transfer')
-                                      ? Colors.green
-                                      : !paymentMethod.contains('cash')
-                                          ? Colors.blue
-                                          : null,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          isDebt
-                              ? 'Rp${number.format(invoice.remainingDebt)}'
-                              : 'Lunas',
-                          textAlign: TextAlign.end,
-                          style: const TextStyle(
-                              color: Colors.white, fontSize: 15),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                subtitle: Padding(
-                  padding: const EdgeInsets.only(left: 32),
-                  child: Text(
-                    DateFormat('dd/MM HH:mm', 'id')
-                        .format(invoice.createdAt.value!),
-                    style: const TextStyle(fontSize: 15),
-                    // textAlign: TextAlign.end,
+                    onTap: () {
+                      InvoiceModel editInvoice =
+                          InvoiceModel.fromJson(invoice.toJson());
+                      detailDialog(editInvoice);
+                    },
                   ),
                 ),
-                onTap: () {
-                  InvoiceModel editInvoice =
-                      InvoiceModel.fromJson(invoice.toJson());
-                  detailDialog(editInvoice);
-                },
               ),
             );
           },

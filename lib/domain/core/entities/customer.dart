@@ -5,6 +5,7 @@ class Customer {
   String name;
   String? phone;
   String? address;
+  String? noteAddress;
   String? storeId;
 
   Customer({
@@ -14,6 +15,7 @@ class Customer {
     required this.name,
     this.phone,
     this.address,
+    this.noteAddress,
     this.storeId,
   });
 }

@@ -49,7 +49,8 @@ const schema = Schema([
     Column.text('name'),
     Column.text('phone'),
     Column.text('address'),
-    Column.text('created_at')
+    Column.text('created_at'),
+    Column.text('note_address')
   ]),
   Table('sales', [
     Column.text('store_id'),
