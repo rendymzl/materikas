@@ -3,16 +3,17 @@ import 'package:get/get.dart';
 
 class ActivateAccountController extends GetxController {
   var selectedCardIndex = 0.obs;
-  var selectedCardType = 'monthly'.obs;
+  var isMonthly = true.obs;
+  var selectedCardType = 'basic'.obs;
 
   void handleSelectCard(int index) {
     selectedCardIndex.value = index;
     switch (index) {
       case 0:
-        selectedCardType.value = 'monthly';
+        selectedCardType.value = 'basic';
         break;
       case 1:
-        selectedCardType.value = 'yearly';
+        selectedCardType.value = 'premium';
         break;
       case 2:
         selectedCardType.value = 'full';

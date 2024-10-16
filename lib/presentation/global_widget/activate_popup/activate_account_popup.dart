@@ -20,10 +20,10 @@ void activateAccountPopup({bool expired = false}) async {
   // await Future.delayed(const Duration(seconds: 2));
   // final box = midtransC.box;
   var orderId = authService.box.get('order_id');
-  var package = authService.box.get('package');
-  if (package != null) {
-    midtransC.selectedPackage.value = package;
-  }
+  // var package = authService.box.get('package');
+  // if (package != null) {
+  //   midtransC.selectedPackage.value = package;
+  // }
   if (orderId != null) {
     midtransC.startTimer(orderId);
   }
@@ -66,6 +66,7 @@ void activateAccountPopup({bool expired = false}) async {
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   ),
                 ),
+
                 // const SizedBox(height: 10),
                 // const Padding(
                 //   padding: EdgeInsets.all(8.0),
@@ -83,47 +84,27 @@ void activateAccountPopup({bool expired = false}) async {
                     children: [
                       Expanded(
                         child: buildSubscriptionCard(
-                          icon: Icons.calendar_today,
-                          title: 'Langganan Bulanan',
-                          price:
-                              'Rp ${currency.format(midtransC.packages['monthly'])} per bulan',
-                          subPrice: 'Rp 150.000',
-                          benefits: [
-                            'Fitur full akses',
-                            'Support 24/7',
-                          ],
+                          package: 'basic',
+                          icon: Symbols.kid_star,
+                          title: 'Paket Basic',
                           index: 0,
                         ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: buildSubscriptionCard(
-                          icon: Icons.calendar_month,
-                          title: 'Langganan Tahunan',
-                          price:
-                              'Rp ${currency.format(midtransC.packages['yearly'])}  per tahun',
-                          subPrice: 'Rp 1.800.000',
-                          benefits: [
-                            'Fitur full akses',
-                            'Cukup bayar untuk 10 bulan',
-                            'Support prioritas'
-                          ],
+                          package: 'premium',
+                          icon: Symbols.bookmark_star,
+                          title: 'Paket Premium',
                           index: 1,
                         ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: buildSubscriptionCard(
-                          icon: Icons.access_time,
-                          title: 'Selamanya',
-                          price:
-                              'Rp ${currency.format(midtransC.packages['full'])}  sekali bayar',
-                          subPrice: 'Rp 3.500.000',
-                          benefits: [
-                            'Fitur full akses selamanya',
-                            'Sekali bayar akses selamanya',
-                            'Support prioritas'
-                          ],
+                          package: 'full',
+                          icon: Symbols.award_star,
+                          title: 'Paket Bisnis',
                           index: 2,
                         ),
                       ),
@@ -154,10 +135,11 @@ void activateAccountPopup({bool expired = false}) async {
                   else
                     ElevatedButton(
                       onPressed: () {
-                        midtransC
-                            .initiatePayment(controller.selectedCardType.value);
+                        midtransC.initiatePayment(
+                            controller.selectedCardType.value,
+                            controller.isMonthly.value);
                       },
-                      child: const Text('Bayar dengan Midtrans'),
+                      child: const Text('Bayar'),
                     ),
                 ],
               )
@@ -189,16 +171,16 @@ void activateAccountPopup({bool expired = false}) async {
 
 // Fungsi untuk menampilkan detail benefit langganan
 Widget buildSubscriptionCard({
+  required String package,
   required IconData icon,
   required String title,
-  required String price,
-  required String subPrice,
-  required List<String> benefits,
   required int index,
   // required SubscriptionController controller,
 }) {
   final ActivateAccountController controller =
       Get.put(ActivateAccountController());
+  final MenuWidgetController menuC = Get.find();
+  final MidtransController midtransC = Get.find();
   return Obx(() {
     // Mengubah warna jika dipilih
     bool isSelected = controller.selectedCardIndex.value == index;
@@ -231,41 +213,99 @@ Widget buildSubscriptionCard({
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(icon, size: 40, color: textColor),
-                const SizedBox(height: 10),
-                Text(title,
-                    style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: textColor)),
-                Text(price, style: TextStyle(fontSize: 18, color: textColor)),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(title,
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: textColor,
+                        )),
+                    Icon(icon, size: 40, color: textColor),
+                  ],
+                ),
                 Text(
-                  subPrice,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: textColor,
-                    decoration: TextDecoration.lineThrough,
-                  ),
+                    'Rp ${currency.format(controller.isMonthly.value ? midtransC.monthlyPrice[package] : midtransC.yearlyPrice[package])}',
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: isSelected
+                          ? Colors.white
+                          : Theme.of(Get.context!).primaryColor,
+                      fontWeight: FontWeight.bold,
+                    )),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Text(
+                      currency.format(midtransC.oldPrice[package]),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: textColor,
+                        decoration: TextDecoration.lineThrough,
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 4, horizontal: 8),
+                      decoration: BoxDecoration(
+                        color: Theme.of(Get.context!).colorScheme.primary,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: menuC.countdown,
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 10),
+                Divider(color: Colors.grey[100]),
                 // Menampilkan detail benefit
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: benefits.map((benefit) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 5),
-                      child: Row(
-                        children: [
-                          Icon(Icons.check, size: 18, color: textColor),
-                          const SizedBox(width: 5),
-                          Expanded(
-                            child: Text(
-                              benefit,
-                              style: TextStyle(color: textColor),
+                  children: midtransC.features[package]!.map((feature) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 5),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            feature['feature'] as String,
+                            style: TextStyle(
+                              color: textColor,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                        ...((feature['sub_feature'] as List).map((subFeature) {
+                          var item = subFeature['feature'];
+                          var isActive = subFeature['active'];
+                          return Padding(
+                            padding: const EdgeInsets.all(2),
+                            child: Row(
+                              children: [
+                                isActive
+                                    ? Icon(Icons.check,
+                                        size: 18, color: textColor)
+                                    : Icon(Icons.close,
+                                        size: 18, color: Colors.red),
+                                const SizedBox(width: 5),
+                                Expanded(
+                                  child: Text(
+                                    item,
+                                    style: TextStyle(
+                                      color: textColor,
+                                      decoration: isActive
+                                          ? TextDecoration.none
+                                          : TextDecoration.lineThrough,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList()),
+                      ],
                     );
                   }).toList(),
                 ),
