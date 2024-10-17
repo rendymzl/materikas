@@ -263,8 +263,12 @@ class PaymentController extends GetxController {
           invoice.account.value.name = _authService.selectedUser.value!.name;
         }
 
-        invoice.customer.value?.id = customerFieldC.lastCustomersId.value;
+        if (_authService.account.value!.accountType != 'flexible') {
+          invoice.isAppBillPaid.value = true;
+        }
 
+        invoice.customer.value?.id = customerFieldC.lastCustomersId.value;
+        invoice.appBillAmount.value = invoice.totalAppBill;
         await _invoiceService.insert(invoice);
         _homeC.resetData();
         Get.back();

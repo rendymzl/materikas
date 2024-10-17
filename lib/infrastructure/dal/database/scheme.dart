@@ -41,6 +41,7 @@ const schema = Schema([
     Column.text('payments'),
     Column.real('debt_amount'),
     Column.integer('is_debt_paid'),
+    Column.integer('is_app_bill_paid'),
     Column.text('other_costs'),
     Column.text('init_at'),
     Column.text('remove_at'),

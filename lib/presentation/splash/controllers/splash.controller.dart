@@ -75,6 +75,10 @@ class SplashController extends GetxController {
         print('SelectUserController FINISH INIT');
         authService.loadingStatus.value = 'selesai';
         isConnected.value = authService.connected.value;
+        authService.prevMonthAppBill.value =
+            await _invoiceService.getAppBill(DateTime.now().month - 1);
+        authService.thisMonthAppBill.value =
+            await _invoiceService.getAppBill(DateTime.now().month);
         Get.offAllNamed(Routes.SELECT_USER);
       } else {
         Get.put(DetailStoreController());

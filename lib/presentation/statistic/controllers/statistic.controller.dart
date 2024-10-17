@@ -13,11 +13,11 @@ import '../../../infrastructure/models/operating_cost_model.dart';
 
 class StatisticController extends GetxController {
   late final AuthService authService = Get.find();
-  final InvoiceService _invoiceService = Get.find();
+  final InvoiceService invoiceService = Get.find();
   final InvoiceSalesService _invoiceSalesService = Get.find();
   final OperatingCostService _operatingCostService = Get.find();
 
-  // late final invoices = _invoiceService.invoices;
+  // late final invoices = invoiceService.invoices;
   // late final salesInvoices = _invoiceSalesService.invoices;
   late final operatingCosts = _operatingCostService.operatingCosts;
   late final foundOperatingCosts = _operatingCostService.foundOperatingCost;
@@ -28,6 +28,7 @@ class StatisticController extends GetxController {
 
   late List<InvoiceModel> currentInvoices = <InvoiceModel>[].obs;
   late List<InvoiceModel> byPaymentDateInvoices = <InvoiceModel>[].obs;
+  late final monthlyInvoice = 0.0.obs;
   late List<InvoiceSalesModel> currentFilteredSalesInvoices =
       <InvoiceSalesModel>[].obs;
   late List<OperatingCostModel> currentFilteredOperatingCosts =
@@ -97,10 +98,12 @@ class StatisticController extends GetxController {
   void onInit() async {
     print('--salesInvoices.length ${_invoiceSalesService.invoices.length}');
     super.onInit();
+    monthlyInvoice.value =
+        await invoiceService.getAppBill(DateTime.now().month);
     everAll([
       operatingCosts,
-      _invoiceService.paidInv,
-      _invoiceService.debtInv,
+      invoiceService.paidInv,
+      invoiceService.debtInv,
       _invoiceSalesService.invoices
     ], (_) {
       rangePickerHandle(DateTime.now());
@@ -175,10 +178,9 @@ class StatisticController extends GetxController {
   Future<List<Chart>> groupDailyInvoices(DateTime selectedDate) async {
     PickerDateRange pickerDateRange = PickerDateRange(
         selectedDate, selectedDate.add(const Duration(days: 1)));
-    currentInvoices = await _invoiceService.getByCreatedDate(pickerDateRange);
+    currentInvoices = await invoiceService.getByCreatedDate(pickerDateRange);
 
-    byPaymentDateInvoices =
-        await _invoiceService.getByPaymentDate(selectedDate);
+    byPaymentDateInvoices = await invoiceService.getByPaymentDate(selectedDate);
 
     currentFilteredSalesInvoices =
         _invoiceSalesService.invoices.where((invoice) {
@@ -211,13 +213,13 @@ class StatisticController extends GetxController {
         currentStartOfWeek.subtract(const Duration(days: 1)),
         currentStartOfWeek.add(const Duration(days: 7)));
 
-    currentInvoices = await _invoiceService.getByCreatedDate(pickerDateRange);
-    // await _invoiceService.getByPaymentDate(selectedDate);
-    //     _invoiceService.paidInv.where((invoice) {
+    currentInvoices = await invoiceService.getByCreatedDate(pickerDateRange);
+    // await invoiceService.getByPaymentDate(selectedDate);
+    //     invoiceService.paidInv.where((invoice) {
     //   return invoice.createdAt.value!.isAfter(prevStartOfWeek);
     // }).toList();
     // currentAndPrevFilteredDebtInvoices =
-    //     _invoiceService.debtInv.where((invoice) {
+    //     invoiceService.debtInv.where((invoice) {
     //   return invoice.createdAt.value!.isAfter(prevStartOfWeek);
     // }).toList();
 
@@ -271,9 +273,9 @@ class StatisticController extends GetxController {
         startOfCurrentMonth.subtract(const Duration(days: 1)),
         endOfMonth.add(const Duration(days: 1)));
 
-    currentInvoices = await _invoiceService.getByCreatedDate(pickerDateRange);
+    currentInvoices = await invoiceService.getByCreatedDate(pickerDateRange);
 
-    // currentInvoices = _invoiceService.paidInv.where((invoice) {
+    // currentInvoices = invoiceService.paidInv.where((invoice) {
     //   return invoice.createdAt.value!
     //           .isAfter(startOfPrevMonth.subtract(const Duration(days: 1))) &&
     //       invoice.createdAt.value!
@@ -323,9 +325,9 @@ class StatisticController extends GetxController {
         startOfCurrentYear.add(const Duration(milliseconds: 1)),
         endOfYear.add(const Duration(days: 1)));
 
-    currentInvoices = await _invoiceService.getByCreatedDate(pickerDateRange);
+    currentInvoices = await invoiceService.getByCreatedDate(pickerDateRange);
 
-    // currentInvoices = _invoiceService.paidInv.where((invoice) {
+    // currentInvoices = invoiceService.paidInv.where((invoice) {
     //   return invoice.createdAt.value!
     //           .isAfter(startOfPrevYear.subtract(const Duration(days: 1))) &&
     //       invoice.createdAt.value!

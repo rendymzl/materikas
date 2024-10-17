@@ -243,7 +243,7 @@ class EditInvoiceController extends GetxController {
         }
       }
 
-      List<RemoveProduct> removedCartItem = [];
+      print('removeCartList ${removeCartList.length}');
       for (var removedCart in removeCartList) {
         var foundProduct = foundProducts
             .firstWhereOrNull((item) => item.id == removedCart.product.id);
@@ -257,8 +257,8 @@ class EditInvoiceController extends GetxController {
                 removedCart.quantity.value + removedCart.quantityReturn.value;
           }
         }
-        removedCartItem.add(
-            RemoveProduct(removeAt: DateTime.now(), cartItem: removedCart));
+
+        // print('removedCartItem ${removedCartItem[0].toJson()}');
 
         print('stock removedCart ${removedCart.product.stock.value}');
         ProductModel updatedProduct =
@@ -272,7 +272,20 @@ class EditInvoiceController extends GetxController {
         }
       }
 
-      invoice.removeProduct.value = removedCartItem;
+      if (removeCartList.isNotEmpty) {
+        List<RemoveProduct> removedCartItem = [];
+        removedCartItem.add(RemoveProduct(
+            removeAt: DateTime.now(),
+            removedCart: Cart(items: removeCartList)));
+        // print('invoice ${invoice.toJson()}');
+        invoice.removeProduct.assignAll(removedCartItem);
+      }
+
+      if (DateTime.now().isBefore(DateTime(invoice.initAt.value!.year,
+          invoice.initAt.value!.month, invoice.initAt.value!.day + 1))) {
+        invoice.appBillAmount.value = invoice.totalAppBill;
+      }
+      print('invoice ${invoice.toJson()}');
       await _productService.updateList(productList);
       await customerFieldC.handleSave();
       await customerFieldC.addCustomer(invoice);

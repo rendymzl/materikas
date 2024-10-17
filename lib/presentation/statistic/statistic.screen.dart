@@ -325,6 +325,58 @@ class SectionMenuBar extends StatelessWidget {
                 ),
               ),
             ),
+            // Divider(color: Colors.grey[200]),
+            // if (controller.authService.account.value!.accountType == 'flexible')
+            const SizedBox(width: 16),
+            // if (controller.authService.account.value!.accountType == 'flexible')
+            ElevatedButton(
+              onPressed: null,
+              style: ButtonStyle(
+                enableFeedback: true,
+                backgroundColor: WidgetStatePropertyAll(
+                  // Colors.white,
+                  Theme.of(context).colorScheme.primary,
+                ),
+              ),
+              child: Obx(
+                () {
+                  print(
+                      '=======monthlyInvoice======= ${controller.monthlyInvoice}');
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Tagihan ${getMonthName(DateTime.now().month)}',
+                        style: context.textTheme.titleLarge!
+                            .copyWith(color: Colors.white),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 4, horizontal: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(4),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              spreadRadius: 2,
+                              blurRadius: 5,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          'Rp${currency.format(controller.monthlyInvoice.value)}',
+                          style: context.textTheme.titleLarge!.copyWith(
+                              color: Theme.of(context).colorScheme.primary),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
           ],
         ),
       ),

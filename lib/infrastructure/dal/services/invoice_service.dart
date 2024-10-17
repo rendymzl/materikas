@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ffi';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -16,6 +17,7 @@ class InvoiceService extends GetxService implements InvoiceRepository {
   var debtInv = <InvoiceModel>[].obs;
   var filteredPaidInv = <InvoiceModel>[].obs;
   var filteredDebtInv = <InvoiceModel>[].obs;
+  // var monthlyInvoice = <InvoiceModel>[].obs;
   var displayedInvoices = <InvoiceModel>[].obs;
 
   // var CashPayment = <InvoiceModel>[].obs;
@@ -193,8 +195,8 @@ class InvoiceService extends GetxService implements InvoiceRepository {
       String query = '''
       SELECT * FROM invoices WHERE
       is_debt_paid = ? AND
+      remove_at IS NULL AND
       created_at BETWEEN ? AND ?
-      AND remove_at IS NULL
       ''';
       List<Map<String, dynamic>> results = await db.getAll(query, [
         paid,
@@ -206,6 +208,7 @@ class InvoiceService extends GetxService implements InvoiceRepository {
     } else {
       String query = '''
       SELECT * FROM invoices WHERE
+      remove_at IS NULL AND
       created_at BETWEEN ? AND ?
       ''';
       List<Map<String, dynamic>> results = await db.getAll(query, [
@@ -216,18 +219,61 @@ class InvoiceService extends GetxService implements InvoiceRepository {
       return invoiceList;
     }
   }
+
   // @override
-  // Future<List<InvoiceModel>> getByCreatedDate(DateTime startOfDate) async {
-  //   String query = '''
-  //     SELECT * FROM invoices WHERE
-  //     DATE(created_at) LIKE ?
-  //     ''';
-  //   List<Map<String, dynamic>> results = await db.getAll(query, [
-  //     '%${DateFormat('yyyy-MM-dd').format(startOfDate)}%',
-  //   ]);
-  //   var invoiceList = results.map((e) => InvoiceModel.fromJson(e)).toList();
-  //   return invoiceList;
-  // }
+  Future<double> getAppBill(int month) async {
+    var monthlyInvoice = <InvoiceModel>[];
+
+    PickerDateRange pickerDateRange = PickerDateRange(
+        DateTime(DateTime.now().year, month, 1),
+        DateTime(DateTime.now().year, month + 1, 1));
+
+    // PickerDateRange pickerDateRangePrevMonth = PickerDateRange(
+    //     DateTime(DateTime.now().year, DateTime.now().month - 1, 1),
+    //     DateTime(DateTime.now().year, DateTime.now().month, 1));
+
+    // var lastPaid = DateTime(DateTime.now().year, DateTime.now().month - 1);
+    // print(lastPaid);
+
+    // bool isPrevMonthPaid = lastPaid.isAtSameMomentAs(DateTime(
+    //     DateTime.now().year,
+    //     DateTime.now().month - 1)); //lastpaid dalam bulan lalu
+
+    // var pickerDateRange =
+    //     isPrevMonthPaid ? pickerDateRangeThisMonth : pickerDateRangePrevMonth;
+
+    String query = '''
+      SELECT * FROM invoices WHERE
+      init_at BETWEEN ? AND ?
+      ''';
+    List<Map<String, dynamic>> results = await db.getAll(query, [
+      DateFormat('yyyy-MM-dd').format(pickerDateRange.startDate!),
+      DateFormat('yyyy-MM-dd').format(pickerDateRange.endDate!),
+    ]);
+    var invoiceList = results.map((e) => InvoiceModel.fromJson(e)).toList();
+
+    var invoiceBill = invoiceList
+        .where((invoice) =>
+            invoice.removeAt.value == null ||
+            invoice.removeAt.value!.isAfter(DateTime(invoice.initAt.value!.year,
+                invoice.initAt.value!.month, invoice.initAt.value!.day + 1)))
+        .toList();
+
+    monthlyInvoice.assignAll(invoiceBill);
+
+    var totalAppBill = monthlyInvoice.fold(
+        0.0,
+        (previousValue, element) =>
+            previousValue +
+            (element.isAppBillPaid.value
+                ? 0
+                : (element.totalPurchase +
+                    (element.removeProduct.isEmpty
+                        ? 0
+                        : element.totalRemovedValue))));
+    // return monthlyInvoice.length.toDouble();
+    return totalAppBill * 0.01;
+  }
 
   //   @override
   // Future<List<InvoiceModel>> getByCreatedDate(DateTime startOfDate) async {
@@ -266,8 +312,8 @@ class InvoiceService extends GetxService implements InvoiceRepository {
     INSERT INTO invoices(
       id, store_id, invoice_id, account, created_at, customer, purchase_list,
       return_list, after_return_list, price_type, discount, tax, return_fee,
-      payments, remove_product, debt_amount, is_debt_paid, other_costs, init_at, remove_at
-    ) VALUES(uuid(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      payments, remove_product, debt_amount, app_bill_amount, is_debt_paid, is_app_bill_paid, other_costs, init_at, remove_at
+    ) VALUES(uuid(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''',
       [
         // invoice.id,
@@ -286,7 +332,9 @@ class InvoiceService extends GetxService implements InvoiceRepository {
         invoice.payments.map((e) => e.toJson()).toList(),
         invoice.removeProduct.map((e) => e.toJson()).toList(),
         invoice.debtAmount.value,
+        invoice.appBillAmount.value,
         invoice.isDebtPaid.value ? 1 : 0,
+        invoice.isAppBillPaid.value ? 1 : 0,
         invoice.otherCosts.map((e) => e.toJson()).toList(),
         invoice.initAt.value?.toIso8601String(),
         invoice.removeAt.value?.toIso8601String(),
@@ -315,7 +363,9 @@ class InvoiceService extends GetxService implements InvoiceRepository {
       payments = ?, 
       remove_product = ?, 
       debt_amount = ?, 
+      app_bill_amount = ?, 
       is_debt_paid = ?, 
+      is_app_bill_paid = ?, 
       other_costs = ?,
       init_at = ?,
       remove_at = ?
@@ -337,7 +387,9 @@ class InvoiceService extends GetxService implements InvoiceRepository {
           updatedInvoice.payments.map((e) => e.toJson()).toList(),
           updatedInvoice.removeProduct.map((e) => e.toJson()).toList(),
           updatedInvoice.debtAmount.value,
+          updatedInvoice.appBillAmount.value,
           updatedInvoice.isDebtPaid.value ? 1 : 0,
+          updatedInvoice.isAppBillPaid.value ? 1 : 0,
           updatedInvoice.otherCosts.map((e) => e.toJson()).toList(),
           updatedInvoice.initAt.value?.toIso8601String(),
           updatedInvoice.removeAt.value?.toIso8601String(),
@@ -345,7 +397,7 @@ class InvoiceService extends GetxService implements InvoiceRepository {
         ],
       );
     } catch (e) {
-      e.toString();
+      debugPrint(e.toString());
     }
   }
 
