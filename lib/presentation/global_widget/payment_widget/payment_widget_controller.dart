@@ -202,6 +202,7 @@ class PaymentController extends GetxController {
     final isNewInvoice = invoice.invoiceId == null;
     await customerFieldC.addCustomer(invoice);
     if (isNewInvoice) {
+      invoice.initAt.value = DateTime.now();
       DateTime dateTime = DateTime(
         _datePickerC.selectedDate.value.year,
         _datePickerC.selectedDate.value.month,

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 
 import '../../infrastructure/utils/display_format.dart';
+import '../global_widget/activate_popup/activate_account_popup.dart';
 import '../global_widget/popup_page_widget.dart';
 import 'controllers/profile.controller.dart';
 import 'detail_profile_store.dart';
@@ -14,12 +15,12 @@ class ProfileStoreWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     ProfileController controller = Get.find();
     return Obx(() {
-      var package = '';
-      if (controller.account.value!.endDate != null) {
-        package = date.format(controller.account.value!.endDate!);
-      } else {
-        package = 'Selamanya';
-      }
+      // var package = '';
+      // if (controller.account.value!.endDate != null) {
+      //   package = date.format(controller.account.value!.endDate!);
+      // } else {
+      //   package = 'Selamanya';
+      // }
       return Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
@@ -101,35 +102,50 @@ class ProfileStoreWidget extends StatelessWidget {
                   title: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const SizedBox(width: 100, child: Text('Aktif sampai')),
+                      const SizedBox(width: 100, child: Text('Paket : ')),
                       Expanded(
-                        child: Text(package),
+                        child: Text(controller.account.value!.accountType
+                            .toUpperCase()),
                       ),
+                      // TextButton(
+                      //   onPressed: () async => activateAccountPopup(),
+                      //   child: const Text('Upgrade Paket'),
+                      // ),
                     ],
                   ),
                 ),
               ],
             ),
-            TextButton(
-              onPressed: () => showPopupPageWidget(
-                  title: 'Ubah PIN',
-                  content: const ChangePinWidget(),
-                  buttonList: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => Get.back(),
-                        child: const Text('Batal'),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () => controller.changePinHandle(),
-                        child: const Text('Simpan'),
-                      ),
-                    ),
-                  ]),
-              child: const Text('Ubah PIN'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                if (controller.account.value!.accountType != 'business')
+                  ElevatedButton(
+                    onPressed: () async => activateAccountPopup(),
+                    child: const Text('Upgrade Paket'),
+                  ),
+                TextButton(
+                  onPressed: () => showPopupPageWidget(
+                      title: 'Ubah PIN',
+                      content: const ChangePinWidget(),
+                      buttonList: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Get.back(),
+                            child: const Text('Batal'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () => controller.changePinHandle(),
+                            child: const Text('Simpan'),
+                          ),
+                        ),
+                      ]),
+                  child: const Text('Ubah PIN'),
+                ),
+              ],
             ),
           ],
         ),

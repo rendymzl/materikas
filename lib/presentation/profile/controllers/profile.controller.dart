@@ -8,14 +8,14 @@ import '../../../infrastructure/models/user_model.dart';
 import '../../global_widget/app_dialog_widget.dart';
 
 class ProfileController extends GetxController {
-  final AuthService _authService = Get.find<AuthService>();
-  final AccountService _accountService = Get.find<AccountService>();
+  final AuthService authService = Get.find<AuthService>();
+  final AccountService accountService = Get.find<AccountService>();
 
   final setup = false.obs;
 
-  late final account = _authService.account;
-  late final store = _authService.store;
-  late final cashiers = _authService.cashiers;
+  late final account = authService.account;
+  late final store = authService.store;
+  late final cashiers = authService.cashiers;
 
   final formCashierKey = GlobalKey<FormState>();
 
@@ -41,7 +41,7 @@ class ProfileController extends GetxController {
   @override
   void onInit() async {
     setup.value = account.value!.accountType == 'setup';
-    _authService.getCashier();
+    authService.getCashier();
     print('cashiers.length ${cashiers}');
     super.onInit();
   }
@@ -61,46 +61,69 @@ class ProfileController extends GetxController {
   }
 
   Future<void> registerWorker() async {
-    if (formCashierKey.currentState?.validate() ?? false) {
+    if (authService.account.value!.accountType == 'flexible') {
       Get.defaultDialog(
-        title: 'Menambahkan kasir...',
-        content: const CircularProgressIndicator(),
-        barrierDismissible: false,
+        title: 'Upgrade Akun',
+        middleText: 'Upgrade akun untuk menambahkan kasir',
+        confirm: TextButton(
+          onPressed: () => Get.back(),
+          child: const Text('OK'),
+        ),
       );
-      try {
-        String id = cashiers.isNotEmpty
-            ? (int.parse(cashiers.last.id.toString()) + 1).toString()
-            : '1';
-        final Cashier newCashier = Cashier(
-          id: id,
-          createdAt: DateTime.now(),
-          name: nameController.text,
-          password: passwordController.text,
-          accessList: <String>[].obs,
-        );
-        var updatedAccount = AccountModel.fromJson(account.toJson());
-        print(updatedAccount.users.length);
-
-        updatedAccount.users.add(newCashier);
-
-        await _accountService.update(updatedAccount);
-        await _authService.getAccount();
-        _authService.getCashier();
-
-        nameController.text = '';
-        passwordController.text = '';
-        Get.back();
-      } catch (e) {
-        Get.back();
-        debugPrint(e.toString());
+    } else {
+      if ((authService.account.value!.accountType == 'subscription') &&
+          (cashiers.length > 2)) {
         Get.defaultDialog(
-          title: 'Error',
-          middleText: 'Terjadi kesalahan tidak terduga',
+          title: 'Upgrade Akun',
+          middleText: 'Upgrade akun untuk menambahkan kasir',
           confirm: TextButton(
             onPressed: () => Get.back(),
             child: const Text('OK'),
           ),
         );
+      } else {
+        if (formCashierKey.currentState?.validate() ?? false) {
+          Get.defaultDialog(
+            title: 'Menambahkan kasir...',
+            content: const CircularProgressIndicator(),
+            barrierDismissible: false,
+          );
+          try {
+            String id = cashiers.isNotEmpty
+                ? (int.parse(cashiers.last.id.toString()) + 1).toString()
+                : '1';
+            final Cashier newCashier = Cashier(
+              id: id,
+              createdAt: DateTime.now(),
+              name: nameController.text,
+              password: passwordController.text,
+              accessList: <String>[].obs,
+            );
+            var updatedAccount = AccountModel.fromJson(account.toJson());
+            print(updatedAccount.users.length);
+
+            updatedAccount.users.add(newCashier);
+
+            await accountService.update(updatedAccount);
+            await authService.getAccount();
+            authService.getCashier();
+
+            nameController.text = '';
+            passwordController.text = '';
+            Get.back();
+          } catch (e) {
+            Get.back();
+            debugPrint(e.toString());
+            Get.defaultDialog(
+              title: 'Error',
+              middleText: 'Terjadi kesalahan tidak terduga',
+              confirm: TextButton(
+                onPressed: () => Get.back(),
+                child: const Text('OK'),
+              ),
+            );
+          }
+        }
       }
     }
   }
@@ -115,8 +138,9 @@ class ProfileController extends GetxController {
       cancelColor: Get.theme.primaryColor,
       onConfirm: () async {
         foundAccount.users.remove(cashier);
-        await _accountService.update(foundAccount);
-        await _authService.getAccount();
+        await accountService.update(foundAccount);
+        await authService.getAccount();
+        authService.getCashier();
         Get.back();
       },
       onCancel: () => Get.back(),
@@ -142,8 +166,8 @@ class ProfileController extends GetxController {
       // confirmColor: Colors.grey,
       // cancelColor: Get.theme.primaryColor,
       onConfirm: () async {
-        await _accountService.update(editedAccount);
-        await _authService.getAccount();
+        await accountService.update(editedAccount);
+        await authService.getAccount();
         Get.back();
       },
       onCancel: () => Get.back(),
@@ -179,7 +203,7 @@ class ProfileController extends GetxController {
   }
 
   Future<void> changePinHandle() async {
-    if (_authService.account.value!.password == oldPinController.text) {
+    if (authService.account.value!.password == oldPinController.text) {
       if (oldPinController.text != newPinController.text) {
         if ((formkey.currentState?.validate() ?? false)) {
           Get.defaultDialog(
@@ -189,10 +213,10 @@ class ProfileController extends GetxController {
           );
           try {
             AccountModel updatedAccount =
-                AccountModel.fromJson(_authService.account.toJson());
+                AccountModel.fromJson(authService.account.toJson());
             updatedAccount.password = newPinController.text;
-            await _accountService.update(updatedAccount);
-            await _authService.getAccount();
+            await accountService.update(updatedAccount);
+            await authService.getAccount();
 
             oldPinController.text = '';
             newPinController.text = '';

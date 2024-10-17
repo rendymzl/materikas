@@ -32,7 +32,7 @@ class InvoiceService extends GetxService implements InvoiceRepository {
   Future<void> subscribe(String storeId) async {
     //! paid invoice
     var streamPaidInv = db.watch('''
-      SELECT * FROM invoices WHERE store_id = ? AND is_debt_paid = true ORDER BY created_at DESC LIMIT 100
+      SELECT * FROM invoices WHERE store_id = ? AND is_debt_paid = true AND remove_at IS NULL ORDER BY created_at DESC LIMIT 100
       ''', parameters: [
       storeId
     ]).map((data) => data.map((json) => InvoiceModel.fromJson(json)).toList());
@@ -49,7 +49,7 @@ class InvoiceService extends GetxService implements InvoiceRepository {
 
     //! debt invoice
     var streamDebtInv = db.watch('''
-      SELECT * FROM invoices WHERE store_id = ? AND is_debt_paid = false
+      SELECT * FROM invoices WHERE store_id = ? AND is_debt_paid = false AND remove_at IS NULL
       ''', parameters: [
       storeId
     ]).map((data) => data.map((json) => InvoiceModel.fromJson(json)).toList());
@@ -58,9 +58,11 @@ class InvoiceService extends GetxService implements InvoiceRepository {
       print('debtInv.length: ${datas.length}');
       debtInv.clear();
       debtInv.value = datas;
-      debtInv.sort((a, b) =>
-          DateTime.parse(b.createdAt.value!.toIso8601String())
-              .compareTo(DateTime.parse(a.createdAt.value!.toIso8601String())));
+      print('datas: $datas');
+
+      // debtInv.sort((a, b) =>
+      //     DateTime.parse(b.createdAt.value!.toIso8601String())
+      //         .compareTo(DateTime.parse(a.createdAt.value!.toIso8601String())));
     });
   }
 
@@ -159,6 +161,7 @@ class InvoiceService extends GetxService implements InvoiceRepository {
         (customer LIKE ? OR
         invoice_id LIKE ?) AND
         is_debt_paid = ?
+        AND remove_at IS NULL
         ''';
     List<Map<String, dynamic>> results = await db.getAll(query, [
       '%${searchTerm.toLowerCase()}%',
@@ -174,6 +177,7 @@ class InvoiceService extends GetxService implements InvoiceRepository {
         SELECT * FROM invoices WHERE
         payments LIKE ? AND
         is_debt_paid = ?
+        AND remove_at IS NULL
         ''';
     List<Map<String, dynamic>> results = await db.getAll(query, [
       '%${searchTerm.toLowerCase()}%',
@@ -190,6 +194,7 @@ class InvoiceService extends GetxService implements InvoiceRepository {
       SELECT * FROM invoices WHERE
       is_debt_paid = ? AND
       created_at BETWEEN ? AND ?
+      AND remove_at IS NULL
       ''';
       List<Map<String, dynamic>> results = await db.getAll(query, [
         paid,
@@ -261,8 +266,8 @@ class InvoiceService extends GetxService implements InvoiceRepository {
     INSERT INTO invoices(
       id, store_id, invoice_id, account, created_at, customer, purchase_list,
       return_list, after_return_list, price_type, discount, tax, return_fee,
-      payments, debt_amount, is_debt_paid, other_costs
-    ) VALUES(uuid(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      payments, remove_product, debt_amount, is_debt_paid, other_costs, init_at, remove_at
+    ) VALUES(uuid(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''',
       [
         // invoice.id,
@@ -279,9 +284,12 @@ class InvoiceService extends GetxService implements InvoiceRepository {
         invoice.tax.value,
         invoice.returnFee.value,
         invoice.payments.map((e) => e.toJson()).toList(),
+        invoice.removeProduct.map((e) => e.toJson()).toList(),
         invoice.debtAmount.value,
         invoice.isDebtPaid.value ? 1 : 0,
         invoice.otherCosts.map((e) => e.toJson()).toList(),
+        invoice.initAt.value?.toIso8601String(),
+        invoice.removeAt.value?.toIso8601String(),
       ],
     );
   }
@@ -305,9 +313,12 @@ class InvoiceService extends GetxService implements InvoiceRepository {
       tax = ?, 
       return_fee = ?, 
       payments = ?, 
+      remove_product = ?, 
       debt_amount = ?, 
       is_debt_paid = ?, 
-      other_costs = ?
+      other_costs = ?,
+      init_at = ?,
+      remove_at = ?
     WHERE id = ?
     ''',
         [
@@ -324,9 +335,12 @@ class InvoiceService extends GetxService implements InvoiceRepository {
           updatedInvoice.tax.value,
           updatedInvoice.returnFee.value,
           updatedInvoice.payments.map((e) => e.toJson()).toList(),
+          updatedInvoice.removeProduct.map((e) => e.toJson()).toList(),
           updatedInvoice.debtAmount.value,
           updatedInvoice.isDebtPaid.value ? 1 : 0,
           updatedInvoice.otherCosts.map((e) => e.toJson()).toList(),
+          updatedInvoice.initAt.value?.toIso8601String(),
+          updatedInvoice.removeAt.value?.toIso8601String(),
           updatedInvoice.id,
         ],
       );
@@ -337,6 +351,18 @@ class InvoiceService extends GetxService implements InvoiceRepository {
 
   @override
   Future<void> delete(String id) async {
-    await db.execute('DELETE FROM invoices WHERE id = ?', [id]);
+    // await db.execute('DELETE FROM invoices WHERE id = ?', [id]);
+    try {
+      await db.execute(
+        '''
+    UPDATE invoices SET
+      remove_at = ?
+    WHERE id = ?
+    ''',
+        [DateTime.now(), id],
+      );
+    } catch (e) {
+      e.toString();
+    }
   }
 }

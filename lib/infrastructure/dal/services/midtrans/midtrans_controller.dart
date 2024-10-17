@@ -22,29 +22,19 @@ class MidtransController extends GetxController {
   final String _clientKey = dotenv.env['MIDTRANS_CLIENT']!;
   var isLoading = false.obs;
   var paymentStatus = ''.obs;
-  // var selectedPackage = 'basic'.obs;
+  // var selectedPackage = 'flexible'.obs;
   var snap = ''.obs;
+  var totalAmount = 10000.obs;
   Timer? timer;
   final webviewController = WebviewController().obs;
   // late final box = Hive.openBox('midtrans').obs;
 
   final features = {
-    'basic': [
+    'flexible': [
       {
-        'feature': "Fitur Utama",
+        'feature': "Transaksi",
         'sub_feature': [
-          {"feature": "Membuat Transaksi", "active": true},
-          {"feature": "Menambahkan Diskon", "active": true},
-          {"feature": "Menyimpan Pelanggan", "active": true},
-          {"feature": "Piutang", "active": true},
-          {"feature": "Return Barang", "active": true},
-          {"feature": "Cetak Struk", "active": true},
-          {"feature": "Cetak Surat Jalan", "active": true},
-          {"feature": "Harga Jual Bervariasi", "active": true},
-          {"feature": "Stok Otomatis", "active": true},
-          {"feature": "Menyimpan Sales", "active": true},
-          {"feature": "Pembelian Barang dari Sales", "active": true},
-          {"feature": "Biaya Operasional", "active": true},
+          {"feature": "Biaya 1% /transaksi", "active": true},
         ],
       },
       {
@@ -59,8 +49,8 @@ class MidtransController extends GetxController {
       {
         'feature': "Manajemen Kasir",
         'sub_feature': [
-          {"feature": "1 Kasir", "active": true},
-          {"feature": "Pengaturan akses kasir", "active": true},
+          {"feature": "Tambah kasir", "active": false},
+          {"feature": "Pengaturan akses kasir", "active": false},
         ],
       },
       {
@@ -70,22 +60,11 @@ class MidtransController extends GetxController {
         ],
       },
     ],
-    'premium': [
+    'subscription': [
       {
-        'feature': "Fitur Utama",
+        'feature': "Transaksi",
         'sub_feature': [
-          {"feature": "Membuat Transaksi", "active": true},
-          {"feature": "Menambahkan Diskon", "active": true},
-          {"feature": "Menyimpan Pelanggan", "active": true},
-          {"feature": "Piutang", "active": true},
-          {"feature": "Return Barang", "active": true},
-          {"feature": "Cetak Struk", "active": true},
-          {"feature": "Cetak Surat Jalan", "active": true},
-          {"feature": "Harga Jual Bervariasi", "active": true},
-          {"feature": "Stok Otomatis", "active": true},
-          {"feature": "Menyimpan Sales", "active": true},
-          {"feature": "Pembelian Barang dari Sales", "active": true},
-          {"feature": "Biaya Operasional", "active": true},
+          {"feature": "Menghilangkan biaya transaksi", "active": true},
         ],
       },
       {
@@ -100,7 +79,7 @@ class MidtransController extends GetxController {
       {
         'feature': "Manajemen Kasir",
         'sub_feature': [
-          {"feature": "3 Kasir", "active": true},
+          {"feature": "Tambah hingga 3 kasir", "active": true},
           {"feature": "Pengaturan akses kasir", "active": true},
         ],
       },
@@ -113,20 +92,9 @@ class MidtransController extends GetxController {
     ],
     'full': [
       {
-        'feature': "Fitur Utama",
+        'feature': "Transaksi",
         'sub_feature': [
-          {"feature": "Membuat Transaksi", "active": true},
-          {"feature": "Menambahkan Diskon", "active": true},
-          {"feature": "Menyimpan Pelanggan", "active": true},
-          {"feature": "Piutang", "active": true},
-          {"feature": "Return Barang", "active": true},
-          {"feature": "Cetak Struk", "active": true},
-          {"feature": "Cetak Surat Jalan", "active": true},
-          {"feature": "Harga Jual Bervariasi", "active": true},
-          {"feature": "Stok Otomatis", "active": true},
-          {"feature": "Menyimpan Sales", "active": true},
-          {"feature": "Pembelian Barang dari Sales", "active": true},
-          {"feature": "Biaya Operasional", "active": true},
+          {"feature": "Menghilangkan biaya transaksi", "active": true},
         ],
       },
       {
@@ -141,7 +109,7 @@ class MidtransController extends GetxController {
       {
         'feature': "Manajemen Kasir",
         'sub_feature': [
-          {"feature": "Kasir tanpa batas", "active": true},
+          {"feature": "Tambah Kasir tanpa batas", "active": true},
           {"feature": "Pengaturan akses kasir", "active": true},
         ],
       },
@@ -154,22 +122,16 @@ class MidtransController extends GetxController {
     ]
   };
 
-  final monthlyPrice = {
-    'basic': 99000,
-    'premium': 199000,
-    'full': 2990000,
-  };
-
-  final yearlyPrice = {
-    'basic': 99000 * 10,
-    'premium': 199000 * 10,
-    'full': 2990000,
+  final price = {
+    'flexible': 1 / 100,
+    'subscription': 299000,
+    'full': 3490000,
   };
 
   final oldPrice = {
-    'basic': 150000,
-    'premium': 299000,
-    'full': 3990000,
+    'flexible': 2 / 100,
+    'subscription': 499000,
+    'full': 6990000,
   };
 
   // Fungsi untuk mendapatkan Snap Token dari Midtrans
@@ -270,7 +232,7 @@ class MidtransController extends GetxController {
   }
 
   // Fungsi untuk memulai pembayaran
-  Future<void> initiatePayment(String selectedCard, bool isMonthly) async {
+  Future<void> initiatePayment(String selectedCard) async {
     isLoading.value = true;
     // selectedPackage.value = selectedCard;
 
@@ -288,9 +250,9 @@ class MidtransController extends GetxController {
         snapToken = await getMidtransSnapToken(
           orderId: orderId,
           packageName: selectedCard,
-          grossAmount: isMonthly
-              ? monthlyPrice[selectedCard]!
-              : yearlyPrice[selectedCard]!,
+          grossAmount: selectedCard is double
+              ? ((price[selectedCard]! as double) * totalAmount.value).toInt()
+              : price[selectedCard]! as int,
           customerName: authC.account.value!.name,
           customerPhone: authC.store.value!.phone.value,
           // customerEmail: 'johndoe@example.com',
@@ -352,7 +314,7 @@ class MidtransController extends GetxController {
 
     authC.account.value!.accountType = package!;
     authC.account.value!.isActive = true;
-    if (package == 'basic') {
+    if (package == 'subscription') {
       if (authC.account.value!.endDate!.isBefore(DateTime.now())) {
         authC.account.value!.startDate = DateTime.now();
         authC.account.value!.endDate =
@@ -361,16 +323,6 @@ class MidtransController extends GetxController {
         authC.account.value!.startDate = authC.account.value!.endDate;
         authC.account.value!.endDate =
             authC.account.value!.endDate!.add(const Duration(days: 31));
-      }
-    } else if (package == 'yearly') {
-      if (authC.account.value!.endDate!.isBefore(DateTime.now())) {
-        authC.account.value!.startDate = DateTime.now();
-        authC.account.value!.endDate =
-            DateTime.now().add(const Duration(days: 365));
-      } else {
-        authC.account.value!.startDate = authC.account.value!.endDate;
-        authC.account.value!.endDate =
-            authC.account.value!.endDate!.add(const Duration(days: 365));
       }
     } else if (package == 'full') {
       authC.account.value!.endDate = null;

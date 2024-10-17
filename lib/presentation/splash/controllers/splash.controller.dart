@@ -105,10 +105,9 @@ class SplashController extends GetxController {
         AccountModel updatedAccount =
             AccountModel.fromJson(authService.account.value!.toJson());
 
-        updatedAccount.endDate =
-            DateTime.now().add(const Duration(days: 7)).toLocal();
+        updatedAccount.endDate = DateTime.now();
         updatedAccount.updatedAt = DateTime.now().toLocal();
-        updatedAccount.accountType = 'free_trial';
+        updatedAccount.accountType = 'flexible';
         await accountService.update(updatedAccount);
 
         Get.offAllNamed(Routes.SPLASH);

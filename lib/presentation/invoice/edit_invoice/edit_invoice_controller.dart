@@ -171,7 +171,7 @@ class EditInvoiceController extends GetxController {
       cartItem.product.stock.value = foundProduct.stock.value;
     }
 
-    print(cartItem.product.stock.value);
+    print('rmv $cartItem');
     cartItem.product.stock.value += cartItem.quantity.value;
     cartItem.product.stock.value -= cartItem.quantityReturn.value;
     print(cartItem.product.stock.value);
@@ -243,6 +243,7 @@ class EditInvoiceController extends GetxController {
         }
       }
 
+      List<RemoveProduct> removedCartItem = [];
       for (var removedCart in removeCartList) {
         var foundProduct = foundProducts
             .firstWhereOrNull((item) => item.id == removedCart.product.id);
@@ -256,6 +257,8 @@ class EditInvoiceController extends GetxController {
                 removedCart.quantity.value + removedCart.quantityReturn.value;
           }
         }
+        removedCartItem.add(
+            RemoveProduct(removeAt: DateTime.now(), cartItem: removedCart));
 
         print('stock removedCart ${removedCart.product.stock.value}');
         ProductModel updatedProduct =
@@ -269,6 +272,7 @@ class EditInvoiceController extends GetxController {
         }
       }
 
+      invoice.removeProduct.value = removedCartItem;
       await _productService.updateList(productList);
       await customerFieldC.handleSave();
       await customerFieldC.addCustomer(invoice);

@@ -57,7 +57,7 @@ class AccountModel extends Account {
       storeId: json['store_id'],
       users: users,
       password: json['password'] ?? 'admin',
-      accountType: json['account_type'] ?? 'free_trial',
+      accountType: json['account_type'] ?? 'flexible',
       startDate: json['start_date'] != null
           ? DateTime.parse(json['start_date']).toLocal()
           : null,
@@ -123,7 +123,7 @@ class AccountModel extends Account {
       storeId: row['store_id'] as String?,
       users: users,
       password: row['password'],
-      accountType: row['account_type'] ?? 'free_trial',
+      accountType: row['account_type'] ?? 'flexible',
       startDate: row['start_date'] != null
           ? DateTime.parse(row['start_date']).toLocal()
           : null,

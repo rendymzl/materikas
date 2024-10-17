@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import '../account_model.dart';
 import '../customer_model.dart';
 import '../payment_model.dart';
+import 'cart_item_model.dart';
 import 'cart_model.dart';
 
 class OtherCost {
@@ -33,6 +34,31 @@ class OtherCost {
   }
 }
 
+class RemoveProduct {
+  DateTime removeAt;
+  CartItem cartItem;
+
+  RemoveProduct({
+    required this.removeAt,
+    required this.cartItem,
+  });
+
+  RemoveProduct.fromJson(Map<String, dynamic> json)
+      : removeAt = DateTime.parse(json['remove_at']).toLocal(),
+        cartItem = json['cart_item'];
+
+  RemoveProduct.fromRow(sqlite.Row row)
+      : removeAt = DateTime.parse(row['remove_at']).toLocal(),
+        cartItem = row['cart_item'];
+
+  Map<String, dynamic> toJson() {
+    final data = <String, dynamic>{};
+    data['remove_at'] = removeAt;
+    data['cart_item'] = cartItem.toJson();
+    return data;
+  }
+}
+
 class InvoiceModel {
   String? id;
   String? storeId;
@@ -48,9 +74,12 @@ class InvoiceModel {
   late RxDouble tax;
   late RxDouble returnFee;
   late RxList<PaymentModel> payments;
+  late RxList<RemoveProduct> removeProduct = RxList<RemoveProduct>([]);
   late RxDouble debtAmount;
   late RxBool isDebtPaid;
   late RxList<OtherCost> otherCosts;
+  late Rx<DateTime?> initAt;
+  late Rx<DateTime?> removeAt;
 
   InvoiceModel({
     this.id,
@@ -67,9 +96,12 @@ class InvoiceModel {
     double tax = 0,
     double returnFee = 0,
     List<PaymentModel>? payments,
+    List<RemoveProduct>? removeProduct,
     double debtAmount = 0,
     bool isDebtPaid = false,
     List<OtherCost>? otherCosts,
+    DateTime? initAt,
+    DateTime? removeAt,
   })  : account = Rx<AccountModel>(account),
         createdAt = Rx<DateTime?>(createdAt),
         customer = Rx<CustomerModel?>(customer),
@@ -81,10 +113,13 @@ class InvoiceModel {
         tax = RxDouble(tax),
         returnFee = RxDouble(returnFee),
         payments = RxList<PaymentModel>(payments ?? []),
+        removeProduct = RxList<RemoveProduct>(removeProduct ?? []),
         // change = RxDouble(change),
         debtAmount = RxDouble(debtAmount),
         isDebtPaid = RxBool(isDebtPaid),
-        otherCosts = RxList<OtherCost>(otherCosts ?? []);
+        otherCosts = RxList<OtherCost>(otherCosts ?? []),
+        initAt = Rx<DateTime?>(initAt),
+        removeAt = Rx<DateTime?>(removeAt);
 
   InvoiceModel.fromJson(Map<String, dynamic> json) {
     // Handling account field
@@ -198,6 +233,32 @@ class InvoiceModel {
       payments = RxList<PaymentModel>();
     }
 
+    if (json['remove_product'] != null) {
+      // Check if payments is a JSON string
+      final dynamic removeData = json['remove_product'] is String
+          ? jsonDecode(json['remove_product'])
+          : json['remove_product'];
+
+      // Ensure removeData is a list
+      if (removeData is List) {
+        removeProduct = RxList<RemoveProduct>(
+          removeData
+              .map((i) => RemoveProduct.fromJson(i as Map<String, dynamic>))
+              .toList(),
+        );
+      } else {
+        // Handle the case where removeData is not a list
+        removeProduct = RxList<RemoveProduct>(
+          (jsonDecode(removeData) as List)
+              .map((i) => RemoveProduct.fromJson(i as Map<String, dynamic>))
+              .toList(),
+        );
+        // payments = RxList<PaymentModel>();
+      }
+    } else {
+      payments = RxList<PaymentModel>();
+    }
+
     debtAmount = RxDouble(json['debt_amount']?.toDouble() ?? 0);
     isDebtPaid = RxBool(json['is_debt_paid'] == 1);
 
@@ -224,6 +285,18 @@ class InvoiceModel {
     } else {
       otherCosts = RxList<OtherCost>();
     }
+
+    initAt = Rx<DateTime?>(
+      json['init_at'] != null
+          ? DateTime.parse(json['init_at']).toLocal()
+          : null,
+    );
+
+    removeAt = Rx<DateTime?>(
+      json['remove_at'] != null
+          ? DateTime.parse(json['remove_at']).toLocal()
+          : null,
+    );
   }
 
   InvoiceModel.fromRow(sqlite.Row row)
@@ -247,12 +320,19 @@ class InvoiceModel {
         payments = RxList<PaymentModel>((row['payments'] as List)
             .map((i) => PaymentModel.fromRow(i))
             .toList()),
+        removeProduct = RxList<RemoveProduct>(row['remove_product'] != null
+            ? (row['remove_product'] as List)
+                .map((i) => RemoveProduct.fromRow(i))
+                .toList()
+            : []),
         // change = RxDouble(json['change']),
         debtAmount = RxDouble(row['debt_amount'].toDouble()),
         isDebtPaid = RxBool(row['is_debt_paid']),
         otherCosts = RxList<OtherCost>((row['other_costs'] as List)
             .map((i) => OtherCost.fromJson(i))
-            .toList());
+            .toList()),
+        initAt = Rx<DateTime?>(DateTime.parse(row['init_at']).toLocal()),
+        removeAt = Rx<DateTime?>(DateTime.parse(row['remove_at']).toLocal());
 
   Map<String, dynamic> toJson() {
     final data = <String, dynamic>{};
@@ -270,10 +350,15 @@ class InvoiceModel {
     data['tax'] = tax.value;
     data['return_fee'] = returnFee.value;
     data['payments'] = payments.map((item) => item.toJson()).toList();
+    data['remove_product'] = removeProduct.isNotEmpty
+        ? removeProduct.map((item) => item.toJson()).toList()
+        : [];
     // data['change'] = change.value;
     data['debt_amount'] = debtAmount.value;
     data['is_debt_paid'] = isDebtPaid.value;
     data['other_costs'] = otherCosts.map((item) => item.toJson()).toList();
+    data['init_at'] = initAt.value?.toIso8601String();
+    data['remove_at'] = removeAt.value?.toIso8601String();
     return data;
   }
 

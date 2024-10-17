@@ -44,7 +44,7 @@ void activateAccountPopup({bool expired = false}) async {
 
   showPopupPageWidget(
     barrierDismissible: expired,
-    title: 'Aktivasi Akun',
+    title: 'Paket saat ini: ${authService.account.value!.accountType}',
     // iconButton: IconButton(
     //     onPressed: () async {
     //       await authService.box.delete('order_id');
@@ -62,7 +62,7 @@ void activateAccountPopup({bool expired = false}) async {
                 const Padding(
                   padding: EdgeInsets.all(8.0),
                   child: Text(
-                    "Pilih Langganan:",
+                    "Pilih Paket:",
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -84,18 +84,20 @@ void activateAccountPopup({bool expired = false}) async {
                     children: [
                       Expanded(
                         child: buildSubscriptionCard(
-                          package: 'basic',
+                          package: 'flexible',
                           icon: Symbols.kid_star,
-                          title: 'Paket Basic',
+                          title: 'Paket Flexible',
+                          ext: '/transaksi',
                           index: 0,
                         ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: buildSubscriptionCard(
-                          package: 'premium',
+                          package: 'subscription',
                           icon: Symbols.bookmark_star,
-                          title: 'Paket Premium',
+                          title: 'Paket Subscription',
+                          ext: '/bulan',
                           index: 1,
                         ),
                       ),
@@ -104,7 +106,8 @@ void activateAccountPopup({bool expired = false}) async {
                         child: buildSubscriptionCard(
                           package: 'full',
                           icon: Symbols.award_star,
-                          title: 'Paket Bisnis',
+                          title: 'Paket Business',
+                          ext: '/sekali bayar',
                           index: 2,
                         ),
                       ),
@@ -134,11 +137,11 @@ void activateAccountPopup({bool expired = false}) async {
                     const CircularProgressIndicator()
                   else
                     ElevatedButton(
-                      onPressed: () {
-                        midtransC.initiatePayment(
-                            controller.selectedCardType.value,
-                            controller.isMonthly.value);
-                      },
+                      onPressed:
+                          (controller.selectedCardType.value != 'flexible')
+                              ? () => midtransC.initiatePayment(
+                                  controller.selectedCardType.value)
+                              : null,
                       child: const Text('Bayar'),
                     ),
                 ],
@@ -174,6 +177,7 @@ Widget buildSubscriptionCard({
   required String package,
   required IconData icon,
   required String title,
+  required String ext,
   required int index,
   // required SubscriptionController controller,
 }) {
@@ -226,7 +230,9 @@ Widget buildSubscriptionCard({
                   ],
                 ),
                 Text(
-                    'Rp ${currency.format(controller.isMonthly.value ? midtransC.monthlyPrice[package] : midtransC.yearlyPrice[package])}',
+                    midtransC.price[package] is double
+                        ? '1% $ext'
+                        : 'Rp ${currency.format(midtransC.price[package])} $ext',
                     style: TextStyle(
                       fontSize: 20,
                       color: isSelected
@@ -238,23 +244,27 @@ Widget buildSubscriptionCard({
                 Row(
                   children: [
                     Text(
-                      currency.format(midtransC.oldPrice[package]),
+                      midtransC.price[package] is double
+                          ? 'Contoh: Transaksi 10.000 x 1% = Rp. 100'
+                          : 'Rp ${currency.format(midtransC.oldPrice[package])}',
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 12,
                         color: textColor,
-                        decoration: TextDecoration.lineThrough,
+                        decoration: midtransC.price[package] is double
+                            ? null
+                            : TextDecoration.lineThrough,
                       ),
                     ),
-                    SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 4, horizontal: 8),
-                      decoration: BoxDecoration(
-                        color: Theme.of(Get.context!).colorScheme.primary,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: menuC.countdown,
-                    ),
+                    // SizedBox(width: 8),
+                    // Container(
+                    //   padding: const EdgeInsets.symmetric(
+                    //       vertical: 4, horizontal: 8),
+                    //   decoration: BoxDecoration(
+                    //     color: Theme.of(Get.context!).colorScheme.primary,
+                    //     borderRadius: BorderRadius.circular(4),
+                    //   ),
+                    //   child: menuC.countdown,
+                    // ),
                   ],
                 ),
                 const SizedBox(height: 10),

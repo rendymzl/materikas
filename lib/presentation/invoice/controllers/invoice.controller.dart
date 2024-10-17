@@ -320,6 +320,7 @@ class InvoiceController extends GetxController {
   }
 
   destroyHandle(InvoiceModel invoice) async {
-    await invoiceService.delete(invoice.id!);
+    invoice.removeAt.value = DateTime.now();
+    await invoiceService.update(invoice);
   }
 }

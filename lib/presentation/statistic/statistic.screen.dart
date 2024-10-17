@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 
 import '../../infrastructure/utils/display_format.dart';
+import '../global_widget/activate_popup/activate_account_popup.dart';
 import '../global_widget/menu_widget/menu_widget.dart';
 import '../sales/selected_product_sales_widget/calculate_sales.dart';
 import '../operating_cost/add_operating_cost.dart';
@@ -214,8 +215,20 @@ class SectionMenuBar extends StatelessWidget {
             Expanded(
               child: ElevatedButton(
                 onPressed: () {
-                  controller.rangePickerHandle(controller.args.value);
-                  controller.selectedSection.value = 'weekly';
+                  if (controller.authService.account.value!.accountType ==
+                      'flexible') {
+                    Get.defaultDialog(
+                      title: 'Upgrade Akun',
+                      middleText: 'Upgrade akun untuk menambahkan kasir',
+                      confirm: ElevatedButton(
+                        onPressed: () async => activateAccountPopup(),
+                        child: const Text('Upgrade Paket'),
+                      ),
+                    );
+                  } else {
+                    controller.rangePickerHandle(controller.args.value);
+                    controller.selectedSection.value = 'weekly';
+                  }
                 },
                 style: ButtonStyle(
                   enableFeedback: true,
@@ -240,8 +253,20 @@ class SectionMenuBar extends StatelessWidget {
             Expanded(
               child: ElevatedButton(
                 onPressed: () {
-                  controller.monthPickerHandle(controller.args.value);
-                  controller.selectedSection.value = 'monthly';
+                  if (controller.authService.account.value!.accountType ==
+                      'flexible') {
+                    Get.defaultDialog(
+                      title: 'Upgrade Akun',
+                      middleText: 'Upgrade akun untuk menambahkan kasir',
+                      confirm: ElevatedButton(
+                        onPressed: () async => activateAccountPopup(),
+                        child: const Text('Upgrade Paket'),
+                      ),
+                    );
+                  } else {
+                    controller.monthPickerHandle(controller.args.value);
+                    controller.selectedSection.value = 'monthly';
+                  }
                 },
                 style: ButtonStyle(
                   enableFeedback: true,
@@ -266,8 +291,20 @@ class SectionMenuBar extends StatelessWidget {
             Expanded(
               child: ElevatedButton(
                 onPressed: () {
-                  controller.yearPickerHandle(controller.args.value);
-                  controller.selectedSection.value = 'yearly';
+                  if (controller.authService.account.value!.accountType ==
+                      'flexible') {
+                    Get.defaultDialog(
+                      title: 'Upgrade Akun',
+                      middleText: 'Upgrade akun untuk menambahkan kasir',
+                      confirm: ElevatedButton(
+                        onPressed: () async => activateAccountPopup(),
+                        child: const Text('Upgrade Paket'),
+                      ),
+                    );
+                  } else {
+                    controller.yearPickerHandle(controller.args.value);
+                    controller.selectedSection.value = 'yearly';
+                  }
                 },
                 style: ButtonStyle(
                   enableFeedback: true,

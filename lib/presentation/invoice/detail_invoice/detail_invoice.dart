@@ -158,7 +158,7 @@ void detailDialog(InvoiceModel invoice) {
                             ),
                           ),
                         SizedBox(
-                          width: 500,
+                          width: 700,
                           child: PropertiesRow(
                             primary: true,
                             title:
@@ -182,7 +182,7 @@ void detailDialog(InvoiceModel invoice) {
                             ),
                           ),
                         SizedBox(
-                          width: 500,
+                          width: 700,
                           child: PropertiesRow(
                             subtraction: true,
                             title: 'Total Diskon',
@@ -206,7 +206,7 @@ void detailDialog(InvoiceModel invoice) {
                           ),
                         (invoice.totalOtherCosts > 0)
                             ? SizedBox(
-                                width: 500,
+                                width: 700,
                                 child: ListView.builder(
                                   shrinkWrap: true,
                                   itemCount: invoice.otherCosts.length,
@@ -220,7 +220,7 @@ void detailDialog(InvoiceModel invoice) {
                                 ),
                               )
                             : const SizedBox(
-                                width: 500,
+                                width: 700,
                                 child: PropertiesRow(
                                   title: '',
                                   value: '',
@@ -235,7 +235,7 @@ void detailDialog(InvoiceModel invoice) {
                         children: [
                           const SizedBox(),
                           SizedBox(
-                            width: 500,
+                            width: 700,
                             child: PropertiesRow(
                               primary: true,
                               title:
@@ -259,7 +259,7 @@ void detailDialog(InvoiceModel invoice) {
                             ),
                           ),
                           SizedBox(
-                            width: 500,
+                            width: 700,
                             child: PropertiesRow(
                               primary: true,
                               subtraction: true,
@@ -279,7 +279,7 @@ void detailDialog(InvoiceModel invoice) {
               children: [
                 const SizedBox(),
                 SizedBox(
-                  width: 500,
+                  width: 700,
                   child: Column(
                     children: [
                       PropertiesRow(
@@ -299,7 +299,7 @@ void detailDialog(InvoiceModel invoice) {
                 children: [
                   const SizedBox(),
                   SizedBox(
-                    width: 500,
+                    width: 700,
                     child: Obx(
                       () {
                         return ListView.builder(
@@ -327,7 +327,7 @@ void detailDialog(InvoiceModel invoice) {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   const SizedBox(),
-                  SizedBox(width: 500, child: Divider(color: Colors.grey[300])),
+                  SizedBox(width: 700, child: Divider(color: Colors.grey[300])),
                 ],
               ),
             // if (invoice.totalPaid > 0)
@@ -341,7 +341,7 @@ void detailDialog(InvoiceModel invoice) {
                       : invoice.isReturn
                           ? Colors.yellow[50]
                           : Colors.green[50],
-                  width: 500,
+                  width: 700,
                   child: PropertiesRow(
                     primary: true,
                     subtraction: invoice.totalPaid < invoice.totalBill,
@@ -367,7 +367,7 @@ void detailDialog(InvoiceModel invoice) {
                         : invoice.isReturn
                             ? Colors.yellow[50]
                             : Colors.green[50],
-                    width: 500,
+                    width: 700,
                     child: PropertiesRow(
                       primary: true,
                       subtraction: invoice.totalPaid < invoice.totalBill,
