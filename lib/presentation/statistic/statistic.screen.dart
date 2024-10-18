@@ -8,6 +8,7 @@ import '../global_widget/activate_popup/activate_account_popup.dart';
 import '../global_widget/menu_widget/menu_widget.dart';
 import '../sales/selected_product_sales_widget/calculate_sales.dart';
 import '../operating_cost/add_operating_cost.dart';
+import '../global_widget/billing_widget/billing_dashboard.dart';
 import 'controllers/statistic.controller.dart';
 import 'date_picker_cart.dart';
 import 'detail_operating_cost.dart';
@@ -330,7 +331,7 @@ class SectionMenuBar extends StatelessWidget {
             const SizedBox(width: 16),
             // if (controller.authService.account.value!.accountType == 'flexible')
             ElevatedButton(
-              onPressed: null,
+              onPressed: () => billingDashboard(),
               style: ButtonStyle(
                 enableFeedback: true,
                 backgroundColor: WidgetStatePropertyAll(
@@ -340,8 +341,6 @@ class SectionMenuBar extends StatelessWidget {
               ),
               child: Obx(
                 () {
-                  print(
-                      '=======monthlyInvoice======= ${controller.monthlyInvoice}');
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -367,7 +366,7 @@ class SectionMenuBar extends StatelessWidget {
                           ],
                         ),
                         child: Text(
-                          'Rp${currency.format(controller.monthlyInvoice.value)}',
+                          'Rp${currency.format(controller.authService.thisMonthAppBill.value)}',
                           style: context.textTheme.titleLarge!.copyWith(
                               color: Theme.of(context).colorScheme.primary),
                         ),

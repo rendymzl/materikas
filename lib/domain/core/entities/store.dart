@@ -1,5 +1,7 @@
 import 'package:get/get.dart';
 
+import '../../../infrastructure/models/billing_model.dart';
+
 class Stores {
   String? id;
   String? ownerId;
@@ -8,6 +10,7 @@ class Stores {
   RxString address;
   RxString phone;
   RxString telp;
+  RxList<Billing>? billings;
   RxString? promo;
 
   Stores({
@@ -18,6 +21,7 @@ class Stores {
     required this.address,
     required this.phone,
     required this.telp,
+    this.billings,
     this.promo,
   });
 }

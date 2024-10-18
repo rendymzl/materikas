@@ -91,6 +91,7 @@ void editInvoice(InvoiceModel invoice) {
             confirmText: 'Simpan',
             cancelText: 'Batal',
             onConfirm: () {
+              double prevTotalAppBill = invoice.appBillAmount.value;
               invoice.id = editInvoice.id;
               invoice.invoiceId = editInvoice.invoiceId;
               invoice.createdAt.value = datePickerC.selectedDate.value;
@@ -103,10 +104,12 @@ void editInvoice(InvoiceModel invoice) {
               invoice.returnFee.value = editInvoice.returnFee.value;
               invoice.payments.value = editInvoice.payments;
               invoice.debtAmount.value = editInvoice.debtAmount.value;
+              // invoice.appBillAmount.value = editInvoice.appBillAmount.value;
               invoice.isDebtPaid.value = editInvoice.isDebtPaid.value;
               invoice.otherCosts.value = editInvoice.otherCosts;
               print('----edit invoice ${invoice.customer.value!.customerId}');
-              controller.updateInvoice(invoice);
+              controller.updateInvoice(invoice,
+                  prevTotalAppBill: prevTotalAppBill);
               Get.back();
             },
             onCancel: () => Get.back(),

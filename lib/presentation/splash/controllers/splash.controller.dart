@@ -14,7 +14,9 @@ import '../../../infrastructure/dal/services/purchase_order_service.dart';
 import '../../../infrastructure/dal/services/sales_service.dart';
 import '../../../infrastructure/dal/services/store_service.dart';
 import '../../../infrastructure/models/account_model.dart';
+import '../../../infrastructure/models/billing_model.dart';
 import '../../../infrastructure/navigation/routes.dart';
+import '../../../infrastructure/utils/display_format.dart';
 import '../../global_widget/app_dialog_widget.dart';
 import '../../global_widget/popup_page_widget.dart';
 import '../../profile/controllers/profile.controller.dart';
@@ -58,7 +60,7 @@ class SplashController extends GetxController {
       await authService.getStore();
       authService.loadingStatus.value = 'mengambil data toko';
       await authService.getCashier();
-      Get.put(StoreService());
+      var storeC = Get.put(StoreService());
       var accountService = Get.put(AccountService());
       print('SelectUserController INIT');
       print('SelectUserController getAccount');
@@ -75,10 +77,55 @@ class SplashController extends GetxController {
         print('SelectUserController FINISH INIT');
         authService.loadingStatus.value = 'selesai';
         isConnected.value = authService.connected.value;
+
+        DateTime thisMonth =
+            DateTime(DateTime.now().year, DateTime.now().month, 1);
+        DateTime prevMonth = thisMonth.subtract(Duration(days: 1));
+
         authService.prevMonthAppBill.value =
-            await _invoiceService.getAppBill(DateTime.now().month - 1);
+            await _invoiceService.getAppBill(thisMonth);
         authService.thisMonthAppBill.value =
-            await _invoiceService.getAppBill(DateTime.now().month);
+            await _invoiceService.getAppBill(prevMonth);
+
+        if (authService.account.value!.accountType == 'flexible') {
+          if (authService.store.value!.billings == null) {
+            authService.store.value!.billings = <Billing>[].obs;
+          }
+          var prevBilling =
+              authService.store.value!.billings!.firstWhereOrNull((billing) {
+            return billing.billingName == getMonthName(prevMonth.month);
+          });
+
+          var currentBilling =
+              authService.store.value!.billings!.firstWhereOrNull((billing) {
+            return billing.billingName == getMonthName(thisMonth.month);
+          });
+
+          if (prevBilling == null) {
+            var billing = Billing(
+              billingName: getMonthName(prevMonth.month),
+              billingNumber: _invoiceService.generateInvoiceNumber(prevMonth),
+              amountPaid: authService.prevMonthAppBill.value,
+              isPaid: false,
+            );
+            authService.store.value!.billings!.add(billing);
+            print(
+                'authService.store.value!.billings ${authService.store.value!.billings}');
+            // print('currentBilling $currentBilling');
+            await storeC.update(authService.store.value!);
+          }
+
+          if (currentBilling == null) {
+            var billing = Billing(
+              billingName: getMonthName(thisMonth.month),
+              billingNumber: _invoiceService.generateInvoiceNumber(thisMonth),
+              amountPaid: authService.thisMonthAppBill.value,
+              isPaid: false,
+            );
+            authService.store.value!.billings!.add(billing);
+            await storeC.update(authService.store.value!);
+          }
+        }
         Get.offAllNamed(Routes.SELECT_USER);
       } else {
         Get.put(DetailStoreController());
@@ -105,7 +152,7 @@ class SplashController extends GetxController {
           barrierDismissible: true,
         );
 
-        print(authService.account.value!.toJson());
+        // print(authService.account.value!.toJson());
         AccountModel updatedAccount =
             AccountModel.fromJson(authService.account.value!.toJson());
 

@@ -23,7 +23,8 @@ const schema = Schema([
     Column.text('phone'),
     Column.text('telp'),
     Column.text('promo'),
-    Column.text('created_at')
+    Column.text('created_at'),
+    Column.text('billings')
   ]),
   Table('invoices', [
     Column.text('store_id'),
@@ -40,6 +41,7 @@ const schema = Schema([
     Column.real('return_fee'),
     Column.text('payments'),
     Column.real('debt_amount'),
+    Column.real('app_bill_amount'),
     Column.integer('is_debt_paid'),
     Column.integer('is_app_bill_paid'),
     Column.text('other_costs'),

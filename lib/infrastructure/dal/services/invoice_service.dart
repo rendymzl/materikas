@@ -17,7 +17,7 @@ class InvoiceService extends GetxService implements InvoiceRepository {
   var debtInv = <InvoiceModel>[].obs;
   var filteredPaidInv = <InvoiceModel>[].obs;
   var filteredDebtInv = <InvoiceModel>[].obs;
-  // var monthlyInvoice = <InvoiceModel>[].obs;
+  var monthlyInvoice = <InvoiceModel>[].obs;
   var displayedInvoices = <InvoiceModel>[].obs;
 
   // var CashPayment = <InvoiceModel>[].obs;
@@ -221,12 +221,11 @@ class InvoiceService extends GetxService implements InvoiceRepository {
   }
 
   // @override
-  Future<double> getAppBill(int month) async {
-    var monthlyInvoice = <InvoiceModel>[];
-
+  Future<double> getAppBill(DateTime date) async {
+    // DateTime year =
     PickerDateRange pickerDateRange = PickerDateRange(
-        DateTime(DateTime.now().year, month, 1),
-        DateTime(DateTime.now().year, month + 1, 1));
+        DateTime(date.year, date.month, 1),
+        DateTime(date.year, date.month + 1, 1));
 
     // PickerDateRange pickerDateRangePrevMonth = PickerDateRange(
     //     DateTime(DateTime.now().year, DateTime.now().month - 1, 1),
@@ -259,20 +258,31 @@ class InvoiceService extends GetxService implements InvoiceRepository {
                 invoice.initAt.value!.month, invoice.initAt.value!.day + 1)))
         .toList();
 
-    monthlyInvoice.assignAll(invoiceBill);
+    monthlyInvoice.assignAll(invoiceList);
 
-    var totalAppBill = monthlyInvoice.fold(
+    // var totalAppBill = monthlyInvoice.fold(
+    //     0.0,
+    //     (previousValue, element) =>
+    //         previousValue +
+    //         (element.isAppBillPaid.value
+    //             ? 0
+    //             : (element.totalPurchase +
+    //                 (element.removeProduct.isEmpty
+    //                     ? 0
+    //                     : element.totalRemovedValue))));
+    var totalAppBill = invoiceList.fold(
         0.0,
         (previousValue, element) =>
             previousValue +
-            (element.isAppBillPaid.value
-                ? 0
-                : (element.totalPurchase +
-                    (element.removeProduct.isEmpty
-                        ? 0
-                        : element.totalRemovedValue))));
+            (element.isAppBillPaid.value ? 0 : element.appBillAmount.value));
     // return monthlyInvoice.length.toDouble();
-    return totalAppBill * 0.01;
+    return totalAppBill;
+  }
+
+  String generateInvoiceNumber(DateTime date) {
+    final month = date.month.toString().padLeft(2, '0');
+    final year = date.year.toString();
+    return 'BILL-$year$month';
   }
 
   //   @override

@@ -45,6 +45,7 @@ class StoreService extends GetxService implements StoreRepository {
       address = ?, 
       phone = ?, 
       telp = ?, 
+      billings = ?, 
       promo = ?
     WHERE id = ?
     ''',
@@ -54,6 +55,7 @@ class StoreService extends GetxService implements StoreRepository {
         store.address.value,
         store.phone.value,
         store.telp.value,
+        store.billings?.map((e) => e.toJson()).toList(),
         store.promo?.value,
         store.id,
       ],

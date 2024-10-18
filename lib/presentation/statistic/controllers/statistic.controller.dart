@@ -28,7 +28,6 @@ class StatisticController extends GetxController {
 
   late List<InvoiceModel> currentInvoices = <InvoiceModel>[].obs;
   late List<InvoiceModel> byPaymentDateInvoices = <InvoiceModel>[].obs;
-  late final monthlyInvoice = 0.0.obs;
   late List<InvoiceSalesModel> currentFilteredSalesInvoices =
       <InvoiceSalesModel>[].obs;
   late List<OperatingCostModel> currentFilteredOperatingCosts =
@@ -98,8 +97,14 @@ class StatisticController extends GetxController {
   void onInit() async {
     print('--salesInvoices.length ${_invoiceSalesService.invoices.length}');
     super.onInit();
-    monthlyInvoice.value =
-        await invoiceService.getAppBill(DateTime.now().month);
+    DateTime thisMonth = DateTime(DateTime.now().year, DateTime.now().month, 1);
+    DateTime prevMonth = thisMonth.subtract(Duration(days: 1));
+
+    authService.prevMonthAppBill.value =
+        await invoiceService.getAppBill(prevMonth);
+    authService.thisMonthAppBill.value =
+        await invoiceService.getAppBill(thisMonth);
+
     everAll([
       operatingCosts,
       invoiceService.paidInv,

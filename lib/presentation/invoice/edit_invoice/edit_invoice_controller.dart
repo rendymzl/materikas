@@ -187,7 +187,8 @@ class EditInvoiceController extends GetxController {
   }
 
   bool validateTotal = false;
-  Future<void> updateInvoice(InvoiceModel invoice) async {
+  Future<void> updateInvoice(InvoiceModel invoice,
+      {double prevTotalAppBill = 0}) async {
     invoice.updateIsDebtPaid();
     Get.defaultDialog(
       title: 'Menyimpan Invoice...',
@@ -281,11 +282,18 @@ class EditInvoiceController extends GetxController {
         invoice.removeProduct.assignAll(removedCartItem);
       }
 
-      if (DateTime.now().isBefore(DateTime(invoice.initAt.value!.year,
-          invoice.initAt.value!.month, invoice.initAt.value!.day + 1))) {
+      print('totalAppBill ${invoice.totalAppBill}');
+      print('prevTotalAppBill $prevTotalAppBill');
+
+      if (invoice.totalAppBill < prevTotalAppBill) {
+        if (DateTime.now().isBefore(DateTime(invoice.initAt.value!.year,
+            invoice.initAt.value!.month, invoice.initAt.value!.day + 1))) {
+          invoice.appBillAmount.value = invoice.totalAppBill;
+        }
+      } else {
         invoice.appBillAmount.value = invoice.totalAppBill;
       }
-      print('invoice ${invoice.toJson()}');
+
       await _productService.updateList(productList);
       await customerFieldC.handleSave();
       await customerFieldC.addCustomer(invoice);
