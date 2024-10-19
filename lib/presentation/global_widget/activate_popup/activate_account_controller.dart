@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 class ActivateAccountController extends GetxController {
   var selectedCardIndex = 0.obs;
   // var isMonthly = true.obs;
-  var selectedCardType = ''.obs;
+  var selectedCardType = 'flexible'.obs;
 
   void handleSelectCard(int index) {
     selectedCardIndex.value = index;

@@ -221,12 +221,11 @@ class InvoiceService extends GetxService implements InvoiceRepository {
   }
 
   // @override
-  Future<double> getAppBill(DateTime date) async {
+  Future<double> getBillAmount(DateTime date) async {
     // DateTime year =
     PickerDateRange pickerDateRange = PickerDateRange(
         DateTime(date.year, date.month, 1),
         DateTime(date.year, date.month + 1, 1));
-
     // PickerDateRange pickerDateRangePrevMonth = PickerDateRange(
     //     DateTime(DateTime.now().year, DateTime.now().month - 1, 1),
     //     DateTime(DateTime.now().year, DateTime.now().month, 1));
@@ -251,14 +250,8 @@ class InvoiceService extends GetxService implements InvoiceRepository {
     ]);
     var invoiceList = results.map((e) => InvoiceModel.fromJson(e)).toList();
 
-    var invoiceBill = invoiceList
-        .where((invoice) =>
-            invoice.removeAt.value == null ||
-            invoice.removeAt.value!.isAfter(DateTime(invoice.initAt.value!.year,
-                invoice.initAt.value!.month, invoice.initAt.value!.day + 1)))
-        .toList();
-
     monthlyInvoice.assignAll(invoiceList);
+    monthlyInvoice.sort((a, b) => a.initAt.value!.compareTo(b.initAt.value!));
 
     // var totalAppBill = monthlyInvoice.fold(
     //     0.0,
@@ -377,7 +370,6 @@ class InvoiceService extends GetxService implements InvoiceRepository {
       is_debt_paid = ?, 
       is_app_bill_paid = ?, 
       other_costs = ?,
-      init_at = ?,
       remove_at = ?
     WHERE id = ?
     ''',
@@ -401,7 +393,6 @@ class InvoiceService extends GetxService implements InvoiceRepository {
           updatedInvoice.isDebtPaid.value ? 1 : 0,
           updatedInvoice.isAppBillPaid.value ? 1 : 0,
           updatedInvoice.otherCosts.map((e) => e.toJson()).toList(),
-          updatedInvoice.initAt.value?.toIso8601String(),
           updatedInvoice.removeAt.value?.toIso8601String(),
           updatedInvoice.id,
         ],
@@ -409,6 +400,63 @@ class InvoiceService extends GetxService implements InvoiceRepository {
     } catch (e) {
       debugPrint(e.toString());
     }
+  }
+
+  Future<void> updateList(List<InvoiceModel> updatedInvoiceList) async {
+    final List<List<Object?>> parameterSets =
+        updatedInvoiceList.map((updatedInvoice) {
+      return [
+        updatedInvoice.storeId,
+        updatedInvoice.invoiceId,
+        updatedInvoice.account.value.toJson(),
+        updatedInvoice.createdAt.value?.toIso8601String(),
+        updatedInvoice.customer.value?.toJson(),
+        updatedInvoice.purchaseList.value.toJson(),
+        updatedInvoice.returnList.value?.toJson(),
+        updatedInvoice.afterReturnList.value?.toJson(),
+        updatedInvoice.priceType.value,
+        updatedInvoice.discount.value,
+        updatedInvoice.tax.value,
+        updatedInvoice.returnFee.value,
+        updatedInvoice.payments.map((e) => e.toJson()).toList(),
+        updatedInvoice.removeProduct.map((e) => e.toJson()).toList(),
+        updatedInvoice.debtAmount.value,
+        updatedInvoice.appBillAmount.value,
+        updatedInvoice.isDebtPaid.value ? 1 : 0,
+        updatedInvoice.isAppBillPaid.value ? 1 : 0,
+        updatedInvoice.otherCosts.map((e) => e.toJson()).toList(),
+        updatedInvoice.removeAt.value?.toIso8601String(),
+        updatedInvoice.id,
+      ];
+    }).toList();
+
+    await db.executeBatch(
+      '''
+   UPDATE invoices SET
+      store_id = ?, 
+      invoice_id = ?, 
+      account = ?, 
+      created_at = ?, 
+      customer = ?, 
+      purchase_list = ?, 
+      return_list = ?, 
+      after_return_list = ?, 
+      price_type = ?, 
+      discount = ?, 
+      tax = ?, 
+      return_fee = ?, 
+      payments = ?, 
+      remove_product = ?, 
+      debt_amount = ?, 
+      app_bill_amount = ?, 
+      is_debt_paid = ?, 
+      is_app_bill_paid = ?, 
+      other_costs = ?,
+      remove_at = ?
+    WHERE id = ?
+    ''',
+      parameterSets,
+    );
   }
 
   @override

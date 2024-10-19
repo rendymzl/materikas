@@ -25,7 +25,12 @@ void activateAccountPopup({bool expired = false}) async {
   //   midtransC.selectedPackage.value = package;
   // }
   if (orderId != null) {
-    midtransC.startTimer(orderId);
+    await midtransC.checkPaymentStatus(orderId);
+    if (midtransC.paymentStatus.value.toLowerCase().contains('kadaluarsa')) {
+      midtransC.cancelPayment();
+    } else {
+      midtransC.startTimer(orderId);
+    }
   }
   Color getStatusColor(String status) {
     switch (status) {
@@ -44,7 +49,10 @@ void activateAccountPopup({bool expired = false}) async {
 
   showPopupPageWidget(
     barrierDismissible: expired,
-    title: 'Paket saat ini: ${authService.account.value!.accountType}',
+    title: midtransC.snap.isEmpty
+        ? 'Paket saat ini: ${authService.account.value!.accountType}'
+        : 'Pembayaran Upgrade: ${controller.selectedCardType.value}',
+
     // iconButton: IconButton(
     //     onPressed: () async {
     //       await authService.box.delete('order_id');
@@ -158,6 +166,10 @@ void activateAccountPopup({bool expired = false}) async {
                       ),
                     ),
                     ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey[200],
+                        foregroundColor: Theme.of(Get.context!).primaryColor,
+                      ),
                       onPressed: () {
                         midtransC.cancelPayment();
                       },
@@ -183,7 +195,7 @@ Widget buildSubscriptionCard({
 }) {
   final ActivateAccountController controller =
       Get.put(ActivateAccountController());
-  final MenuWidgetController menuC = Get.find();
+  // final MenuWidgetController menuC = Get.find();
   final MidtransController midtransC = Get.find();
   return Obx(() {
     // Mengubah warna jika dipilih

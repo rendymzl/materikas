@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_windows/webview_windows.dart';
 
 import '../../../../presentation/global_widget/menu_widget/menu_controller.dart';
@@ -13,10 +12,13 @@ import '../account_service.dart';
 import '../auth_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+import '../billing_service.dart';
+
 class MidtransController extends GetxController {
   final AuthService authC = Get.find();
   final OtpController otpC = Get.put(OtpController());
   final AccountService accountSecvice = Get.find();
+  final BillingService billingService = Get.find();
   final MenuWidgetController menuC = Get.find();
   final String _serverKey = dotenv.env['MIDTRANS_SERVER']!;
   final String _clientKey = dotenv.env['MIDTRANS_CLIENT']!;
@@ -24,7 +26,9 @@ class MidtransController extends GetxController {
   var paymentStatus = ''.obs;
   // var selectedPackage = 'flexible'.obs;
   var snap = ''.obs;
-  var totalAmount = 10000.obs;
+  late final totalAmount = billingService.billAmount.value;
+  late final billId = billingService.billId.value;
+
   Timer? timer;
   final webviewController = WebviewController().obs;
   // late final box = Hive.openBox('midtrans').obs;
@@ -220,6 +224,9 @@ class MidtransController extends GetxController {
         case 'deny':
           paymentStatus.value = 'Pembayaran ditolak.';
           break;
+        case 'expire':
+          paymentStatus.value = 'Pembayaran kadaluarsa.';
+          break;
         case 'cancel':
           paymentStatus.value = 'Pembayaran dibatalkan.';
           break;
@@ -249,9 +256,9 @@ class MidtransController extends GetxController {
         // Mengambil Snap Token
         snapToken = await getMidtransSnapToken(
           orderId: orderId,
-          packageName: selectedCard,
-          grossAmount: selectedCard is double
-              ? ((price[selectedCard]! as double) * totalAmount.value).toInt()
+          packageName: selectedCard == 'flexible' ? billId : selectedCard,
+          grossAmount: selectedCard == 'flexible'
+              ? (totalAmount).toInt()
               : price[selectedCard]! as int,
           customerName: authC.account.value!.name,
           customerPhone: authC.store.value!.phone.value,
@@ -298,7 +305,7 @@ class MidtransController extends GetxController {
       // } else {
       //   throw 'Could not launch $snapUrl';
       // }
-      snap.value = 'https://app.midtrans.com/snap/v2/vtweb/$snapToken';
+      snap.value = snapUrl;
     } catch (e) {
       paymentStatus.value = 'Pembayaran gagal: $e';
     } finally {
@@ -310,11 +317,13 @@ class MidtransController extends GetxController {
     stopTimer();
     String? package = await authC.box.get('package');
     // var updatedAccount = AccountModel.fromJson(authC.account.value!.toJson());
-    menuC.expired.value = false;
+    billingService.isExpired.value = false;
 
     authC.account.value!.accountType = package!;
     authC.account.value!.isActive = true;
-    if (package == 'subscription') {
+    if (package == 'flexible') {
+      await billingService.payBill();
+    } else if (package == 'subscription') {
       if (authC.account.value!.endDate!.isBefore(DateTime.now())) {
         authC.account.value!.startDate = DateTime.now();
         authC.account.value!.endDate =

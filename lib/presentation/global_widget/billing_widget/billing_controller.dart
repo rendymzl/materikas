@@ -1,60 +1,100 @@
+import 'dart:convert';
+import 'dart:typed_data';
+import 'dart:ui';
+
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:get/get.dart';
 
 import '../../../infrastructure/dal/services/auth_service.dart';
+import '../../../infrastructure/dal/services/billing_service.dart';
 import '../../../infrastructure/dal/services/invoice_service.dart';
-import '../../../infrastructure/models/billing_model.dart';
 
 class BillingController extends GetxController {
   late final AuthService authService = Get.find();
-  final InvoiceService invoiceService = Get.find();
+  late final BillingService billingService = Get.find();
+  late final InvoiceService invoiceService = Get.find();
 
-  // var totalInvoices = 0.obs;
-  var paymentStatus = "Belum Dibayar".obs;
+  final path = ''.obs;
+  final GlobalKey _globalKey = GlobalKey();
 
-  // @override
-  // void onInit() {
-  //   super.onInit();
-  //   loadInvoices();
-  // }
+  @override
+  void onInit() {
+    super.onInit();
+    // buildHiddenReceipt();
 
-  // void loadInvoices() {
-  //   // Contoh data dummy
-  //   invoices.value = [
-  //     {
-  //       'invoiceNumber': 'INV-001',
-  //       'date': '01-10-2024',
-  //       'totalTransaction': 500000,
-  //       'invoiceFee': 1000,
-  //       'status': 'Valid'
-  //     },
-  //     {
-  //       'invoiceNumber': 'INV-002',
-  //       'date': '02-10-2024',
-  //       'totalTransaction': 700000,
-  //       'invoiceFee': 1000,
-  //       'status': 'Valid'
-  //     },
-  //     {
-  //       'invoiceNumber': 'INV-003',
-  //       'date': '03-10-2024',
-  //       'totalTransaction': 200000,
-  //       'invoiceFee': 1000,
-  //       'status': 'Void'
-  //     },
-  //   ];
-  //   calculateTotalFee();
-  // }
+    // Pastikan widget dirender sebelum mencoba akses
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      Future.delayed(Duration(seconds: 1), () async {
+        path.value = await generateAndSaveReceiptInBackground();
+      });
+    });
+  }
 
-  // void calculateTotalFee() {
-  //   int total = 0;
-  //   int count = 0;
-  //   for (var invoice in invoices) {
-  //     if (invoice['status'] == 'Valid') {
-  //       total += invoice['invoiceFee'];
-  //       count++;
-  //     }
-  //   }
-  //   totalFee.value = total;
-  //   totalInvoices.value = count;
-  // }
+  Future<String> generateAndSaveReceiptInBackground() async {
+    try {
+      // Tunggu hingga widget sepenuhnya dirender
+      RenderRepaintBoundary? boundary = _globalKey.currentContext
+          ?.findRenderObject() as RenderRepaintBoundary?;
+
+      if (boundary == null) {
+        print('Boundary is null, widget belum dirender.');
+        return '';
+      }
+
+      var image = await boundary.toImage(pixelRatio: 3.0);
+      ByteData? byteData = await image.toByteData(format: ImageByteFormat.png);
+      Uint8List pngBytes = byteData!.buffer.asUint8List();
+
+      return base64Encode(pngBytes);
+    } catch (e) {
+      print('Error: $e');
+      return '';
+    }
+  }
+
+  // Widget struk pembayaran yang tidak akan ditampilkan (Offstage)
+  Widget buildHiddenReceipt() {
+    return RepaintBoundary(
+      key: _globalKey,
+      child: Container(
+        padding: const EdgeInsets.all(16.0),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Struk Pembayaran',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 10),
+            _buildReceiptDetail('Nomor Invoice', 'INV-001'),
+            _buildReceiptDetail('Tanggal', '16-10-2024'),
+            _buildReceiptDetail('Nama Pelanggan', 'Rendy Wardana'),
+            _buildReceiptDetail('Total Pembayaran', 'Rp 500.000'),
+            _buildReceiptDetail('Metode Pembayaran', 'Transfer Bank'),
+            SizedBox(height: 10),
+            Center(
+                child: Text('Terima Kasih!', style: TextStyle(fontSize: 16))),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReceiptDetail(String title, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
+          Text(value),
+        ],
+      ),
+    );
+  }
 }

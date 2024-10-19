@@ -1,27 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../infrastructure/dal/services/billing_service.dart';
 import '../../../infrastructure/utils/display_format.dart';
 import '../popup_page_widget.dart';
 import 'billing_controller.dart';
 
 void billingHistory() async {
+  final BillingService billingService = Get.find();
+
+  billingService.onInit();
+  print('awdwadwadwad ${billingService.isExpired.value}');
   showPopupPageWidget(
-      title: '',
+      title: 'Riwayat Pembayaran',
       height: MediaQuery.of(Get.context!).size.height * (0.8),
-      width: MediaQuery.of(Get.context!).size.width * (0.90),
+      width: MediaQuery.of(Get.context!).size.width * (0.75),
       content: SizedBox(
         height: MediaQuery.of(Get.context!).size.height * (0.6),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-            // Header
-            Text(
-              'Riwayat Pembayaran',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 20),
-
-            // Tabel Riwayat Pembayaran
             _buildPaymentHistoryTable(),
           ],
         ),
@@ -37,14 +34,15 @@ Widget _buildPaymentHistoryTable() {
   final BillingController billingController = Get.find();
   return Obx(() => Expanded(
         child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
+          scrollDirection: Axis.vertical,
           child: DataTable(
             columns: [
               DataColumn(label: Text('No')),
               DataColumn(label: Text('Tagihan')),
               DataColumn(label: Text('Nomor Invoice')),
               DataColumn(label: Text('Tanggal Pembayaran')),
-              DataColumn(label: Text('Jumlah Dibayar')),
+              DataColumn(label: Text('Total Tagihan')),
+              // DataColumn(label: Text('Jumlah Dibayar')),
               DataColumn(label: Text('Status Pembayaran')),
             ],
             rows: List.generate(
@@ -56,10 +54,26 @@ Widget _buildPaymentHistoryTable() {
                 DataCell(Text('${index + 1}')),
                 DataCell(Text(payment.billingName)),
                 DataCell(Text(payment.billingNumber)),
-                DataCell(Text(
-                    payment.isPaid ? date.format(payment.paymentDate!) : '')),
-                DataCell(Text('Rp ${currency.format(payment.amountPaid)}')),
-                DataCell(Text(payment.isPaid ? 'Dibayar' : 'Belum Dibayar')),
+                DataCell(Text(payment.isPaid
+                    ? date.format(payment.paymentDate ?? DateTime.now())
+                    : '-')),
+                // DataCell(Text(
+                //     'Rp ${currency.format(billingController.billingService.billAmount.value)}')),
+                DataCell(Text('Rp ${currency.format(payment.amountBill)}')),
+                DataCell(
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                    decoration: BoxDecoration(
+                      color: payment.isPaid ? Colors.green : Colors.red,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      payment.isPaid ? 'Dibayar' : 'Belum Dibayar',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ),
               ]);
             }),
           ),

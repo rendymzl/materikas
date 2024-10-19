@@ -6,6 +6,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   app_links
   auto_updater_windows
   connectivity_plus
+  permission_handler_windows
   powersync_flutter_libs
   screen_retriever
   sqlite3_flutter_libs

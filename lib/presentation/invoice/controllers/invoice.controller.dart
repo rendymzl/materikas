@@ -321,6 +321,12 @@ class InvoiceController extends GetxController {
 
   destroyHandle(InvoiceModel invoice) async {
     invoice.removeAt.value = DateTime.now();
+
+    if (DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day)
+        .isAtSameMomentAs(DateTime(invoice.initAt.value!.year,
+            invoice.initAt.value!.month, invoice.initAt.value!.day))) {
+      invoice.appBillAmount.value = 0;
+    }
     await invoiceService.update(invoice);
   }
 }

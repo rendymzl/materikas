@@ -327,15 +327,11 @@ class InvoiceModel {
     }
 
     initAt = Rx<DateTime?>(
-      json['init_at'] != null
-          ? DateTime.parse(json['init_at']).toLocal()
-          : null,
+      json['init_at'] != null ? DateTime.parse(json['init_at']) : null,
     );
 
     removeAt = Rx<DateTime?>(
-      json['remove_at'] != null
-          ? DateTime.parse(json['remove_at']).toLocal()
-          : null,
+      json['remove_at'] != null ? DateTime.parse(json['remove_at']) : null,
     );
   }
 

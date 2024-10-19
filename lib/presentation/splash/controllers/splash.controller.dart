@@ -5,9 +5,11 @@ import '../../../infrastructure/dal/database/powersync.dart';
 import '../../../infrastructure/dal/database/sync_status.dart';
 import '../../../infrastructure/dal/services/account_service.dart';
 import '../../../infrastructure/dal/services/auth_service.dart';
+import '../../../infrastructure/dal/services/billing_service.dart';
 import '../../../infrastructure/dal/services/customer_service.dart';
 import '../../../infrastructure/dal/services/invoice_sales_service.dart';
 import '../../../infrastructure/dal/services/invoice_service.dart';
+import '../../../infrastructure/dal/services/midtrans/midtrans_controller.dart';
 import '../../../infrastructure/dal/services/operating_cost_service.dart';
 import '../../../infrastructure/dal/services/product_service.dart';
 import '../../../infrastructure/dal/services/purchase_order_service.dart';
@@ -59,9 +61,10 @@ class SplashController extends GetxController {
       authService.loadingStatus.value = 'menghubungkan toko';
       await authService.getStore();
       authService.loadingStatus.value = 'mengambil data toko';
-      await authService.getCashier();
-      var storeC = Get.put(StoreService());
+      authService.getCashier();
+      Get.put(StoreService());
       var accountService = Get.put(AccountService());
+
       print('SelectUserController INIT');
       print('SelectUserController getAccount');
       account = authService.account.value;
@@ -78,54 +81,16 @@ class SplashController extends GetxController {
         authService.loadingStatus.value = 'selesai';
         isConnected.value = authService.connected.value;
 
-        DateTime thisMonth =
-            DateTime(DateTime.now().year, DateTime.now().month, 1);
-        DateTime prevMonth = thisMonth.subtract(Duration(days: 1));
+        // DateTime thisMonth =
+        //     DateTime(DateTime.now().year, DateTime.now().month, 1);
+        // DateTime prevMonth = thisMonth.subtract(Duration(days: 1));
 
-        authService.prevMonthAppBill.value =
-            await _invoiceService.getAppBill(thisMonth);
-        authService.thisMonthAppBill.value =
-            await _invoiceService.getAppBill(prevMonth);
+        // authService.prevMonthAppBill.value =
+        //     await _invoiceService.getAppBill(thisMonth);
+        // authService.thisMonthAppBill.value =
+        //     await _invoiceService.getAppBill(prevMonth);
 
-        if (authService.account.value!.accountType == 'flexible') {
-          if (authService.store.value!.billings == null) {
-            authService.store.value!.billings = <Billing>[].obs;
-          }
-          var prevBilling =
-              authService.store.value!.billings!.firstWhereOrNull((billing) {
-            return billing.billingName == getMonthName(prevMonth.month);
-          });
-
-          var currentBilling =
-              authService.store.value!.billings!.firstWhereOrNull((billing) {
-            return billing.billingName == getMonthName(thisMonth.month);
-          });
-
-          if (prevBilling == null) {
-            var billing = Billing(
-              billingName: getMonthName(prevMonth.month),
-              billingNumber: _invoiceService.generateInvoiceNumber(prevMonth),
-              amountPaid: authService.prevMonthAppBill.value,
-              isPaid: false,
-            );
-            authService.store.value!.billings!.add(billing);
-            print(
-                'authService.store.value!.billings ${authService.store.value!.billings}');
-            // print('currentBilling $currentBilling');
-            await storeC.update(authService.store.value!);
-          }
-
-          if (currentBilling == null) {
-            var billing = Billing(
-              billingName: getMonthName(thisMonth.month),
-              billingNumber: _invoiceService.generateInvoiceNumber(thisMonth),
-              amountPaid: authService.thisMonthAppBill.value,
-              isPaid: false,
-            );
-            authService.store.value!.billings!.add(billing);
-            await storeC.update(authService.store.value!);
-          }
-        }
+        Get.put(BillingService());
         Get.offAllNamed(Routes.SELECT_USER);
       } else {
         Get.put(DetailStoreController());

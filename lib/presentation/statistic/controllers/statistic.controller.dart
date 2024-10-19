@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 
 import '../../../infrastructure/dal/services/auth_service.dart';
+import '../../../infrastructure/dal/services/billing_service.dart';
 import '../../../infrastructure/dal/services/invoice_sales_service.dart';
 import '../../../infrastructure/dal/services/invoice_service.dart';
 import '../../../infrastructure/dal/services/operating_cost_service.dart';
@@ -13,6 +14,7 @@ import '../../../infrastructure/models/operating_cost_model.dart';
 
 class StatisticController extends GetxController {
   late final AuthService authService = Get.find();
+  late final BillingService billingService = Get.find();
   final InvoiceService invoiceService = Get.find();
   final InvoiceSalesService _invoiceSalesService = Get.find();
   final OperatingCostService _operatingCostService = Get.find();
@@ -97,13 +99,15 @@ class StatisticController extends GetxController {
   void onInit() async {
     print('--salesInvoices.length ${_invoiceSalesService.invoices.length}');
     super.onInit();
-    DateTime thisMonth = DateTime(DateTime.now().year, DateTime.now().month, 1);
-    DateTime prevMonth = thisMonth.subtract(Duration(days: 1));
+    billingService.getBillAmount();
+    // invoiceService.getBillAmount(billingService.selectedMonth.value);
+    // DateTime thisMonth = DateTime(DateTime.now().year, DateTime.now().month, 1);
+    // DateTime prevMonth = thisMonth.subtract(Duration(days: 1));
 
-    authService.prevMonthAppBill.value =
-        await invoiceService.getAppBill(prevMonth);
-    authService.thisMonthAppBill.value =
-        await invoiceService.getAppBill(thisMonth);
+    // authService.prevMonthAppBill.value =
+    //     await invoiceService.getAppBill(prevMonth);
+    // authService.thisMonthAppBill.value =
+    //     await invoiceService.getAppBill(thisMonth);
 
     everAll([
       operatingCosts,

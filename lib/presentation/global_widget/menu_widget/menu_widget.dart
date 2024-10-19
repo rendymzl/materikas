@@ -6,6 +6,7 @@ import '../../../infrastructure/models/menu_model.dart';
 import '../../../infrastructure/utils/display_format.dart';
 import '../activate_popup/activate_account_popup.dart';
 import '../app_dialog_widget.dart';
+import '../billing_widget/billing_dashboard.dart';
 import 'menu_controller.dart';
 
 class MenuWidget extends GetView<MenuWidgetController> {
@@ -85,11 +86,17 @@ class MenuWidget extends GetView<MenuWidgetController> {
                       Obx(
                         () {
                           var data = controller.menuData;
-                          if (controller.expired.value) {
-                            Future.delayed(const Duration(seconds: 2), () {
-                              activateAccountPopup(expired: true);
-                            });
-                          }
+                          Future.delayed(const Duration(seconds: 2), () {
+                            controller.billingService.onInit();
+                            print(
+                                'controller.expired ${controller.billingService.isExpired.value}');
+                            if (controller.billingService.isExpired.value) {
+                              billingDashboard(
+                                  expired: controller
+                                      .billingService.isExpired.value);
+                            }
+                          });
+
                           return ListView.separated(
                             separatorBuilder: (context, index) =>
                                 const SizedBox(width: 8),

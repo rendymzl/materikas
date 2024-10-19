@@ -4,14 +4,14 @@ class Billing {
   String billingName;
   DateTime? paymentDate;
   String billingNumber;
-  double amountPaid;
+  double amountBill;
   bool isPaid;
 
   Billing({
     required this.billingName,
     this.paymentDate,
     required this.billingNumber,
-    required this.amountPaid,
+    required this.amountBill,
     required this.isPaid,
   });
 
@@ -22,7 +22,7 @@ class Billing {
           ? DateTime.parse(json['payment_date']).toLocal()
           : null,
       billingNumber: json['billing_number'],
-      amountPaid: json['amount_paid'],
+      amountBill: json['amount_bill'],
       isPaid: json['is_paid'],
     );
   }
@@ -34,7 +34,7 @@ class Billing {
           ? DateTime.parse(row['payment_date']).toLocal()
           : null,
       billingNumber: row['billing_number'],
-      amountPaid: row['amount_paid'],
+      amountBill: row['amount_bill'],
       isPaid: row['is_paid'],
     );
   }
@@ -44,7 +44,7 @@ class Billing {
     data['billing_name'] = billingName;
     data['payment_date'] = paymentDate?.toIso8601String();
     data['billing_number'] = billingNumber;
-    data['amount_paid'] = amountPaid;
+    data['amount_bill'] = amountBill;
     data['is_paid'] = isPaid;
     return data;
   }

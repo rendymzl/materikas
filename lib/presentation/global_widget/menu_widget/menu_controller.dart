@@ -6,6 +6,7 @@ import 'package:hive/hive.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../infrastructure/dal/services/auth_service.dart';
+import '../../../infrastructure/dal/services/billing_service.dart';
 import '../../../infrastructure/models/account_model.dart';
 import '../../../infrastructure/models/menu_model.dart';
 import '../../../infrastructure/navigation/routes.dart';
@@ -13,7 +14,8 @@ import '../../../infrastructure/utils/display_format.dart';
 import 'menu_data.dart';
 
 class MenuWidgetController extends GetxController {
-  final AuthService authService = Get.find<AuthService>();
+  final AuthService authService = Get.find();
+  final BillingService billingService = Get.find();
   SupabaseClient supabase = Supabase.instance.client;
 
   // final isConnected = true.obs;
@@ -24,29 +26,38 @@ class MenuWidgetController extends GetxController {
   // final selectedIndex = 0.obs;
   // final selectedUser = ''.obs;
   final menuData = <MenuModel>[].obs;
-  final expired = false.obs;
+  // late final expired = billingService.isExpired.value;
 
   @override
   void onInit() async {
     debugPrint('MenuWidgetController INIT');
     account.value = authService.account.value;
-    countdown = CountdownTimer(
-      endTime: authService.account.value?.endDate?.millisecondsSinceEpoch ??
-          0, // Cek null sebelum mengakses endDate
-      widgetBuilder: (_, CurrentRemainingTime? time) {
-        // Pastikan 'time' nullable
-        if (time == null) {
-          expired.value = true;
-          return const Text('Masa percobaan telah berakhir!');
-        }
-        // Gunakan nilai default jika null
-        return Text(
-          '${time.days ?? 0} Hari, ${time.hours ?? 0} : ${time.min ?? 0} : ${time.sec ?? 0}',
-          style:
-              const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        );
-      },
-    );
+    // ever(billingService.isExpired, (_) {
+    //   billingService.isExpired.value =
+    //       !billingService.isLastMonthBillPaid.value &&
+    //           DateTime.now().isAfter(DateTime(
+    //               billingService.thisMonth.value.year,
+    //               billingService.thisMonth.value.month,
+    //               10));
+    //   print('awdwadwadwad ${billingService.isExpired.value}');
+    // });
+    // countdown = CountdownTimer(
+    //   endTime: authService.account.value?.endDate?.millisecondsSinceEpoch ??
+    //       0, // Cek null sebelum mengakses endDate
+    //   widgetBuilder: (_, CurrentRemainingTime? time) {
+    //     // Pastikan 'time' nullable
+    //     if (time == null) {
+    //       expired.value = true;
+    //       return const Text('Masa percobaan telah berakhir!');
+    //     }
+    //     // Gunakan nilai default jika null
+    //     return Text(
+    //       '${time.days ?? 0} Hari, ${time.hours ?? 0} : ${time.min ?? 0} : ${time.sec ?? 0}',
+    //       style:
+    //           const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+    //     );
+    //   },
+    // );
 
     // isConnected.value = authService.connected.value;
     getMenu();

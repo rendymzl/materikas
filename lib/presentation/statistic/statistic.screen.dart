@@ -345,7 +345,7 @@ class SectionMenuBar extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
-                        'Tagihan ${getMonthName(DateTime.now().month)}',
+                        'Tagihan ${getMonthName(controller.billingService.selectedMonth.value.month)}',
                         style: context.textTheme.titleLarge!
                             .copyWith(color: Colors.white),
                       ),
@@ -366,7 +366,7 @@ class SectionMenuBar extends StatelessWidget {
                           ],
                         ),
                         child: Text(
-                          'Rp${currency.format(controller.authService.thisMonthAppBill.value)}',
+                          'Rp${currency.format(controller.billingService.billAmount.value)}',
                           style: context.textTheme.titleLarge!.copyWith(
                               color: Theme.of(context).colorScheme.primary),
                         ),
