@@ -8,7 +8,6 @@ import 'package:materikas/infrastructure/models/user_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../domain/core/interfaces/auth_repository.dart';
-// import '../../../presentation/global_widget/menu_widget/menu_controller.dart';
 import '../../models/account_model.dart';
 import '../../models/store_model.dart';
 import '../../navigation/routes.dart';
@@ -19,7 +18,6 @@ class AuthService extends GetxService implements AuthRepository {
 
   late StreamSubscription<List<ConnectivityResult>> connectivitySubs;
   final connected = true.obs;
-  final loadingStatus = 'Menghubungkan...'.obs;
   RxBool hasSynced = false.obs;
 
   late final account = Rx<AccountModel?>(null);
@@ -27,18 +25,11 @@ class AuthService extends GetxService implements AuthRepository {
   late final cashiers = RxList<Cashier>(<Cashier>[]);
   late final selectedUser = Rx<Cashier?>(null);
   final selectedIndexMenu = 0.obs;
-  // final prevMonthAppBill = 0.0.obs;
-  // final thisMonthAppBill = 0.0.obs;
-  // late final selectedUser = ''.obs;
 
   var isLogin = false;
   var isOwner = false.obs;
 
   late final Box<dynamic> box;
-
-  void checkStats() {
-    loadingStatus.value = '${db.currentStatus}';
-  }
 
   Future<bool> checkAccess(String code) async {
     final accessList = selectedUser.value?.accessList ?? [];
@@ -79,32 +70,6 @@ class AuthService extends GetxService implements AuthRepository {
           title: 'Error',
           content: const Text('Email atau password salah'),
         );
-      } else if (e.message.contains('Email not confirmed')) {
-        // Get.defaultDialog(
-        //   title: 'Error',
-        //   content: Column(
-        //     children: [
-        //       const Text('Kode OTP telah dikirim ke WhatsApp Anda'),
-        //       const SizedBox(height: 10),
-        //       Obx(() => ElevatedButton(
-        //             onPressed: isResendDisabled.value
-        //                 ? null // Disable jika countdown sedang berjalan
-        //                 : () async {
-        //                     await sendOtp('6281802127920');
-        //                   },
-        //             style: ElevatedButton.styleFrom(
-        //               padding: const EdgeInsets.symmetric(
-        //                   horizontal: 16, vertical: 8),
-        //             ),
-        //             child: Text(
-        //               isResendDisabled.value
-        //                   ? 'Kirim Ulang ($countdown)' // Tampilkan countdown
-        //                   : 'Kirim Ulang Email Konfirmasi',
-        //             ),
-        //           )),
-        //     ],
-        //   ),
-        // );
       } else {
         Get.defaultDialog(
           title: 'Error',
@@ -121,10 +86,9 @@ class AuthService extends GetxService implements AuthRepository {
         await Future.delayed(const Duration(seconds: 2));
         print(db.currentStatus);
         print('Menunggu koneksi, ${db.currentStatus.lastSyncedAt}');
-        loadingStatus.value = 'Menunggu koneksi ${db.currentStatus.anyError}';
+
         if (db.currentStatus.lastSyncedAt == null) {
           print('Mencoba koneksi ulang, ${db.currentStatus.downloadError}');
-          loadingStatus.value = 'Mencoba koneksi ulang, ${db.currentStatus}';
         }
       }
     }
@@ -142,14 +106,12 @@ class AuthService extends GetxService implements AuthRepository {
         await Future.delayed(const Duration(seconds: 2));
         print(db.currentStatus);
         print('Menunggu koneksi, ${db.currentStatus.lastSyncedAt}');
-        loadingStatus.value = 'Menunggu koneksi ${db.currentStatus.anyError}';
         if (db.currentStatus.lastSyncedAt == null) {
           print('Mencoba koneksi ulang, ${db.currentStatus.downloadError}');
-          loadingStatus.value = 'Mencoba koneksi ulang, ${db.currentStatus}';
         }
       }
     }
-    // await Future.delayed(const Duration(seconds: 10));
+
     print('MENGAMBIL DATA STORE : ${supabaseClient.auth.currentUser!.id}');
     final row = await db
         .get('SELECT * FROM stores WHERE id = ?', [account.value!.storeId]);
@@ -159,8 +121,6 @@ class AuthService extends GetxService implements AuthRepository {
 
   @override
   RxList<Cashier> getCashier() {
-    loadingStatus.value =
-        'Mengambil data Toko, ${db.currentStatus.lastSyncedAt}';
     if (account.value!.users.isNotEmpty) {
       print('account.value!.users ${account.value!.users.length}');
       cashiers.assignAll(

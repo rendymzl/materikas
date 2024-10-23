@@ -1,14 +1,14 @@
 import 'dart:convert';
-import 'dart:ffi';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:materikas/infrastructure/models/payment_model.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 
 import '../../../domain/core/interfaces/invoice_repository.dart';
 import '../../models/invoice_model/invoice_model.dart';
+import '../../models/payment_model.dart';
 import '../database/powersync.dart';
 
 class InvoiceService extends GetxService implements InvoiceRepository {
@@ -17,7 +17,7 @@ class InvoiceService extends GetxService implements InvoiceRepository {
   var debtInv = <InvoiceModel>[].obs;
   var filteredPaidInv = <InvoiceModel>[].obs;
   var filteredDebtInv = <InvoiceModel>[].obs;
-  var monthlyInvoice = <InvoiceModel>[].obs;
+  // var monthlyInvoice = <InvoiceModel>[].obs;
   var displayedInvoices = <InvoiceModel>[].obs;
 
   // var CashPayment = <InvoiceModel>[].obs;
@@ -33,38 +33,30 @@ class InvoiceService extends GetxService implements InvoiceRepository {
   @override
   Future<void> subscribe(String storeId) async {
     //! paid invoice
-    var streamPaidInv = db.watch('''
-      SELECT * FROM invoices WHERE store_id = ? AND is_debt_paid = true AND remove_at IS NULL ORDER BY created_at DESC LIMIT 100
-      ''', parameters: [
-      storeId
-    ]).map((data) => data.map((json) => InvoiceModel.fromJson(json)).toList());
+    stream = db.watch('''
+      SELECT * 
+      FROM invoices 
+      WHERE remove_at IS NULL AND is_debt_paid = 1
+      ORDER BY created_at DESC
+      LIMIT 200
+      ''').map((data) => data.map((json) => InvoiceModel.fromJson(json)).toList());
 
-    streamPaidInv.listen((datas) {
-      print('paidInv.length: ${datas.length}');
-      paidInv.clear();
+    stream.listen((datas) {
+      print('object');
       paidInv.value = datas;
-      paidInv.sort((a, b) =>
-          DateTime.parse(b.createdAt.value!.toIso8601String())
-              .compareTo(DateTime.parse(a.createdAt.value!.toIso8601String())));
-      changeCount.value++;
     });
 
     //! debt invoice
-    var streamDebtInv = db.watch('''
-      SELECT * FROM invoices WHERE store_id = ? AND is_debt_paid = false AND remove_at IS NULL
-      ''', parameters: [
-      storeId
-    ]).map((data) => data.map((json) => InvoiceModel.fromJson(json)).toList());
+    stream = db.watch('''
+      SELECT * 
+      FROM invoices 
+      WHERE remove_at IS NULL AND is_debt_paid = 0
+      ORDER BY created_at DESC
+      LIMIT 200
+      ''').map((data) => data.map((json) => InvoiceModel.fromJson(json)).toList());
 
-    streamDebtInv.listen((datas) {
-      print('debtInv.length: ${datas.length}');
-      debtInv.clear();
+    stream.listen((datas) {
       debtInv.value = datas;
-      print('datas: $datas');
-
-      // debtInv.sort((a, b) =>
-      //     DateTime.parse(b.createdAt.value!.toIso8601String())
-      //         .compareTo(DateTime.parse(a.createdAt.value!.toIso8601String())));
     });
   }
 
@@ -87,11 +79,8 @@ class InvoiceService extends GetxService implements InvoiceRepository {
           await searchByPaymentMethod(methodPayment.value, false);
     }
 
-    // Filter berdasarkan pencarian (misal mencari berdasarkan nama produk)
     if (searchQuery.value.isNotEmpty) {
       if (searchDateQuery.value != null || methodPayment.value.isNotEmpty) {
-        // List<InvoiceModel> paid;
-        // List<InvoiceModel> debt;
         if (searchDateQuery.value != null) {
           var paid = paidInvResult
               .where((invoice) =>
@@ -148,7 +137,6 @@ class InvoiceService extends GetxService implements InvoiceRepository {
       }
     }
 
-    // Update produk yang sudah difilter
     filteredPaidInv.value = paidInvResult
       ..sort((a, b) => DateTime.parse(b.createdAt.value!.toIso8601String())
           .compareTo(DateTime.parse(a.createdAt.value!.toIso8601String())));
@@ -175,70 +163,61 @@ class InvoiceService extends GetxService implements InvoiceRepository {
 
   Future<List<InvoiceModel>> searchByPaymentMethod(
       String searchTerm, bool paid) async {
-    String query = '''
+    if (paid) {
+      String query = '''
+        SELECT * FROM invoices WHERE
+        payments LIKE ? AND
+        is_debt_paid = ?
+        AND remove_at IS NULL
+        LIMIT 200
+        ''';
+      List<Map<String, dynamic>> results = await db.getAll(query, [
+        '%${searchTerm.toLowerCase()}%',
+        paid,
+      ]);
+      return results.map((e) => InvoiceModel.fromJson(e)).toList();
+    } else {
+      String query = '''
         SELECT * FROM invoices WHERE
         payments LIKE ? AND
         is_debt_paid = ?
         AND remove_at IS NULL
         ''';
-    List<Map<String, dynamic>> results = await db.getAll(query, [
-      '%${searchTerm.toLowerCase()}%',
-      paid,
-    ]);
-    return results.map((e) => InvoiceModel.fromJson(e)).toList();
+      List<Map<String, dynamic>> results = await db.getAll(query, [
+        '%${searchTerm.toLowerCase()}%',
+        paid,
+      ]);
+      return results.map((e) => InvoiceModel.fromJson(e)).toList();
+    }
   }
 
   @override
   Future<List<InvoiceModel>> getByCreatedDate(PickerDateRange pickerDateRange,
       {bool? paid}) async {
+    String query = '''
+      SELECT * FROM invoices WHERE
+      created_at BETWEEN ? AND ?
+      AND remove_at IS NULL
+      ''';
+    List<Map<String, dynamic>> results = await db.getAll(query, [
+      DateFormat('yyyy-MM-dd').format(pickerDateRange.startDate!),
+      DateFormat('yyyy-MM-dd').format(pickerDateRange.endDate!),
+    ]);
     if (paid != null) {
-      String query = '''
-      SELECT * FROM invoices WHERE
-      is_debt_paid = ? AND
-      remove_at IS NULL AND
-      created_at BETWEEN ? AND ?
-      ''';
-      List<Map<String, dynamic>> results = await db.getAll(query, [
-        paid,
-        DateFormat('yyyy-MM-dd').format(pickerDateRange.startDate!),
-        DateFormat('yyyy-MM-dd').format(pickerDateRange.endDate!),
-      ]);
-      var invoiceList = results.map((e) => InvoiceModel.fromJson(e)).toList();
-      return invoiceList;
-    } else {
-      String query = '''
-      SELECT * FROM invoices WHERE
-      remove_at IS NULL AND
-      created_at BETWEEN ? AND ?
-      ''';
-      List<Map<String, dynamic>> results = await db.getAll(query, [
-        DateFormat('yyyy-MM-dd').format(pickerDateRange.startDate!),
-        DateFormat('yyyy-MM-dd').format(pickerDateRange.endDate!),
-      ]);
-      var invoiceList = results.map((e) => InvoiceModel.fromJson(e)).toList();
-      return invoiceList;
+      results = results.where((element) {
+        // print('results ${element}');
+        return element['is_debt_paid'] == (paid ? 1 : 0);
+      }).toList();
+      print('results ${results.length}');
     }
+    var invoiceList = results.map((e) => InvoiceModel.fromJson(e)).toList();
+    return invoiceList;
   }
 
-  // @override
-  Future<double> getBillAmount(DateTime date) async {
-    // DateTime year =
+  Future<List<InvoiceModel>> getBillInvoice(DateTime date) async {
     PickerDateRange pickerDateRange = PickerDateRange(
         DateTime(date.year, date.month, 1),
         DateTime(date.year, date.month + 1, 1));
-    // PickerDateRange pickerDateRangePrevMonth = PickerDateRange(
-    //     DateTime(DateTime.now().year, DateTime.now().month - 1, 1),
-    //     DateTime(DateTime.now().year, DateTime.now().month, 1));
-
-    // var lastPaid = DateTime(DateTime.now().year, DateTime.now().month - 1);
-    // print(lastPaid);
-
-    // bool isPrevMonthPaid = lastPaid.isAtSameMomentAs(DateTime(
-    //     DateTime.now().year,
-    //     DateTime.now().month - 1)); //lastpaid dalam bulan lalu
-
-    // var pickerDateRange =
-    //     isPrevMonthPaid ? pickerDateRangeThisMonth : pickerDateRangePrevMonth;
 
     String query = '''
       SELECT * FROM invoices WHERE
@@ -248,28 +227,8 @@ class InvoiceService extends GetxService implements InvoiceRepository {
       DateFormat('yyyy-MM-dd').format(pickerDateRange.startDate!),
       DateFormat('yyyy-MM-dd').format(pickerDateRange.endDate!),
     ]);
-    var invoiceList = results.map((e) => InvoiceModel.fromJson(e)).toList();
-
-    monthlyInvoice.assignAll(invoiceList);
-    monthlyInvoice.sort((a, b) => a.initAt.value!.compareTo(b.initAt.value!));
-
-    // var totalAppBill = monthlyInvoice.fold(
-    //     0.0,
-    //     (previousValue, element) =>
-    //         previousValue +
-    //         (element.isAppBillPaid.value
-    //             ? 0
-    //             : (element.totalPurchase +
-    //                 (element.removeProduct.isEmpty
-    //                     ? 0
-    //                     : element.totalRemovedValue))));
-    var totalAppBill = invoiceList.fold(
-        0.0,
-        (previousValue, element) =>
-            previousValue +
-            (element.isAppBillPaid.value ? 0 : element.appBillAmount.value));
-    // return monthlyInvoice.length.toDouble();
-    return totalAppBill;
+    return results.map((e) => InvoiceModel.fromJson(e)).toList()
+      ..sort((a, b) => a.initAt.value!.compareTo(b.initAt.value!));
   }
 
   String generateInvoiceNumber(DateTime date) {
@@ -306,6 +265,24 @@ class InvoiceService extends GetxService implements InvoiceRepository {
     var invoiceList = results.map((e) => InvoiceModel.fromJson(e)).toList();
     print('getByPaymentDate $invoiceList');
     return invoiceList;
+  }
+
+  Future<List<PaymentMapModel>> getPaymentByDate(
+      PickerDateRange pickerDateRange) async {
+    String query =
+        'SELECT id, created_at, payments FROM invoices WHERE remove_at IS NULL AND created_at BETWEEN ? AND ?';
+
+    List<Map<String, dynamic>> results = await db.getAll(query, [
+      DateFormat('yyyy-MM-dd').format(pickerDateRange.startDate!),
+      DateFormat('yyyy-MM-dd').format(pickerDateRange.endDate!),
+    ]);
+    return results.map((e) => PaymentMapModel.fromJson(e)).toList();
+  }
+
+  Future<List<PaymentMapModel>> getAllPayment() async {
+    List<Map<String, dynamic>> results = await db.getAll(
+        'SELECT id, created_at, payments FROM invoices WHERE remove_at IS NULL');
+    return results.map((e) => PaymentMapModel.fromJson(e)).toList();
   }
 
   @override
@@ -408,23 +385,35 @@ class InvoiceService extends GetxService implements InvoiceRepository {
       return [
         updatedInvoice.storeId,
         updatedInvoice.invoiceId,
-        updatedInvoice.account.value.toJson(),
+        jsonEncode(updatedInvoice.account.value
+            .toJson()), // Convert Map to JSON string
         updatedInvoice.createdAt.value?.toIso8601String(),
-        updatedInvoice.customer.value?.toJson(),
-        updatedInvoice.purchaseList.value.toJson(),
-        updatedInvoice.returnList.value?.toJson(),
-        updatedInvoice.afterReturnList.value?.toJson(),
+        jsonEncode(updatedInvoice.customer.value
+            ?.toJson()), // Convert Map to JSON string
+        jsonEncode(updatedInvoice.purchaseList.value
+            .toJson()), // Convert Map to JSON string
+        jsonEncode(updatedInvoice.returnList.value
+            ?.toJson()), // Convert Map to JSON string
+        updatedInvoice.afterReturnList.value != null
+            ? jsonEncode(updatedInvoice.afterReturnList.value?.toJson())
+            : null,
         updatedInvoice.priceType.value,
         updatedInvoice.discount.value,
         updatedInvoice.tax.value,
         updatedInvoice.returnFee.value,
-        updatedInvoice.payments.map((e) => e.toJson()).toList(),
-        updatedInvoice.removeProduct.map((e) => e.toJson()).toList(),
+        jsonEncode(updatedInvoice.payments
+            .map((e) => e.toJson())
+            .toList()), // Convert list of Maps to JSON string
+        jsonEncode(updatedInvoice.removeProduct
+            .map((e) => e.toJson())
+            .toList()), // Convert list of Maps to JSON string
         updatedInvoice.debtAmount.value,
         updatedInvoice.appBillAmount.value,
         updatedInvoice.isDebtPaid.value ? 1 : 0,
         updatedInvoice.isAppBillPaid.value ? 1 : 0,
-        updatedInvoice.otherCosts.map((e) => e.toJson()).toList(),
+        jsonEncode(updatedInvoice.otherCosts
+            .map((e) => e.toJson())
+            .toList()), // Convert list of Maps to JSON string
         updatedInvoice.removeAt.value?.toIso8601String(),
         updatedInvoice.id,
       ];

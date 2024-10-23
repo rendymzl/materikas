@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -9,6 +11,7 @@ import '../../../infrastructure/dal/services/auth_service.dart';
 import '../../../infrastructure/dal/services/store_service.dart';
 import '../../../infrastructure/models/invoice_model/cart_item_model.dart';
 import '../../../infrastructure/models/invoice_model/invoice_model.dart';
+import 'generate_receipt_blue.dart';
 import 'invoice_generator.dart';
 import 'print_transport_inv.dart';
 import 'receipt_generator.dart';
@@ -17,8 +20,12 @@ import 'transport_print_generator.dart';
 class PrinterController extends GetxController {
   final AuthService _authService = Get.find<AuthService>();
   final StoreService _storeService = Get.find<StoreService>();
-  var devices = <PrinterDevice>[].obs;
   final printMethod = ['receipt', 'invoice'].obs;
+  var devices = <PrinterDevice>[].obs;
+  final blueDevices = <BluetoothDevice>[].obs;
+  final selectedBlue = Rx<BluetoothDevice?>(null);
+  BlueThermalPrinter bluePrint = BlueThermalPrinter.instance;
+
   final selectedPrintMethod = ''.obs;
   var connected = false.obs;
   final textPromo = TextEditingController();
@@ -35,7 +42,18 @@ class PrinterController extends GetxController {
       setDefaultPrinter();
     });
     super.onInit();
-    await scan(PrinterType.usb);
+    // Check if the device is desktop or android
+    if (Platform.isAndroid) {
+      //! pake print_bluetooth_thermal
+      await getBlue();
+      // await scan(PrinterType.bluetooth, isBle: true);
+    } else if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+      await scan(PrinterType.usb);
+    }
+  }
+
+  Future<void> getBlue() async {
+    blueDevices.value = await bluePrint.getBondedDevices();
   }
 
   void setPrintMethod(String method) async {
@@ -50,7 +68,12 @@ class PrinterController extends GetxController {
     if (name != null && address != null) {
       PrinterDevice selectedPrinter =
           PrinterDevice(name: name, address: address);
-      connect(selectedPrinter, PrinterType.usb);
+      // Check if the device is desktop or android
+      if (Platform.isAndroid) {
+        connect(selectedPrinter, PrinterType.bluetooth, isBle: true);
+      } else if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+        connect(selectedPrinter, PrinterType.usb);
+      }
       debugPrint(name);
       debugPrint(address);
       selectedDeviceIndex.value =
@@ -103,6 +126,15 @@ class PrinterController extends GetxController {
       devices.add(device);
     });
   }
+
+  // Future<void> scanBluetooth(PrinterType type, {bool isBle = false}) async {
+  //   devices.clear();
+  //   PrinterManager.instance
+  //       .discovery(type: type, isBle: isBle)
+  //       .listen((device) {
+  //     devices.add(device);
+  //   });
+  // }
 
   Future<void> connect(PrinterDevice selectedPrinter, PrinterType type,
       {bool reconnect = false, bool isBle = false, String? ipAddress}) async {
@@ -157,54 +189,77 @@ class PrinterController extends GetxController {
     }
   }
 
-  void listenBluetoothState() {
-    PrinterManager.instance.stateBluetooth.listen((status) {
-      debugPrint('Bluetooth status: $status');
-    });
-  }
+  // void listenBluetoothState() {
+  //   PrinterManager.instance.stateBluetooth.listen((status) {
+  //     debugPrint('Bluetooth status: $status');
+  //   });
+  // }
 
   Future<void> printReceipt(InvoiceModel invoice) async {
-    if (!connected.value) {
-      debugPrint("Printer not connected");
-      return;
+    // Check if the device is desktop or android
+    if (Platform.isAndroid) {
+      if ((await bluePrint.isConnected)!) {
+        // Add header
+        await generateReceiptBlue(invoice);
+      }
+    } else if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+      if (connected.value) {
+        final bytes = await generateReceiptBytes(invoice);
+        await sendBytesToPrint(bytes, PrinterType.usb);
+      }
     }
-
-    final bytes = await generateReceiptBytes(invoice);
-    await sendBytesToPrint(bytes,
-        PrinterType.usb); // Sesuaikan dengan jenis printer yang digunakan
   }
 
   Future<void> printInvoice(InvoiceModel invoice) async {
-    if (!connected.value) {
-      debugPrint("Printer not connected");
-      return;
+    // Check if the device is desktop or android
+    if (Platform.isAndroid) {
+      if ((await bluePrint.isConnected)!) {
+        bluePrint.printNewLine();
+        bluePrint.printCustom('tes berhasil', 0, 1);
+        bluePrint.printNewLine();
+        bluePrint.printNewLine();
+      }
+    } else if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+      if (connected.value) {
+        final bytes = await generateInvoiceBytes(invoice);
+        await sendBytesToPrint(bytes, PrinterType.usb);
+      }
     }
-
-    final bytes = await generateInvoiceBytes(invoice);
-    await sendBytesToPrint(bytes,
-        PrinterType.usb); // Sesuaikan dengan jenis printer yang digunakan
   }
 
   Future<void> printTransport(InvoiceModel invoice) async {
-    if (!connected.value) {
-      debugPrint("Printer not connected");
-      return;
+    // Check if the device is desktop or android
+    if (Platform.isAndroid) {
+      if ((await bluePrint.isConnected)!) {
+        bluePrint.printNewLine();
+        bluePrint.printCustom('tes berhasil', 0, 1);
+        bluePrint.printNewLine();
+        bluePrint.printNewLine();
+      }
+      // await sendBytesToPrint(bytes, PrinterType.bluetooth);
+    } else if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+      if (connected.value) {
+        final bytes = await generateTransportBytes(invoice);
+        await sendBytesToPrint(bytes, PrinterType.usb);
+      }
     }
-
-    final bytes = await generateTransportBytes(invoice);
-    await sendBytesToPrint(bytes,
-        PrinterType.usb); // Sesuaikan dengan jenis printer yang digunakan
   }
 
   Future<void> printTransportInv(InvoiceModel invoice) async {
-    if (!connected.value) {
-      debugPrint("Printer not connected");
-      return;
+    // Check if the device is desktop or android
+    if (Platform.isAndroid) {
+      if ((await bluePrint.isConnected)!) {
+        bluePrint.printNewLine();
+        bluePrint.printCustom('tes berhasil', 0, 1);
+        bluePrint.printNewLine();
+        bluePrint.printNewLine();
+      }
+    } else if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+      if (connected.value) {
+        final bytes = await generateTransportInvBytes(invoice);
+        await sendBytesToPrint(bytes, PrinterType.usb);
+      }
     }
-
-    final bytes = await generateTransportInvBytes(invoice);
-    await sendBytesToPrint(bytes,
-        PrinterType.usb); // Sesuaikan dengan jenis printer yang digunakan
   }
 
 //! tes print
@@ -354,7 +409,12 @@ class PrinterController extends GetxController {
     final bytes = await generateTesBytes();
     isPrinting.value = true;
 
-    await sendBytesToPrint(bytes, PrinterType.usb);
+    // Check if the device is desktop or android
+    if (Platform.isAndroid) {
+      await sendBytesToPrint(bytes, PrinterType.bluetooth);
+    } else if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+      await sendBytesToPrint(bytes, PrinterType.usb);
+    }
     isPrinting.value = false;
   }
 }

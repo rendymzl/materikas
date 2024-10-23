@@ -7,6 +7,7 @@ import 'package:webview_windows/webview_windows.dart';
 import '../../../infrastructure/dal/services/auth_service.dart';
 import '../../../infrastructure/dal/services/midtrans/midtrans_controller.dart';
 import '../../../infrastructure/utils/display_format.dart';
+import '../app_dialog_widget.dart';
 import '../menu_widget/menu_controller.dart';
 import '../popup_page_widget.dart';
 import 'activate_account_controller.dart';
@@ -20,7 +21,7 @@ void activateAccountPopup({bool expired = false}) async {
   // await Future.delayed(const Duration(seconds: 2));
   // final box = midtransC.box;
   var orderId = authService.box.get('order_id');
-  // var package = authService.box.get('package');
+  var package = authService.box.get('package');
   // if (package != null) {
   //   midtransC.selectedPackage.value = package;
   // }
@@ -29,7 +30,8 @@ void activateAccountPopup({bool expired = false}) async {
     if (midtransC.paymentStatus.value.toLowerCase().contains('kadaluarsa')) {
       midtransC.cancelPayment();
     } else {
-      midtransC.startTimer(orderId);
+      await midtransC.initiatePayment(package);
+      // midtransC.startTimer(orderId);
     }
   }
   Color getStatusColor(String status) {
@@ -149,8 +151,23 @@ void activateAccountPopup({bool expired = false}) async {
                           (controller.selectedCardType.value != 'flexible')
                               ? () => midtransC.initiatePayment(
                                   controller.selectedCardType.value)
-                              : null,
-                      child: const Text('Bayar'),
+                              : expired
+                                  ? () => AppDialog.show(
+                                        title: 'Konfirmasi',
+                                        content: 'Kembali ke paket Flexible?',
+                                        confirmText: 'ya',
+                                        cancelText: 'batal',
+                                        // confirmColor: Colors.grey[200],
+                                        // cancelColor: Get.theme.primaryColor,
+                                        onConfirm: () async =>
+                                            await controller.backToFlexible(),
+                                        onCancel: () => Get.back(),
+                                      )
+                                  : null,
+                      child: Text((expired &&
+                              controller.selectedCardType.value == 'flexible')
+                          ? 'Pilih paket'
+                          : 'Bayar'),
                     ),
                 ],
               )
@@ -171,16 +188,27 @@ void activateAccountPopup({bool expired = false}) async {
                         foregroundColor: Theme.of(Get.context!).primaryColor,
                       ),
                       onPressed: () {
-                        midtransC.cancelPayment();
+                        midtransC.snap.value = '';
                       },
-                      child: const Text('Batalkan Pesanan'),
+                      child: const Text('Ubah Pilihan Paket'),
                     ),
+                    // test
+                    // ElevatedButton(
+                    //   style: ElevatedButton.styleFrom(
+                    //     backgroundColor: Colors.grey[800],
+                    //     foregroundColor: Theme.of(Get.context!).primaryColor,
+                    //   ),
+                    //   onPressed: () async {
+                    //     await midtransC.onSuccess();
+                    //     // Get.back();
+                    //   },
+                    //   child: const Text('LUNASI TAGIHAN'),
+                    // ),
                   ],
                 ),
               );
       }),
     ],
-    onClose: () => midtransC.stopTimer(),
   );
 }
 

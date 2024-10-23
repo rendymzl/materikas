@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-// import 'package:material_symbols_icons/material_symbols_icons.dart';
-// import '../../infrastructure/dal/database/sync_controller.dart'; // SyncController
-import '../../infrastructure/dal/database/sync_controller.dart.dart';
 import '../../infrastructure/dal/database/sync_status.dart';
-// import '../global_widget/app_dialog_widget.dart';
 import 'controllers/splash.controller.dart';
 
 class SplashScreen extends GetView<SplashController> {
@@ -13,8 +9,6 @@ class SplashScreen extends GetView<SplashController> {
   @override
   Widget build(BuildContext context) {
     controller.init();
-
-    // Inisialisasi SyncController untuk sinkronisasi
 
     return Scaffold(
       appBar: StatusAppBar(title: 'Materikas'),
@@ -33,9 +27,6 @@ class SplashScreen extends GetView<SplashController> {
                 const SizedBox(height: 8),
                 const Text('Akun Terhubung!'),
               ],
-              // const SizedBox(height: 20),
-              // Text(controller
-              //     .loadingStatus.value), // Status loading dari SplashController
             ],
           ),
         ),

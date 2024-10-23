@@ -68,39 +68,50 @@ void paymentBillingPopup() async {
       ),
     ),
     // buttonList: [
-    //   ElevatedButton(
-    //     style: ElevatedButton.styleFrom(
-    //       backgroundColor: Colors.grey[200],
-    //       foregroundColor: Theme.of(Get.context!).primaryColor,
-    //     ),
-    //     onPressed: () {
-    //       midtransC.cancelPayment();
-    //       Get.back();
-    //     },
-    //     child: const Text('Batalkan Pesanan'),
+    // ElevatedButton(
+    //   style: ElevatedButton.styleFrom(
+    //     backgroundColor: Colors.grey[800],
+    //     foregroundColor: Theme.of(Get.context!).primaryColor,
     //   ),
-    //   // Obx(() {
-    //   //   return Expanded(
-    //   //     child: Row(
-    //   //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    //   //       children: [
-    //   //         Text(
-    //   //           midtransC.paymentStatus.value,
-    //   //           style: TextStyle(
-    //   //             color: getStatusColor(midtransC.paymentStatus.value),
-    //   //             fontSize: 24,
-    //   //           ),
-    //   //         ),
-    //   //         ElevatedButton(
-    //   //           onPressed: () {
-    //   //             midtransC.cancelPayment();
-    //   //           },
-    //   //           child: const Text('Batalkan Pesanan'),
-    //   //         ),
-    //   //       ],
-    //   //     ),
-    //   //   );
-    //   // }),
+    //   onPressed: () async {
+    //     await midtransC.onSuccess();
+    //     // Get.back();
+    //   },
+    //   child: const Text('LUNASI TAGIHAN'),
+    // ),
+    // ElevatedButton(
+    //   style: ElevatedButton.styleFrom(
+    //     backgroundColor: Colors.grey[200],
+    //     foregroundColor: Theme.of(Get.context!).primaryColor,
+    //   ),
+    //   onPressed: () {
+    //     midtransC.cancelPayment();
+    //     Get.back();
+    //   },
+    //   child: const Text('Batalkan Pesanan'),
+    // ),
+    // Obx(() {
+    //   return Expanded(
+    //     child: Row(
+    //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    //       children: [
+    //         Text(
+    //           midtransC.paymentStatus.value,
+    //           style: TextStyle(
+    //             color: getStatusColor(midtransC.paymentStatus.value),
+    //             fontSize: 24,
+    //           ),
+    //         ),
+    //         ElevatedButton(
+    //           onPressed: () {
+    //             midtransC.cancelPayment();
+    //           },
+    //           child: const Text('Batalkan Pesanan'),
+    //         ),
+    //       ],
+    //     ),
+    //   );
+    // }),
     // ],
     onClose: () => midtransC.stopTimer(),
   );

@@ -11,3 +11,4 @@ export 'package:materikas/presentation/setup/setup.screen.dart';
 export 'package:materikas/presentation/signup/signup.screen.dart';
 export 'package:materikas/presentation/splash/splash.screen.dart';
 export 'package:materikas/presentation/statistic/statistic.screen.dart';
+export 'package:materikas/presentation/test/test.screen.dart';

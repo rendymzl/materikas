@@ -18,97 +18,121 @@ class MenuWidget extends GetView<MenuWidgetController> {
   Widget build(BuildContext context) {
     bool trial = controller.account.value!.accountType == 'free_trial';
     bool almostExpired = false;
+    bool isFlexibleFirstMonthNotPaid = false;
     if (controller.account.value!.endDate != null) {
       almostExpired = controller.account.value!.endDate!
-          .isBefore(DateTime.now().add(const Duration(days: 7)));
+          .isBefore(DateTime.now().add(const Duration(days: 5)));
+    }
+    if (controller.account.value!.accountType == 'flexible') {
+      isFlexibleFirstMonthNotPaid =
+          !controller.billingService.getIsLastMonthBillPaid();
     }
     return Container(
       // padding: const EdgeInsets.all(8),
       margin: const EdgeInsets.all(8),
-      height: 60 + ((trial || almostExpired) ? 40 : 0),
+      height: 70 +
+          (controller.authService.isOwner.value &&
+                  (trial || almostExpired || isFlexibleFirstMonthNotPaid)
+              ? 40
+              : 0),
       child: Column(
         children: [
-          if (trial || almostExpired)
-            Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              decoration: BoxDecoration(
-                  color: Colors.red, borderRadius: BorderRadius.circular(8)),
-              height: 35,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    trial
-                        ? 'Masa percobaan berakhir pada '
-                        : 'Akun anda akan berakhir pada ',
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                  Text(
-                    date.format(controller.account.value!.endDate!),
-                    style: const TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.bold),
-                  ),
-                  const Text(
-                    ' dan tersisa ',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  controller.countdown,
-                  const SizedBox(width: 12),
-                  InkWell(
-                    onTap: () async => activateAccountPopup(),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 4, horizontal: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(4),
+          if (controller.authService.isOwner.value)
+            if (trial || almostExpired || isFlexibleFirstMonthNotPaid)
+              Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                    color: Colors.red, borderRadius: BorderRadius.circular(8)),
+                height: 35,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      isFlexibleFirstMonthNotPaid
+                          ? 'Tagihan bulan lalu sudah terbit, Lakukan pembayaran sebelum tanggal 10.'
+                          : 'Akun anda akan berakhir pada ',
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    if (!isFlexibleFirstMonthNotPaid)
+                      Text(
+                        controller.account.value!.endDate != null
+                            ? date.format(controller.account.value!.endDate!)
+                            : '',
+                        style: const TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold),
                       ),
-                      child: Text(
-                        trial ? 'Aktifkan Akun' : 'Perpanjang Akun',
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.primary,
-                          fontWeight: FontWeight.bold,
+                    if (!isFlexibleFirstMonthNotPaid)
+                      const Text(
+                        ' dan tersisa ',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    if (!isFlexibleFirstMonthNotPaid) controller.countdown,
+                    const SizedBox(width: 12),
+                    InkWell(
+                      onTap: isFlexibleFirstMonthNotPaid
+                          ? () async => billingDashboard()
+                          : () async => activateAccountPopup(),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 4, horizontal: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          isFlexibleFirstMonthNotPaid
+                              ? 'Bayar Tagihan'
+                              : 'Perpanjang Akun',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
           Expanded(
             child: Row(
               children: [
                 Expanded(
                   flex: 5,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Obx(
-                        () {
-                          var data = controller.menuData;
-                          Future.delayed(const Duration(seconds: 2), () {
-                            controller.billingService.onInit();
-                            print(
-                                'controller.expired ${controller.billingService.isExpired.value}');
-                            if (controller.billingService.isExpired.value) {
-                              billingDashboard(
-                                  expired: controller
-                                      .billingService.isExpired.value);
-                            }
-                          });
-
-                          return ListView.separated(
-                            separatorBuilder: (context, index) =>
-                                const SizedBox(width: 8),
-                            shrinkWrap: true,
-                            scrollDirection: Axis.horizontal,
-                            itemCount: (data.length),
-                            itemBuilder: (context, index) =>
-                                buildMenuEntry(data[index], index, context),
-                          );
-                        },
-                      )
-                    ],
+                  child: Container(
+                    padding: EdgeInsets.all(2),
+                    child: Obx(
+                      () {
+                        var data = controller.menuData;
+                        Future.delayed(const Duration(seconds: 2), () {
+                          controller.billingService.onInit();
+                          // print(
+                          //     'controller.expired ${controller.billingService.isExpired}');
+                          if (controller.billingService.isExpired &&
+                              controller
+                                      .authService.account.value!.accountType ==
+                                  'flexible') {
+                            billingDashboard(
+                                expired: controller.billingService.isExpired);
+                          }
+                          if (controller.subsExpired.value &&
+                              controller
+                                      .authService.account.value!.accountType ==
+                                  'subscription') {
+                            activateAccountPopup(
+                                expired: controller.subsExpired.value);
+                          }
+                        });
+                        return ListView.separated(
+                          separatorBuilder: (context, index) =>
+                              const SizedBox(width: 8),
+                          shrinkWrap: true,
+                          scrollDirection: Axis.horizontal,
+                          itemCount: (data.length),
+                          itemBuilder: (context, index) =>
+                              buildMenuEntry(data[index], index, context),
+                        );
+                      },
+                    ),
                   ),
                 ),
                 Obx(

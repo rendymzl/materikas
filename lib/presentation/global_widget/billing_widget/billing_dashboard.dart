@@ -26,7 +26,7 @@ void billingDashboard({bool expired = false}) async {
             // mainAxisAlignment: MainAxisAlignment.end,
             children: <Widget>[
               // Ringkasan Tagihan
-              _buildSummaryCard(),
+              await _buildSummaryCard(),
               SizedBox(height: 20),
 
               // Tabel Rincian Invoice
@@ -44,27 +44,26 @@ void billingDashboard({bool expired = false}) async {
 }
 
 // Fungsi untuk membuat Ringkasan Tagihan
-Widget _buildSummaryCard() {
-  final BillingController billingController = Get.find();
-
+Future<Widget> _buildSummaryCard() async {
+  final BillingController controller = Get.find();
+  final billAmount = await controller.billingService.getBillAmount();
   return Obx(
     () => Row(
       children: [
         BillingBigCard(
           title: 'Total Invoice Dihasilkan:',
-          value: '${billingController.invoiceService.monthlyInvoice.length}',
+          value: '${controller.billInvoice.value.length}',
         ),
         BillingBigCard(
           title: 'Total Biaya Tagihan:',
-          value:
-              'Rp ${currency.format(billingController.billingService.billAmount.value)}',
+          value: 'Rp ${currency.format(billAmount)}',
         ),
         BillingBigCard(
           title: 'Status Tagihan:',
-          value: (billingController.billingService.isExpired.value)
+          value: (controller.billingService.isExpired)
               ? 'Bayar tagihan untuk lanjut menggunakan aplikasi'
-              : billingController.billingService.getIsLastMonthBillPaid()
-                  ? 'Dapat dibayar di Bulan ${getMonthName(billingController.billingService.nextMonth.value.month)}'
+              : controller.billingService.getIsLastMonthBillPaid()
+                  ? 'Dapat dibayar di Bulan ${getMonthName(controller.billingService.nextMonth.month)}'
                   : 'Belum dibayar',
         ),
       ],
@@ -115,7 +114,7 @@ class BillingBigCard extends StatelessWidget {
 
 // Fungsi untuk membuat Tabel Rincian Invoice
 Widget _buildInvoiceTable() {
-  final BillingController billingController = Get.find();
+  final BillingController controller = Get.find();
   return Obx(() => Expanded(
         child: SizedBox(
           child: SingleChildScrollView(
@@ -130,11 +129,8 @@ Widget _buildInvoiceTable() {
                 DataColumn(label: Text('Biaya/Invoice')),
                 DataColumn(label: Text('Status')),
               ],
-              rows: List.generate(
-                  billingController.invoiceService.monthlyInvoice.length,
-                  (index) {
-                final invoice =
-                    billingController.invoiceService.monthlyInvoice[index];
+              rows: List.generate(controller.billInvoice.value.length, (index) {
+                final invoice = controller.billInvoice.value[index];
                 return DataRow(cells: [
                   DataCell(Text('${index + 1}')),
                   DataCell(Text(date.format(invoice.initAt.value!))),

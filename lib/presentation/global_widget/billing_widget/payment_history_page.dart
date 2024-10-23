@@ -9,7 +9,7 @@ void billingHistory() async {
   final BillingService billingService = Get.find();
 
   billingService.onInit();
-  print('awdwadwadwad ${billingService.isExpired.value}');
+  // print('awdwadwadwad ${billingService.isExpired}');
   showPopupPageWidget(
       title: 'Riwayat Pembayaran',
       height: MediaQuery.of(Get.context!).size.height * (0.8),

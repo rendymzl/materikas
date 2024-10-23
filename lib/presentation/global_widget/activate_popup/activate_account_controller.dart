@@ -1,7 +1,13 @@
 import 'package:get/get.dart';
+
+import '../../../infrastructure/dal/services/account_service.dart';
+import '../../../infrastructure/dal/services/auth_service.dart';
+import '../../../infrastructure/navigation/routes.dart';
 // import 'package:url_launcher/url_launcher.dart';
 
 class ActivateAccountController extends GetxController {
+  AccountService accountSecvice = Get.find();
+  AuthService authC = Get.find();
   var selectedCardIndex = 0.obs;
   // var isMonthly = true.obs;
   var selectedCardType = 'flexible'.obs;
@@ -21,6 +27,13 @@ class ActivateAccountController extends GetxController {
       default:
         selectedCardType.value = '';
     }
+  }
+
+  Future<void> backToFlexible() async {
+    authC.account.value!.accountType = 'flexible';
+    authC.account.value!.endDate = null;
+    await accountSecvice.update(authC.account.value!);
+    Get.offAllNamed(Routes.SPLASH);
   }
 
   // Future<void> handleLaunchUrl() async {

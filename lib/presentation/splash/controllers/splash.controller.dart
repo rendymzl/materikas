@@ -9,16 +9,13 @@ import '../../../infrastructure/dal/services/billing_service.dart';
 import '../../../infrastructure/dal/services/customer_service.dart';
 import '../../../infrastructure/dal/services/invoice_sales_service.dart';
 import '../../../infrastructure/dal/services/invoice_service.dart';
-import '../../../infrastructure/dal/services/midtrans/midtrans_controller.dart';
 import '../../../infrastructure/dal/services/operating_cost_service.dart';
 import '../../../infrastructure/dal/services/product_service.dart';
 import '../../../infrastructure/dal/services/purchase_order_service.dart';
 import '../../../infrastructure/dal/services/sales_service.dart';
 import '../../../infrastructure/dal/services/store_service.dart';
 import '../../../infrastructure/models/account_model.dart';
-import '../../../infrastructure/models/billing_model.dart';
 import '../../../infrastructure/navigation/routes.dart';
-import '../../../infrastructure/utils/display_format.dart';
 import '../../global_widget/app_dialog_widget.dart';
 import '../../global_widget/popup_page_widget.dart';
 import '../../profile/controllers/profile.controller.dart';
@@ -41,35 +38,25 @@ class SplashController extends GetxController {
       Get.put(PurchaseOrderService());
 
   late final AccountModel? account;
-  // late final StoreModel? store;
 
   late final isConnected = false.obs;
-  late final loadingStatus = authService.loadingStatus;
 
   void init() async {
     final isLoggedIn = await authService.isLoggedIn();
-    print('login in $isLoggedIn');
     isConnected.value = authService.connected.value;
     // await signOut();
 
     if (isLoggedIn) {
-      // while (!authService.hasSynced.value) {
+      Get.put(StoreService());
       await Future.delayed(const Duration(seconds: 2));
-      // }
       await authService.getAccount();
 
-      authService.loadingStatus.value = 'menghubungkan toko';
       await authService.getStore();
-      authService.loadingStatus.value = 'mengambil data toko';
       authService.getCashier();
-      Get.put(StoreService());
-      var accountService = Get.put(AccountService());
+      final accountService = Get.put(AccountService());
 
-      print('SelectUserController INIT');
-      print('SelectUserController getAccount');
       account = authService.account.value;
       if (account!.accountType != 'setup') {
-        // store = await _storeService.getStore(account!.storeId!);
         await _invoiceService.subscribe(account!.storeId!);
         await _productService.subscribe(account!.storeId!);
         await _customerService.subscribe(account!.storeId!);
@@ -77,18 +64,7 @@ class SplashController extends GetxController {
         await _invoiceSalesService.subscribe(account!.storeId!);
         await _operatingCostService.subscribe(account!.storeId!);
         await _purchaseOrderService.subscribe(account!.storeId!);
-        print('SelectUserController FINISH INIT');
-        authService.loadingStatus.value = 'selesai';
         isConnected.value = authService.connected.value;
-
-        // DateTime thisMonth =
-        //     DateTime(DateTime.now().year, DateTime.now().month, 1);
-        // DateTime prevMonth = thisMonth.subtract(Duration(days: 1));
-
-        // authService.prevMonthAppBill.value =
-        //     await _invoiceService.getAppBill(thisMonth);
-        // authService.thisMonthAppBill.value =
-        //     await _invoiceService.getAppBill(prevMonth);
 
         Get.put(BillingService());
         Get.offAllNamed(Routes.SELECT_USER);
@@ -134,7 +110,6 @@ class SplashController extends GetxController {
   }
 
   Future<void> signOut() async {
-    // try {
     if (isConnected.value) {
       await logout();
       Get.offNamed(Routes.LOGIN);
@@ -148,9 +123,5 @@ class SplashController extends GetxController {
         },
       );
     }
-  }
-
-  Future<void> checkStats() async {
-    authService.checkStats();
   }
 }

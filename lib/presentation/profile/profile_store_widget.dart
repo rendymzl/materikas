@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 
 import '../../infrastructure/utils/display_format.dart';
@@ -26,100 +27,104 @@ class ProfileStoreWidget extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            ListView(
-              shrinkWrap: true,
-              children: [
-                ListTile(
-                  title: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Data Toko'),
-                      IconButton(
-                        onPressed: () =>
-                            detailStore(foundStore: controller.store.value),
-                        icon: Icon(
-                          Symbols.edit_square,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ListTile(
+                      title: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text('Data Toko'),
+                          IconButton(
+                            onPressed: () =>
+                                detailStore(foundStore: controller.store.value),
+                            icon: Icon(
+                              Symbols.edit_square,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-                ListTile(
-                  title: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const SizedBox(width: 100, child: Text('Nama Toko')),
-                      Expanded(
-                        child: Text(
-                          controller.store.value!.name.value,
-                        ),
+                    ),
+                    ListTile(
+                      title: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const SizedBox(width: 100, child: Text('Nama Toko')),
+                          Expanded(
+                            child: Text(
+                              controller.store.value!.name.value,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-                ListTile(
-                  title: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(width: 100, child: Text('Alamat')),
-                      Expanded(
-                        child: Text(
-                          controller.store.value!.address.value,
-                        ),
+                    ),
+                    ListTile(
+                      title: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(width: 100, child: Text('Alamat')),
+                          Expanded(
+                            child: Text(
+                              controller.store.value!.address.value,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-                ListTile(
-                  title: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const SizedBox(width: 100, child: Text('No Hp')),
-                      Expanded(
-                        child: Text(
-                          controller.store.value!.phone.value,
-                        ),
+                    ),
+                    ListTile(
+                      title: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const SizedBox(width: 100, child: Text('No Hp')),
+                          Expanded(
+                            child: Text(
+                              controller.store.value!.phone.value,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-                ListTile(
-                  title: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const SizedBox(width: 100, child: Text('No Telp')),
-                      Expanded(
-                        child: Text(
-                          controller.store.value!.telp.value,
-                        ),
+                    ),
+                    ListTile(
+                      title: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const SizedBox(width: 100, child: Text('No Telp')),
+                          Expanded(
+                            child: Text(
+                              controller.store.value!.telp.value,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-                ListTile(
-                  title: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const SizedBox(width: 100, child: Text('Paket : ')),
-                      Expanded(
-                        child: Text(controller.account.value!.accountType
-                            .toUpperCase()),
+                    ),
+                    ListTile(
+                      title: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const SizedBox(width: 100, child: Text('Paket : ')),
+                          Expanded(
+                            child: Text(
+                                '${controller.account.value!.accountType.toUpperCase()} ${controller.account.value!.accountType.toLowerCase() == 'subscription' ? '/ ${DateFormat('dd MMMM y', 'id').format(controller.authService.account.value!.endDate!)}' : ''}'),
+                          ),
+                          // TextButton(
+                          //   onPressed: () async => activateAccountPopup(),
+                          //   child: const Text('Upgrade Paket'),
+                          // ),
+                        ],
                       ),
-                      // TextButton(
-                      //   onPressed: () async => activateAccountPopup(),
-                      //   child: const Text('Upgrade Paket'),
-                      // ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                if (controller.account.value!.accountType != 'business')
+                if (controller.account.value!.accountType != 'full')
                   ElevatedButton(
                     onPressed: () async => activateAccountPopup(),
                     child: const Text('Upgrade Paket'),

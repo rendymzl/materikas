@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
@@ -19,21 +21,18 @@ Future main() async {
 
   var initialRoute = await Routes.initialRoute;
 
-  String feedURL = 'https://api.menantikan.com/releases/appcast.xml';
-  await autoUpdater.setFeedURL(feedURL);
-  await autoUpdater.checkForUpdates(inBackground: true);
-  await autoUpdater.setScheduledCheckInterval(3600);
+  if (Platform.isWindows) {
+    String feedURL = 'https://api.menantikan.com/releases/appcast.xml';
+    await autoUpdater.setFeedURL(feedURL);
 
-  //   await autoUpdater.checkForUpdates().then((value) {
-  //   if (value) {
-  //     autoUpdater.setScheduledCheckInterval(3600);
-  //   }
-  // });
+    await autoUpdater.checkForUpdates(inBackground: true);
+    await autoUpdater.setScheduledCheckInterval(3600);
 
-  windowManager.waitUntilReadyToShow(null, () async {
-    await windowManager.show();
-    await windowManager.focus();
-  });
+    windowManager.waitUntilReadyToShow(null, () async {
+      await windowManager.show();
+      await windowManager.focus();
+    });
+  }
 
   await dotenv.load(fileName: ".env");
   await openDatabase();

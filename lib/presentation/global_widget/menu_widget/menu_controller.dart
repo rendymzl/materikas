@@ -10,7 +10,6 @@ import '../../../infrastructure/dal/services/billing_service.dart';
 import '../../../infrastructure/models/account_model.dart';
 import '../../../infrastructure/models/menu_model.dart';
 import '../../../infrastructure/navigation/routes.dart';
-import '../../../infrastructure/utils/display_format.dart';
 import 'menu_data.dart';
 
 class MenuWidgetController extends GetxController {
@@ -26,7 +25,7 @@ class MenuWidgetController extends GetxController {
   // final selectedIndex = 0.obs;
   // final selectedUser = ''.obs;
   final menuData = <MenuModel>[].obs;
-  // late final expired = billingService.isExpired.value;
+  late final subsExpired = false.obs;
 
   @override
   void onInit() async {
@@ -41,23 +40,23 @@ class MenuWidgetController extends GetxController {
     //               10));
     //   print('awdwadwadwad ${billingService.isExpired.value}');
     // });
-    // countdown = CountdownTimer(
-    //   endTime: authService.account.value?.endDate?.millisecondsSinceEpoch ??
-    //       0, // Cek null sebelum mengakses endDate
-    //   widgetBuilder: (_, CurrentRemainingTime? time) {
-    //     // Pastikan 'time' nullable
-    //     if (time == null) {
-    //       expired.value = true;
-    //       return const Text('Masa percobaan telah berakhir!');
-    //     }
-    //     // Gunakan nilai default jika null
-    //     return Text(
-    //       '${time.days ?? 0} Hari, ${time.hours ?? 0} : ${time.min ?? 0} : ${time.sec ?? 0}',
-    //       style:
-    //           const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-    //     );
-    //   },
-    // );
+    countdown = CountdownTimer(
+      endTime: authService.account.value?.endDate?.millisecondsSinceEpoch ??
+          0, // Cek null sebelum mengakses endDate
+      widgetBuilder: (_, CurrentRemainingTime? time) {
+        // Pastikan 'time' nullable
+        if (time == null) {
+          subsExpired.value = true;
+          return const Text('Masa langganan telah berakhir!');
+        }
+        // Gunakan nilai default jika null
+        return Text(
+          '${time.days ?? 0} Hari, ${time.hours ?? 0} : ${time.min ?? 0} : ${time.sec ?? 0}',
+          style:
+              const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        );
+      },
+    );
 
     // isConnected.value = authService.connected.value;
     getMenu();

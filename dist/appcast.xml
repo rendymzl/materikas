@@ -5,15 +5,15 @@
         <description>Most recent updates to materikas_update</description>
         <language>en</language>
         <item>
-            <title>Version 1.0.2</title>
+            <title>Version 1.0.7</title>
             <sparkle:releaseNotesLink>
                 https://api.menantikan.com/releases/release_notes.html
             </sparkle:releaseNotesLink>
-            <pubDate>Wed, 15 okt 2024 00:00:00 +0800</pubDate>
+            <pubDate>Wed, 23 okt 2024 00:00:00 +0800</pubDate>
             <enclosure
-                url="https://api.menantikan.com/releases/1.0.2/materikas-1.0.2+1.0.2-windows-setup.exe"
-                sparkle:dsaSignature="MDwCHDFk1eqfAMjDHQPVT6YdJ6Xrn3i3qnGan+JxJc0CHA+mk2dc0WuZNLQjm5oxg8UHolPSpI+aFuLsGDw="
-                sparkle:version="1.0.2"
+                url="https://api.menantikan.com/releases/1.0.7/materikas-1.0.7+1.0.7-windows-setup.exe"
+                sparkle:dsaSignature="MDwCHF81/DwCEyai2rDWu5k298oDp+IrYh+6eW4hiDACHFJrtqV7WX3wyaBXUFHAsGezsh8ZtRu5s8H2MhM="
+                sparkle:version="1.0.7"
                 sparkle:os="windows"
                 length="0"
                 type="application/octet-stream" />

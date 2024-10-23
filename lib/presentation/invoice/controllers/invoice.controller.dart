@@ -42,60 +42,6 @@ class InvoiceController extends GetxController {
   final paymentInvoice = true.obs;
   final destroyInvoice = true.obs;
 
-  // void fixPayment() async {
-  //   print(invoiceService.paidInv.length);
-  //   var i = 1;
-  //   for (var inv in invoiceService.paidInv) {
-  //     print('========== $i ${inv.invoiceId}');
-  //     var index = 1;
-
-  //     double totalPaid = 0;
-  //     // double prevAmount = 0;
-  //     // double prevFinalAmountPaid = 0;
-
-  //     for (var payment in inv.payments) {
-  //       print('------------index $index');
-  //       print('TOTAL TAGIHAN ${inv.totalBill}');
-  //       print('TOTAL PEMBAYARAN SEBELUMNYA $totalPaid');
-  //       print('PEMBAYARAN SEKARANG ${payment.amountPaid}');
-  //       var finalAmountPaid = totalPaid + payment.amountPaid > inv.totalBill
-  //           ? (payment.amountPaid +
-  //               (inv.totalBill - (totalPaid + payment.amountPaid)) + inv.totalReturnFinal)
-  //           : payment.amountPaid;
-  //       print('finalAmountPaid $finalAmountPaid');
-  //       // payment.finalAmountPaid = finalAmountPaid;
-
-  //       totalPaid += ((totalPaid + payment.amountPaid) < inv.totalBill
-  //           ? finalAmountPaid
-  //           : payment.amountPaid);
-  //       // prevAmount = payment.amountPaid;
-  //       // prevFinalAmountPaid = finalAmountPaid;
-  //       index++;
-  //     }
-  //     i++;
-  //     print('');
-  //   }
-  // }
-
-  // for (var sub in sublist) {
-  //   print('---TAGIHAN ${inv.totalBill}');
-  //   print('---TOTAL PEMBAYARAN SEBELUMNYA $totalPaid');
-  //   print('---PEMBAYARAN SEKARANG ${sub.amountPaid}');
-  //   print('---prevFinalAmountPaid $prevFinalAmountPaid');
-
-  //   finalAmountPaid = totalPaid + sub.amountPaid > inv.totalBill
-  //       ? (sub.amountPaid +
-  //           (inv.totalBill - (totalPaid + sub.amountPaid)))
-  //       : sub.amountPaid;
-
-  //   totalPaid += ((totalPaid + prevAmount) < inv.totalBill
-  //       ? prevFinalAmountPaid
-  //       : prevAmount);
-
-  //   prevAmount = sub.amountPaid;
-  //   prevFinalAmountPaid = finalAmountPaid;
-  // }
-
   @override
   void onInit() async {
     super.onInit();
@@ -154,14 +100,25 @@ class InvoiceController extends GetxController {
     int startIndex = (page - 1) * limit;
     int endIndex = startIndex + limit;
 
-    List<InvoiceModel> newData = [];
-    if (startIndex < invoiceService.paidInv.length) {
-      newData = invoiceService.paidInv.sublist(
-          startIndex,
-          endIndex > invoiceService.paidInv.length
-              ? invoiceService.paidInv.length
-              : endIndex);
-    }
+    List<InvoiceModel> newData = invoiceService.searchQuery.isEmpty &&
+            invoiceService.searchDateQuery.value == null &&
+            invoiceService.methodPayment.value.isEmpty
+        ? startIndex < invoiceService.paidInv.length
+            ? invoiceService.paidInv.sublist(
+                startIndex,
+                endIndex > invoiceService.paidInv.length
+                    ? invoiceService.paidInv.length
+                    : endIndex)
+            : []
+        : startIndex < invoiceService.filteredPaidInv.length
+            ? invoiceService.filteredPaidInv.sublist(
+                startIndex,
+                endIndex > invoiceService.filteredPaidInv.length
+                    ? invoiceService.filteredPaidInv.length
+                    : endIndex)
+            : [];
+    newData.sort((a, b) => DateTime.parse(b.createdAt.value!.toIso8601String())
+        .compareTo(DateTime.parse(a.createdAt.value!.toIso8601String())));
 
     if (newData.isEmpty) {
       hasMore.value = false; // Tidak ada data lagi
@@ -170,7 +127,6 @@ class InvoiceController extends GetxController {
           .addAll(newData); // Tambahkan data baru ke list yang ditampilkan
       page++; // Naikkan halaman
     }
-    print(displayedItems.length);
     isLoading.value = false;
   }
 

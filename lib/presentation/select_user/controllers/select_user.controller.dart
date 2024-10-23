@@ -4,17 +4,13 @@ import 'package:hive/hive.dart';
 
 import '../../../infrastructure/dal/database/powersync.dart';
 import '../../../infrastructure/dal/services/auth_service.dart';
-import '../../../infrastructure/dal/services/billing_service.dart';
-import '../../../infrastructure/dal/services/midtrans/midtrans_controller.dart';
 import '../../../infrastructure/navigation/routes.dart';
-import '../../global_widget/app_dialog_widget.dart';
 import '../../global_widget/menu_widget/menu_controller.dart';
 
 class SelectUserController extends GetxController {
   late final AuthService authService = Get.find();
   late final MenuWidgetController _menuC =
       Get.put(MenuWidgetController(), permanent: true);
-  final BillingService billingService = Get.find();
 
   late final Box<dynamic> box;
   final isLoading = false.obs;
@@ -48,7 +44,7 @@ class SelectUserController extends GetxController {
       selectedUser.value = user!;
       authService.getSelectedCashier(user);
       authService.selectedIndexMenu.value = 0;
-      final BillingService billingService = Get.find();
+
       _menuC.getMenu();
       Get.offAllNamed(Routes.HOME);
     }

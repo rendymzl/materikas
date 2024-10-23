@@ -111,7 +111,7 @@ class OtpController extends GetxController {
           'chatId': '$chatId@c.us',
           'contentType': 'string',
           'content':
-              'Pembayaran berhasil! Terima kasih telah berlangganan.\n\n\nSimpan nomor ini untuk menghubungi kami. \nJika ada pertanyaan silahkan tanyakan dinomor ini',
+              'Pembayaran berhasil! Terima kasih telah menggunakan layanan Materikas.',
         }),
       );
 
@@ -131,20 +131,21 @@ class OtpController extends GetxController {
     }
   }
 
-  Future<void> test() async {
+  Future<void> successImage(String chatId, {String path = ''}) async {
+    chatId = chatId.startsWith('0') ? chatId.replaceFirst('0', '62') : chatId;
     const String endpoint = 'http://82.112.236.54:3000/client/sendMessage/ABCD';
     try {
-      var path = billingC.path.value;
+      // var path = billingC.path.value;
 
       if (path.isNotEmpty) {
-        final response = await http.post(
+        await http.post(
           Uri.parse(endpoint),
           headers: {
             'accept': '*/*',
             'Content-Type': 'application/json',
           },
           body: jsonEncode({
-            "chatId": "6281802127920@c.us",
+            'chatId': '$chatId@c.us',
             "contentType": "MessageMedia",
             "content": {
               "mimetype": "image/jpeg",
@@ -153,23 +154,25 @@ class OtpController extends GetxController {
             }
           }),
         );
-        if (response.statusCode == 200) {
-          Get.defaultDialog(
-            title: 'Info',
-            content: const Text('Pesan berhasil dikirim'),
-          );
-        } else {
-          Get.defaultDialog(
-            title: 'Error',
-            content: const Text('Gagal mengirim pesan'),
-          );
-        }
-      } else {
-        Get.defaultDialog(
-          title: 'Error',
-          content: const Text('Gagal membuat gambar'),
-        );
+        // if (response.statusCode == 200) {
+        //   Get.defaultDialog(
+        //     title: 'Info',
+        //     content: const Text('Pesan berhasil dikirim'),
+        //   );
+        // } else {
+        //   Get.defaultDialog(
+        //     title: 'Error',
+        //     content: const Text('Gagal mengirim pesan'),
+        //   );
+        // }
       }
+      //  else {
+      // Get.defaultDialog(
+      //   title: 'Error',
+      //   content: const Text('Gagal membuat gambar'),
+      // );
+      // }
+      await successMessage(chatId);
     } catch (e) {
       Get.defaultDialog(
         title: 'Error',

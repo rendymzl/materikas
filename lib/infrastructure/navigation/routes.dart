@@ -2,6 +2,7 @@ class Routes {
   static Future<String> get initialRoute async {
     // TODO: implement method
     return SPLASH;
+    // return SPLASH;
   }
 
   static const CUSTOMER = '/customer';
@@ -13,8 +14,9 @@ class Routes {
   static const PROFILE = '/profile';
   static const SALES = '/sales';
   static const SELECT_USER = '/select-user';
+  static const SETUP = '/setup';
   static const SIGNUP = '/signup';
   static const SPLASH = '/splash';
   static const STATISTIC = '/statistic';
-  static const SETUP = '/setup';
+  static const TEST = '/test';
 }

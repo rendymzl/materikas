@@ -91,5 +91,10 @@ class Nav {
       page: () => const SetupScreen(),
       binding: SetupControllerBinding(),
     ),
+    GetPage(
+      name: Routes.TEST,
+      page: () => const TestScreen(),
+      binding: TestControllerBinding(),
+    ),
   ];
 }

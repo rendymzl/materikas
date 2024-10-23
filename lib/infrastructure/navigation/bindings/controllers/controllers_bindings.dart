@@ -11,3 +11,4 @@ export 'package:materikas/infrastructure/navigation/bindings/controllers/setup.c
 export 'package:materikas/infrastructure/navigation/bindings/controllers/signup.controller.binding.dart'; 
 export 'package:materikas/infrastructure/navigation/bindings/controllers/splash.controller.binding.dart'; 
 export 'package:materikas/infrastructure/navigation/bindings/controllers/statistic.controller.binding.dart'; 
+export 'package:materikas/infrastructure/navigation/bindings/controllers/test.controller.binding.dart'; 

@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -51,8 +54,9 @@ void printInvoiceDialog(InvoiceModel invoice) {
                             style: Get.context!.textTheme.titleLarge,
                           ),
                           IconButton(
-                            onPressed: () =>
-                                printerController.scan(PrinterType.usb),
+                            onPressed: () => Platform.isAndroid
+                                ? printerController.getBlue()
+                                : printerController.scan(PrinterType.usb),
                             icon: const Icon(
                               Symbols.refresh,
                               color: Colors.red,
@@ -69,33 +73,70 @@ void printInvoiceDialog(InvoiceModel invoice) {
                             printerController.textPromo.text = promo;
                           });
                           return Obx(
-                            () => DropdownButtonFormField<int>(
-                              decoration: const InputDecoration(
-                                labelText: 'Pilih Printer',
-                                border: OutlineInputBorder(),
-                              ),
-                              value:
-                                  printerController.selectedDeviceIndex.value,
-                              items: printerController.devices
-                                  .asMap()
-                                  .entries
-                                  .map((entry) {
-                                return DropdownMenuItem<int>(
-                                  value: entry.key,
-                                  child: Text(
-                                    entry.value.name,
-                                    overflow: TextOverflow.ellipsis,
+                            () => Platform.isAndroid
+                                ? DropdownButtonFormField<BluetoothDevice>(
+                                    decoration: const InputDecoration(
+                                      labelText: 'Pilih Printer',
+                                      border: OutlineInputBorder(),
+                                    ),
+                                    value: printerController.selectedBlue.value,
+                                    items: printerController.blueDevices
+                                        .map((entry) {
+                                      return DropdownMenuItem<BluetoothDevice>(
+                                        value: entry,
+                                        child: Text(
+                                          entry.name!,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      );
+                                    }).toList(),
+                                    onChanged: (value) {
+                                      printerController.selectedBlue.value =
+                                          value;
+                                      // printerController.connect(
+                                      //   printerController.devices[value],
+                                      //   PrinterType.usb,
+                                      // );
+                                      if (printerController
+                                              .selectedBlue.value !=
+                                          null) {
+                                        printerController.bluePrint.connect(
+                                            printerController
+                                                .selectedBlue.value!);
+                                      }
+                                      printerController.connected.value = true;
+                                      Get.snackbar('Status Printer',
+                                          '${printerController.selectedBlue.value} $value');
+                                    },
+                                  )
+                                : DropdownButtonFormField<int>(
+                                    decoration: const InputDecoration(
+                                      labelText: 'Pilih Printer',
+                                      border: OutlineInputBorder(),
+                                    ),
+                                    value: printerController
+                                        .selectedDeviceIndex.value,
+                                    items: printerController.devices
+                                        .asMap()
+                                        .entries
+                                        .map((entry) {
+                                      return DropdownMenuItem<int>(
+                                        value: entry.key,
+                                        child: Text(
+                                          entry.value.name,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      );
+                                    }).toList(),
+                                    onChanged: (value) {
+                                      printerController
+                                          .selectedPrinterIndex(value!);
+                                      printerController.connect(
+                                        printerController.devices[value],
+                                        PrinterType.usb,
+                                      );
+                                    },
                                   ),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                printerController.selectedPrinterIndex(value!);
-                                printerController.connect(
-                                  printerController.devices[value],
-                                  PrinterType.usb,
-                                );
-                              },
-                            ),
                           );
                         },
                       ),
@@ -115,6 +156,13 @@ void printInvoiceDialog(InvoiceModel invoice) {
                                         .selectedPrintMethod.value,
                                     onChanged: (value) {
                                       printerController.setPrintMethod(value!);
+                                      if (printerController
+                                              .selectedBlue.value !=
+                                          null) {
+                                        printerController.bluePrint.connect(
+                                            printerController
+                                                .selectedBlue.value!);
+                                      }
                                     },
                                   ),
                                   const Text('Struk'),
@@ -137,6 +185,13 @@ void printInvoiceDialog(InvoiceModel invoice) {
                                         .selectedPrintMethod.value,
                                     onChanged: (value) {
                                       printerController.setPrintMethod(value!);
+                                      if (printerController
+                                              .selectedBlue.value !=
+                                          null) {
+                                        printerController.bluePrint.connect(
+                                            printerController
+                                                .selectedBlue.value!);
+                                      }
                                     },
                                   ),
                                   const Text('Invoice'),
@@ -727,7 +782,7 @@ void printInvoiceDialog(InvoiceModel invoice) {
                       ),
                       const SizedBox(height: 12),
                       !printerController.isPrinting.value
-                          ? printerController.connected.value
+                          ? (printerController.connected.value)
                               ? Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
