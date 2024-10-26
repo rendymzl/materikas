@@ -90,7 +90,7 @@ class SplashController extends GetxController {
               ),
             ),
           ],
-          barrierDismissible: true,
+          barrierDismissible: false,
         );
 
         // print(authService.account.value!.toJson());

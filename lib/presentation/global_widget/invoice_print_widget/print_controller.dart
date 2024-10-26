@@ -12,6 +12,7 @@ import '../../../infrastructure/dal/services/store_service.dart';
 import '../../../infrastructure/models/invoice_model/cart_item_model.dart';
 import '../../../infrastructure/models/invoice_model/invoice_model.dart';
 import 'generate_receipt_blue.dart';
+import 'generate_transport_blue.dart';
 import 'invoice_generator.dart';
 import 'print_transport_inv.dart';
 import 'receipt_generator.dart';
@@ -45,6 +46,7 @@ class PrinterController extends GetxController {
     // Check if the device is desktop or android
     if (Platform.isAndroid) {
       //! pake print_bluetooth_thermal
+      setPrintMethod('receipt');
       await getBlue();
       // await scan(PrinterType.bluetooth, isBle: true);
     } else if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
@@ -231,10 +233,8 @@ class PrinterController extends GetxController {
     // Check if the device is desktop or android
     if (Platform.isAndroid) {
       if ((await bluePrint.isConnected)!) {
-        bluePrint.printNewLine();
-        bluePrint.printCustom('tes berhasil', 0, 1);
-        bluePrint.printNewLine();
-        bluePrint.printNewLine();
+        // Add header
+        await generateTransportBlue(invoice);
       }
       // await sendBytesToPrint(bytes, PrinterType.bluetooth);
     } else if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {

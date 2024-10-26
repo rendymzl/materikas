@@ -14,7 +14,7 @@ void detailProduct({ProductModel? foundProduct, bool isPopUp = false}) {
 
   final FocusNode focusNode = FocusNode();
 
-  void _handleKeyPress(KeyEvent event) {
+  void handleKeyPress(KeyEvent event) {
     // Cek apakah key event merupakan input karakter
     if (event is KeyDownEvent) {
       final String key = event.logicalKey.keyLabel;
@@ -60,7 +60,7 @@ void detailProduct({ProductModel? foundProduct, bool isPopUp = false}) {
       content: KeyboardListener(
         focusNode: focusNode,
         autofocus: true,
-        onKeyEvent: _handleKeyPress,
+        onKeyEvent: handleKeyPress,
         child: ListView(
           shrinkWrap: true,
           padding: const EdgeInsets.all(16),

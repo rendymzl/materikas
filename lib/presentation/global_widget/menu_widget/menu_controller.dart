@@ -41,13 +41,15 @@ class MenuWidgetController extends GetxController {
     //   print('awdwadwadwad ${billingService.isExpired.value}');
     // });
     countdown = CountdownTimer(
-      endTime: authService.account.value?.endDate?.millisecondsSinceEpoch ??
-          0, // Cek null sebelum mengakses endDate
+      endTime: DateTime(billingService.nextMonth.year,
+              billingService.nextMonth.month, billingService.nextMonth.day)
+          .add(const Duration(days: -1))
+          .millisecondsSinceEpoch,
       widgetBuilder: (_, CurrentRemainingTime? time) {
         // Pastikan 'time' nullable
         if (time == null) {
-          subsExpired.value = true;
-          return const Text('Masa langganan telah berakhir!');
+          // subsExpired.value = true;
+          return const Text('');
         }
         // Gunakan nilai default jika null
         return Text(

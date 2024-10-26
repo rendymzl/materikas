@@ -80,7 +80,7 @@ Future<void> showPopupPageWidget({
   double width = 300,
   double height = 400,
   FocusNode? focusNode,
-  bool barrierDismissible = false,
+  bool barrierDismissible = true,
   VoidCallback? onClose,
 }) async {
   await Get.dialog(
@@ -94,6 +94,6 @@ Future<void> showPopupPageWidget({
       focusNode: focusNode,
       onClose: onClose,
     ),
-    barrierDismissible: !barrierDismissible,
+    barrierDismissible: barrierDismissible,
   );
 }

@@ -15,10 +15,10 @@ class ProductService extends GetxService implements ProductRepository {
   late final foundProducts = <ProductModel>[].obs;
   late final lowStockProducts = <ProductModel>[].obs;
 
-  @override
-  void onInit() async {
-    super.onInit();
-  }
+  // @override
+  // void onInit() async {
+  //   super.onInit();
+  // }
 
   void search(String searchValue) {
     WidgetsBinding.instance.addPostFrameCallback((_) {

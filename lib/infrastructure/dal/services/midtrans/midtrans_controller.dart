@@ -27,7 +27,12 @@ class MidtransController extends GetxController {
   final String _serverKey = dotenv.env['MIDTRANS_SERVER']!;
   final String _clientKey = dotenv.env['MIDTRANS_CLIENT']!;
   var isLoading = false.obs;
+  var isLoadingReceipt = false.obs;
   var paymentStatus = ''.obs;
+  int amountPaymentInvoice = 0;
+  final paymentSuccess = false.obs;
+  // final codeVoucher = 'OKTOBER10';
+  // final isVoucherActive = false.obs;
   // var selectedPackage = 'flexible'.obs;
   var snap = ''.obs;
   // late final totalAmount = billingService.getBillAmount();
@@ -138,7 +143,7 @@ class MidtransController extends GetxController {
 
   final oldPrice = {
     'flexible': 2 / 100,
-    'subscription': 499000,
+    'subscription': 399000,
     'full': 6990000,
   };
 
@@ -188,7 +193,7 @@ class MidtransController extends GetxController {
       headers: headers,
       body: body,
     );
-    print('response ${response.body}');
+    // print('response ${response.body}');
     if (response.statusCode == 201) {
       final responseData = jsonDecode(response.body);
       return responseData['token'];
@@ -201,7 +206,7 @@ class MidtransController extends GetxController {
 
   Future<void> checkPaymentStatus(String orderId) async {
     final String midtransUrl = 'https://api.midtrans.com/v2/$orderId/status';
-
+    // print(midtransUrl);
     final headers = {
       'Authorization': 'Basic ${base64Encode(utf8.encode(_serverKey))}',
       'Content-Type': 'application/json',
@@ -216,7 +221,7 @@ class MidtransController extends GetxController {
     if (response.statusCode == 200) {
       final responseData = jsonDecode(response.body);
       String transactionStatus = responseData['transaction_status'] ?? '';
-      print(transactionStatus);
+      // print(responseData);
       switch (transactionStatus) {
         case 'settlement':
           paymentStatus.value = 'Pembayaran berhasil.';
@@ -227,19 +232,23 @@ class MidtransController extends GetxController {
           break;
         case 'deny':
           paymentStatus.value = 'Pembayaran ditolak.';
-          cancelPayment();
+          await cancelPayment();
           break;
         case 'expire':
           paymentStatus.value = 'Pembayaran kadaluarsa.';
-          cancelPayment();
+          await cancelPayment();
           break;
         case 'cancel':
           paymentStatus.value = 'Pembayaran dibatalkan.';
-          cancelPayment();
+          await cancelPayment();
           break;
         default:
           paymentStatus.value = 'Pilih metode pembayaran.';
       }
+      // if (responseData['status_code'] == '404') {
+      //   paymentStatus.value = 'Pembayaran kadaluarsa.';
+      //   await cancelPayment();
+      // }
     } else {
       paymentStatus.value = 'Gagal memeriksa status pembayaran.';
     }
@@ -257,11 +266,13 @@ class MidtransController extends GetxController {
     var snapToken = await authC.box.get('snap_token');
     String? package = await authC.box.get('package');
     try {
-      print('orderId $orderId');
-      print('selectedCard $selectedCard');
-      print('package $package');
-      print('selectedCard $selectedCard');
-      if (orderId == null || ((package ?? '') != selectedCard)) {
+      // print('orderId $orderId');
+      // print('selectedCard $selectedCard');
+      // print('package $package');
+      // print('selectedCard $selectedCard');
+      if (orderId == null ||
+          ((package ?? '') != selectedCard) ||
+          snapToken == null) {
         orderId = 'order-id-${DateTime.now().millisecondsSinceEpoch}';
         // Mengambil Snap Token
         snapToken = await getMidtransSnapToken(
@@ -275,49 +286,32 @@ class MidtransController extends GetxController {
           customerPhone: authC.store.value!.phone.value,
           // customerEmail: 'johndoe@example.com',
         );
+
+        await authC.box.delete('order_id');
+        await authC.box.delete('snap_token');
+        await authC.box.delete('package');
         authC.box.put('snap_token', snapToken);
         authC.box.put('order_id', orderId);
         authC.box.put('package', selectedCard.toString());
         startTimer(orderId);
       }
+      amountPaymentInvoice = selectedCard == 'flexible'
+          ? (totalAmount).toInt()
+          : price[selectedCard]! as int;
+      // await checkPaymentStatus(orderId);
+      // if (paymentStatus.value.toLowerCase().contains('kadaluarsa')) {
+      //   return initiatePayment(selectedCard);
+      // }
       print('snapToken $snapToken');
       print('snap ${snap.value}');
       // URL Snap Midtrans
       final String snapUrl =
           'https://app.midtrans.com/snap/v2/vtweb/$snapToken';
 
-      // final Uri snapUrl =
-      //     Uri.parse('https://app.midtrans.com/snap/v2/vtweb/$snapToken');
-      snap.value = snapUrl;
       await webviewController.value.initialize();
-      // webviewController.value.url.listen((url) {
-      //   // debugPrint();
-      //   // // Deteksi URL yang digunakan Midtrans untuk redirect status transaksi
-      //   // if (url.contains('transaction_status=settlement')) {
-      //   //   // Transaksi berhasil
-      //   //   paymentController.onTransactionSuccess();
-      //   // } else if (url.contains('transaction_status=pending')) {
-      //   //   // Transaksi pending
-      //   //   paymentController.onTransactionPending();
-      //   // } else if (url.contains('transaction_status=deny') ||
-      //   //     url.contains('transaction_status=cancel') ||
-      //   //     url.contains('transaction_status=expire')) {
-      //   //   // Transaksi gagal atau dibatalkan
-      //   //   paymentController.onTransactionFailed();
-      //   // }
-      // });
-
       print('load webview');
-      // print(getWebViewVersion());
       webviewController.value.loadUrl(snapUrl);
-
-      // Membuka URL di browser
-      // if (await canLaunchUrl(snapUrl)) {
-      //   await launchUrl(snapUrl);
-      //   startTimer(orderId);
-      // } else {
-      //   throw 'Could not launch $snapUrl';
-      // }
+      snap.value = snapUrl;
     } catch (e) {
       paymentStatus.value = 'Pembayaran gagal: $e';
     } finally {
@@ -384,58 +378,73 @@ class MidtransController extends GetxController {
     accountSecvice.update(authC.account.value!);
 
     await showPopupPageWidget(
-        barrierDismissible: true,
+        barrierDismissible: false,
         title: 'Pembayaran Berhasil',
         height: MediaQuery.of(Get.context!).size.height * (0.8),
         width: MediaQuery.of(Get.context!).size.width * (0.3),
-        content: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: FutureBuilder<Widget>(
-            future: billingController.buildReceipt(package,
-                price: price[package] is int
-                    ? price[package]!.toDouble()
-                    : price[package]! as double),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return SizedBox(
-                  height: MediaQuery.of(Get.context!).size.height * 0.50,
-                  child: snapshot.data!,
-                );
-              } else {
-                return const Center(child: CircularProgressIndicator());
-              }
-            },
-          ),
-        ),
+        content: Obx(() => Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: (!paymentSuccess.value)
+                ? FutureBuilder<Widget>(
+                    future: billingController.buildReceipt(package,
+                        price: amountPaymentInvoice),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        // isLoadingReceipt.value = false;
+                        return SizedBox(
+                          height:
+                              MediaQuery.of(Get.context!).size.height * 0.50,
+                          child: snapshot.data!,
+                        );
+                      } else {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                    },
+                  )
+                : Center(
+                    child: Text(
+                        'Silahkan tutup aplikasi kemudian buka kembali.')))),
         // onClose: () async {},
         buttonList: [
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(Get.context!).primaryColor),
-            onPressed: () async {
-              var path =
-                  await billingController.generateAndSaveReceiptInBackground();
+          Obx(() => !paymentSuccess.value
+              ? isLoadingReceipt.value
+                  ? CircularProgressIndicator()
+                  : ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(Get.context!).primaryColor),
+                      onPressed: () async {
+                        isLoadingReceipt.value = true;
+                        var path = await billingController
+                            .generateAndSaveReceiptInBackground();
 
-              await otpC.successImage(authC.store.value!.phone.value,
-                  path: path);
-              Get.back();
-            },
-            child: const Text('ok', style: TextStyle(color: Colors.white)),
-          ),
+                        await otpC.successImage(authC.store.value!.phone.value,
+                            path: path);
+                        paymentSuccess.value = true;
+                        isLoadingReceipt.value = false;
+                        // Get.back();
+                      },
+                      child: const Text('ok',
+                          style: TextStyle(color: Colors.white)),
+                    )
+              : const SizedBox.shrink()),
         ]);
 
-    Get.defaultDialog(
-      barrierDismissible: true,
-      title: 'Restart Aplikasi',
-      middleText: 'Silahkan tutup aplikasi kemudian buka kembali.',
-    );
+    // await Get.defaultDialog(
+    //   barrierDismissible: false,
+    //   title: 'Restart Aplikasi',
+    //   middleText: 'Silahkan tutup aplikasi kemudian buka kembali.',
+    // );
     // Get.offAllNamed(Routes.SPLASH);
   }
 
-  void cancelPayment() async {
+  Future<void> cancelPayment() async {
+    print('membatalkan pembayaran...');
     snap.value = '';
-    await webviewController.value.stop();
-    await cancelMidtransTransaction(await authC.box.get('snap_token'));
+    // await webviewController.value.stop();
+    var snapToken = authC.box.get('snap_token');
+    if (snapToken != null) {
+      await cancelMidtransTransaction(snapToken);
+    }
     await authC.box.delete('order_id');
     await authC.box.delete('snap_token');
     await authC.box.delete('package');

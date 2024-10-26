@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../global_widget/menu_widget/menu_widget.dart';
+import 'add_from_excel.dart';
 import 'controllers/product.controller.dart';
 import 'detail_product/detail_product.dart';
 import 'product_list.dart';
@@ -45,14 +46,19 @@ class ProductScreen extends GetView<ProductController> {
                         Row(
                           children: [
                             ElevatedButton(
-                              onPressed: () => detailProduct(),
-                              child: const Text('Tambah Barang'),
+                              onPressed: () => addFromExcel(),
+                              child: const Text('Tambah dari Excel'),
                             ),
                             const SizedBox(width: 8),
                             ElevatedButton(
-                              onPressed: () => controller.exportHandle(),
-                              child: const Text('Export Data barang'),
+                              onPressed: () => detailProduct(),
+                              child: const Text('Tambah Barang'),
                             ),
+                            // const SizedBox(width: 8),
+                            // ElevatedButton(
+                            //   onPressed: () => controller.exportHandle(),
+                            //   child: const Text('Export Data barang'),
+                            // ),
                           ],
                         ),
                       ],

@@ -50,7 +50,7 @@ void activateAccountPopup({bool expired = false}) async {
   }
 
   showPopupPageWidget(
-    barrierDismissible: expired,
+    barrierDismissible: !expired,
     title: midtransC.snap.isEmpty
         ? 'Paket saat ini: ${authService.account.value!.accountType}'
         : 'Pembayaran Upgrade: ${controller.selectedCardType.value}',
@@ -146,28 +146,49 @@ void activateAccountPopup({bool expired = false}) async {
                   if (midtransC.isLoading.value)
                     const CircularProgressIndicator()
                   else
-                    ElevatedButton(
-                      onPressed:
-                          (controller.selectedCardType.value != 'flexible')
-                              ? () => midtransC.initiatePayment(
-                                  controller.selectedCardType.value)
-                              : expired
-                                  ? () => AppDialog.show(
-                                        title: 'Konfirmasi',
-                                        content: 'Kembali ke paket Flexible?',
-                                        confirmText: 'ya',
-                                        cancelText: 'batal',
-                                        // confirmColor: Colors.grey[200],
-                                        // cancelColor: Get.theme.primaryColor,
-                                        onConfirm: () async =>
-                                            await controller.backToFlexible(),
-                                        onCancel: () => Get.back(),
-                                      )
-                                  : null,
-                      child: Text((expired &&
-                              controller.selectedCardType.value == 'flexible')
-                          ? 'Pilih paket'
-                          : 'Bayar'),
+                    Row(
+                      children: [
+                        // if (controller.selectedCardType.value != 'flexible')
+                        //   // buat text form code voucher
+                        //   SizedBox(
+                        //     width: 200,
+                        //     child: TextFormField(
+                        //       decoration: InputDecoration(
+                        //         labelText: 'Kode Voucher (jika ada)',
+                        //         border: OutlineInputBorder(),
+                        //       ),
+                        //     ),
+                        //   ),
+                        // if (controller.selectedCardType.value != 'flexible')
+                        //   SizedBox(width: 20),
+                        SizedBox(
+                          width: 200,
+                          child: ElevatedButton(
+                            onPressed: (controller.selectedCardType.value !=
+                                    'flexible')
+                                ? () => midtransC.initiatePayment(
+                                    controller.selectedCardType.value)
+                                : expired
+                                    ? () => AppDialog.show(
+                                          title: 'Konfirmasi',
+                                          content: 'Kembali ke paket Flexible?',
+                                          confirmText: 'ya',
+                                          cancelText: 'batal',
+                                          // confirmColor: Colors.grey[200],
+                                          // cancelColor: Get.theme.primaryColor,
+                                          onConfirm: () async =>
+                                              await controller.backToFlexible(),
+                                          onCancel: () => Get.back(),
+                                        )
+                                    : null,
+                            child: Text((expired &&
+                                    controller.selectedCardType.value ==
+                                        'flexible')
+                                ? 'Pilih paket'
+                                : 'Bayar'),
+                          ),
+                        ),
+                      ],
                     ),
                 ],
               )
@@ -223,7 +244,7 @@ Widget buildSubscriptionCard({
 }) {
   final ActivateAccountController controller =
       Get.put(ActivateAccountController());
-  // final MenuWidgetController menuC = Get.find();
+  final MenuWidgetController menuC = Get.find();
   final MidtransController midtransC = Get.find();
   return Obx(() {
     // Mengubah warna jika dipilih
@@ -295,16 +316,17 @@ Widget buildSubscriptionCard({
                             : TextDecoration.lineThrough,
                       ),
                     ),
-                    // SizedBox(width: 8),
-                    // Container(
-                    //   padding: const EdgeInsets.symmetric(
-                    //       vertical: 4, horizontal: 8),
-                    //   decoration: BoxDecoration(
-                    //     color: Theme.of(Get.context!).colorScheme.primary,
-                    //     borderRadius: BorderRadius.circular(4),
-                    //   ),
-                    //   child: menuC.countdown,
-                    // ),
+                    SizedBox(width: 8),
+                    if (!package.toLowerCase().contains('flexible'))
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 4, horizontal: 8),
+                        decoration: BoxDecoration(
+                          color: Theme.of(Get.context!).colorScheme.primary,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: menuC.countdown,
+                      ),
                   ],
                 ),
                 const SizedBox(height: 10),

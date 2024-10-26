@@ -61,7 +61,7 @@ class BillingController extends GetxController {
   }
 
   // Widget struk pembayaran yang tidak akan ditampilkan (Offstage)
-  Future<Widget> buildReceipt(String package, {double price = 0}) async {
+  Future<Widget> buildReceipt(String package, {int price = 0}) async {
     final store = authService.store.value;
     final billing = await billingService.getBilling();
     return RepaintBoundary(
@@ -158,8 +158,7 @@ class BillingController extends GetxController {
                               buildText(package == 'flexible'
                                   ? billing?.billingName ?? ''
                                   : 'Paket $package'),
-                              buildText(
-                                  'Rp${currency.format(package == 'flexible' ? billing?.amountBill : price)}'),
+                              buildText('Rp${currency.format(price)}'),
                             ],
                           ),
                           Row(

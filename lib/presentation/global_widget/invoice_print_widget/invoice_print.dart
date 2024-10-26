@@ -141,68 +141,71 @@ void printInvoiceDialog(InvoiceModel invoice) {
                         },
                       ),
                       Divider(color: Colors.grey[200]),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          Expanded(
-                            child: ListTile(
-                              tileColor: Colors.grey[100],
-                              title: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Radio<String>(
-                                    value: printerController.printMethod[0],
-                                    groupValue: printerController
-                                        .selectedPrintMethod.value,
-                                    onChanged: (value) {
-                                      printerController.setPrintMethod(value!);
-                                      if (printerController
-                                              .selectedBlue.value !=
-                                          null) {
-                                        printerController.bluePrint.connect(
-                                            printerController
-                                                .selectedBlue.value!);
-                                      }
-                                    },
-                                  ),
-                                  const Text('Struk'),
-                                ],
+                      if (!Platform.isAndroid)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            Expanded(
+                              child: ListTile(
+                                tileColor: Colors.grey[100],
+                                title: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Radio<String>(
+                                      value: printerController.printMethod[0],
+                                      groupValue: printerController
+                                          .selectedPrintMethod.value,
+                                      onChanged: (value) {
+                                        printerController
+                                            .setPrintMethod(value!);
+                                        // if (printerController
+                                        //         .selectedBlue.value !=
+                                        //     null) {
+                                        //   printerController.bluePrint.connect(
+                                        //       printerController
+                                        //           .selectedBlue.value!);
+                                        // }
+                                      },
+                                    ),
+                                    const Text('Struk'),
+                                  ],
+                                ),
+                                onTap: () => printerController.setPrintMethod(
+                                    printerController.printMethod[0]),
                               ),
-                              onTap: () => printerController.setPrintMethod(
-                                  printerController.printMethod[0]),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: ListTile(
-                              tileColor: Colors.grey[100],
-                              title: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Radio<String>(
-                                    value: printerController.printMethod[1],
-                                    groupValue: printerController
-                                        .selectedPrintMethod.value,
-                                    onChanged: (value) {
-                                      printerController.setPrintMethod(value!);
-                                      if (printerController
-                                              .selectedBlue.value !=
-                                          null) {
-                                        printerController.bluePrint.connect(
-                                            printerController
-                                                .selectedBlue.value!);
-                                      }
-                                    },
-                                  ),
-                                  const Text('Invoice'),
-                                ],
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: ListTile(
+                                tileColor: Colors.grey[100],
+                                title: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Radio<String>(
+                                      value: printerController.printMethod[1],
+                                      groupValue: printerController
+                                          .selectedPrintMethod.value,
+                                      onChanged: (value) {
+                                        printerController
+                                            .setPrintMethod(value!);
+                                        if (printerController
+                                                .selectedBlue.value !=
+                                            null) {
+                                          printerController.bluePrint.connect(
+                                              printerController
+                                                  .selectedBlue.value!);
+                                        }
+                                      },
+                                    ),
+                                    const Text('Invoice'),
+                                  ],
+                                ),
+                                onTap: () => printerController.setPrintMethod(
+                                    printerController.printMethod[1]),
                               ),
-                              onTap: () => printerController.setPrintMethod(
-                                  printerController.printMethod[1]),
                             ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
                       Divider(color: Colors.grey[200]),
                       Row(
                         children: [

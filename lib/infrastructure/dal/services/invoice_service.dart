@@ -28,35 +28,41 @@ class InvoiceService extends GetxService implements InvoiceRepository {
   var methodPayment = ''.obs;
   var changeCount = 0.obs;
 
-  late Stream<List<InvoiceModel>> stream;
+  late Stream<List<InvoiceModel>> paidInvStream;
+  late Stream<List<InvoiceModel>> debtInvStream;
 
   @override
   Future<void> subscribe(String storeId) async {
     //! paid invoice
-    stream = db.watch('''
+    final startTime = DateTime.now();
+    paidInvStream = db.watch('''
       SELECT * 
       FROM invoices 
       WHERE remove_at IS NULL AND is_debt_paid = 1
       ORDER BY created_at DESC
-      LIMIT 200
       ''').map((data) => data.map((json) => InvoiceModel.fromJson(json)).toList());
 
-    stream.listen((datas) {
-      print('object');
+    paidInvStream.listen((datas) {
       paidInv.value = datas;
+      final endTime = DateTime.now();
+      final duration = endTime.difference(startTime);
+      print('Waktu pengambilan data paidInv: ${duration.inMilliseconds} ms');
     });
 
     //! debt invoice
-    stream = db.watch('''
+    final startTimeDebt = DateTime.now();
+    debtInvStream = db.watch('''
       SELECT * 
       FROM invoices 
       WHERE remove_at IS NULL AND is_debt_paid = 0
       ORDER BY created_at DESC
-      LIMIT 200
       ''').map((data) => data.map((json) => InvoiceModel.fromJson(json)).toList());
 
-    stream.listen((datas) {
+    debtInvStream.listen((datas) {
       debtInv.value = datas;
+      final endTime = DateTime.now();
+      final duration = endTime.difference(startTimeDebt);
+      print('Waktu pengambilan data debtInv: ${duration.inMilliseconds} ms');
     });
   }
 

@@ -134,8 +134,9 @@ class DetailProductController extends GetxController {
         product.sellPrice3?.value == null || product.sellPrice3!.value == 0
             ? ''
             : currency.format(product.sellPrice3!.value);
-    stockTextC.text =
-        product.stock.value == 0 ? '' : number.format(product.stock.value);
+    stockTextC.text = product.stock.value == 0
+        ? ''
+        : number.format(product.stock.value).replaceAll('.', '');
     minStockTextC.text = product.stockMin.value == 0
         ? ''
         : number.format(product.stockMin.value);
