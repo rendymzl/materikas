@@ -48,6 +48,12 @@ const schema = Schema([
     Column.text('init_at'),
     Column.text('remove_at'),
     Column.text('remove_product')
+  ], indexes: [
+    Index('invoice', [
+      IndexedColumn('invoice_id'),
+      IndexedColumn('customer'),
+    ]),
+    Index('payment', [IndexedColumn('payments')])
   ]),
   Table('customers', [
     Column.text('store_id'),
@@ -77,6 +83,12 @@ const schema = Schema([
     Column.text('payments'),
     Column.real('debt_amount'),
     Column.integer('is_debt_paid')
+  ], indexes: [
+    Index('invoice_sales', [
+      IndexedColumn('invoice_id'),
+      IndexedColumn('sales'),
+    ]),
+    Index('payment_sales', [IndexedColumn('payments')])
   ]),
   Table('products', [
     Column.text('product_id'),
@@ -94,6 +106,8 @@ const schema = Schema([
     Column.real('stock_min'),
     Column.real('sold'),
     Column.text('barcode')
+  ], indexes: [
+    Index('product', [IndexedColumn('product_name')])
   ]),
   Table('operating_costs', [
     Column.text('store_id'),

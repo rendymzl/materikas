@@ -20,7 +20,7 @@ class ProductList extends StatelessWidget {
       double currentScroll = scrollC.position.pixels;
 
       if (maxScroll == currentScroll && controller.hasMore.value) {
-        controller.loadMore();
+        controller.fetch(isClean: true);
       }
     }
 
@@ -93,9 +93,7 @@ class ProductList extends StatelessWidget {
                       child:
                           CircularProgressIndicator()); // Tampilkan loading jika pertama kali
                 }
-                final productList = controller.isLowStock.value
-                    ? controller.lowStockProduct
-                    : controller.displayedItems;
+                final productList = controller.displayedItems;
                 return ListView.separated(
                   separatorBuilder: (context, index) =>
                       Divider(color: Colors.grey[300]),

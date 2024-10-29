@@ -1,7 +1,7 @@
 name: materikas
 description: "Aplikasi Kasir."
 publish_to: "none"
-version: 1.0.9
+version: 1.1.1
 
 environment:
   sdk: ^3.5.0

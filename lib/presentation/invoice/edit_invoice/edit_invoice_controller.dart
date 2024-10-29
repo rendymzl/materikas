@@ -10,12 +10,14 @@ import '../../../infrastructure/models/invoice_model/invoice_model.dart';
 import '../../../infrastructure/models/product_model.dart';
 import '../../global_widget/field_customer_widget/field_customer_widget_controller.dart';
 import '../../global_widget/payment_widget/payment_widget_controller.dart';
+import '../../product/controllers/product.controller.dart';
 
 class EditInvoiceController extends GetxController {
   late final PaymentController paymentC = Get.put(PaymentController());
   late final InvoiceService _invoiceService = Get.find();
-  late final ProductService _productService = Get.find<ProductService>();
-  late final foundProducts = _productService.foundProducts;
+  late final ProductService _productService = Get.find();
+  late final ProductController _productC = Get.put(ProductController());
+  late final foundProducts = _productC.displayedItems;
   final AuthService accountC = Get.find();
   late CustomerInputFieldController customerFieldC = Get.find();
 

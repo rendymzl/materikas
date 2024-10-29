@@ -4,8 +4,9 @@ import 'package:material_symbols_icons/material_symbols_icons.dart';
 
 import '../../../infrastructure/models/product_model.dart';
 import '../../../infrastructure/utils/display_format.dart';
+import '../../product/controllers/product.controller.dart';
 import '../../product/detail_product/detail_product.dart';
-import 'product_list_widget_controller.dart';
+// import 'product_list_widget_controller.dart';
 
 class ProductListWidget extends StatelessWidget {
   final Function(ProductModel) onClick;
@@ -23,16 +24,19 @@ class ProductListWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(ProductListWidgetController());
+    // final controller = Get.put(ProductListWidgetController());
+    final ProductController controller = Get.put(ProductController());
 
     ScrollController scrollC = ScrollController();
 
     void onScroll() {
       double maxScroll = scrollC.position.maxScrollExtent;
       double currentScroll = scrollC.position.pixels;
+      print('maxScroll $maxScroll');
+      print('currentScroll $currentScroll');
 
       if (maxScroll == currentScroll && controller.hasMore.value) {
-        controller.loadMore();
+        controller.fetch();
       }
     }
 
@@ -122,20 +126,14 @@ class ProductListWidget extends StatelessWidget {
               () {
                 if (controller.displayedItems.isEmpty &&
                     controller.isLoading.value) {
-                  return const Center(
-                      child:
-                          CircularProgressIndicator()); // Tampilkan loading jika pertama kali
+                  return const Center(child: CircularProgressIndicator());
                 }
 
-                final productList = controller.isLowStock.value
-                    ? controller.lowStockProduct
-                    : controller.displayedItems;
+                final productList = controller.displayedItems;
 
                 return ListView.builder(
-                  controller: controller.isLowStock.value ? null : scrollC,
-                  itemCount: controller.isLowStock.value
-                      ? productList.length
-                      : productList.length + 1,
+                  controller: scrollC,
+                  itemCount: productList.length,
                   itemBuilder: (BuildContext context, int index) {
                     if (index == controller.displayedItems.length) {
                       // Indikator loading di bagian bawah
@@ -149,8 +147,7 @@ class ProductListWidget extends StatelessWidget {
                     }
 
                     final foundProduct = productList[index];
-                    double getPrice =
-                        foundProduct.getPrice(controller.priceType.value).value;
+                    double getPrice = foundProduct.getPrice(1).value;
                     double sellPrice = getPrice.toInt() != 0
                         ? getPrice
                         : foundProduct.sellPrice1.value;

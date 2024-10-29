@@ -1,9 +1,9 @@
 import 'dart:convert';
 
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:powersync/sqlite3.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 
 import '../../../domain/core/interfaces/invoice_repository.dart';
@@ -12,144 +12,319 @@ import '../../models/payment_model.dart';
 import '../database/powersync.dart';
 
 class InvoiceService extends GetxService implements InvoiceRepository {
-  // var invoices = <InvoiceModel>[].obs;
-  var paidInv = <InvoiceModel>[].obs;
-  var debtInv = <InvoiceModel>[].obs;
-  var filteredPaidInv = <InvoiceModel>[].obs;
-  var filteredDebtInv = <InvoiceModel>[].obs;
-  // var monthlyInvoice = <InvoiceModel>[].obs;
-  var displayedInvoices = <InvoiceModel>[].obs;
+  //!===================== INFINITY SCROLL: VARIABLE =====================
+  final updatedCount = 0.obs;
 
-  // var CashPayment = <InvoiceModel>[].obs;
-  // var displayedInvoices = <InvoiceModel>[].obs;
-
-  var searchQuery = ''.obs;
-  var searchDateQuery = Rx<PickerDateRange?>(null);
-  var methodPayment = ''.obs;
-  var changeCount = 0.obs;
-
-  late Stream<List<InvoiceModel>> paidInvStream;
-  late Stream<List<InvoiceModel>> debtInvStream;
+  //!===================== INFINITY SCROLL: FUNCTION =====================
 
   @override
   Future<void> subscribe(String storeId) async {
     //! paid invoice
     final startTime = DateTime.now();
-    paidInvStream = db.watch('''
-      SELECT * 
+    final invoiceStream = db.watch('''
+      SELECT invoice_id 
       FROM invoices 
-      WHERE remove_at IS NULL AND is_debt_paid = 1
-      ORDER BY created_at DESC
-      ''').map((data) => data.map((json) => InvoiceModel.fromJson(json)).toList());
+      ''').map((data) => data.toList());
 
-    paidInvStream.listen((datas) {
-      paidInv.value = datas;
+    invoiceStream.listen((datas) async {
+      updatedCount.value++;
       final endTime = DateTime.now();
       final duration = endTime.difference(startTime);
-      print('Waktu pengambilan data paidInv: ${duration.inMilliseconds} ms');
-    });
-
-    //! debt invoice
-    final startTimeDebt = DateTime.now();
-    debtInvStream = db.watch('''
-      SELECT * 
-      FROM invoices 
-      WHERE remove_at IS NULL AND is_debt_paid = 0
-      ORDER BY created_at DESC
-      ''').map((data) => data.map((json) => InvoiceModel.fromJson(json)).toList());
-
-    debtInvStream.listen((datas) {
-      debtInv.value = datas;
-      final endTime = DateTime.now();
-      final duration = endTime.difference(startTimeDebt);
-      print('Waktu pengambilan data debtInv: ${duration.inMilliseconds} ms');
+      print(
+          'Waktu pengambilan data listen ${datas.length}: ${duration.inMilliseconds} ms');
     });
   }
 
-  // Fungsi untuk menerapkan filter dan pencarian
-  Future<void> applyFilters() async {
-    var paidInvResult = <InvoiceModel>[].obs;
-    var debtInvResult = <InvoiceModel>[].obs;
-
-    if (searchDateQuery.value != null) {
-      paidInvResult.value =
-          await getByCreatedDate(searchDateQuery.value!, paid: true);
-      debtInvResult.value =
-          await getByCreatedDate(searchDateQuery.value!, paid: false);
-    }
-
-    if (methodPayment.value.isNotEmpty && searchDateQuery.value == null) {
-      paidInvResult.value =
-          await searchByPaymentMethod(methodPayment.value, true);
-      debtInvResult.value =
-          await searchByPaymentMethod(methodPayment.value, false);
-    }
-
-    if (searchQuery.value.isNotEmpty) {
-      if (searchDateQuery.value != null || methodPayment.value.isNotEmpty) {
-        if (searchDateQuery.value != null) {
-          var paid = paidInvResult
-              .where((invoice) =>
-                  invoice.customer.value!.name
-                      .toLowerCase()
-                      .contains(searchQuery.value.toLowerCase()) ||
-                  invoice.invoiceId!
-                      .toLowerCase()
-                      .contains(searchQuery.value.toLowerCase()))
-              .toList();
-          var debt = debtInvResult
-              .where((invoice) =>
-                  invoice.customer.value!.name
-                      .toLowerCase()
-                      .contains(searchQuery.value.toLowerCase()) ||
-                  invoice.invoiceId!
-                      .toLowerCase()
-                      .contains(searchQuery.value.toLowerCase()))
-              .toList();
-          paidInvResult.value = paid;
-          debtInvResult.value = debt;
-        }
-        if (methodPayment.value.isNotEmpty) {
-          var paid = paidInvResult
-              .where((invoice) =>
-                  (invoice.customer.value!.name
-                          .toLowerCase()
-                          .contains(searchQuery.value.toLowerCase()) ||
-                      invoice.invoiceId!
-                          .toLowerCase()
-                          .contains(searchQuery.value.toLowerCase())) &&
-                  invoice.payments.any((payment) => payment.method!
-                      .toLowerCase()
-                      .contains(methodPayment.value.toLowerCase())))
-              .toList();
-          var debt = debtInvResult
-              .where((invoice) =>
-                  (invoice.customer.value!.name
-                          .toLowerCase()
-                          .contains(searchQuery.value.toLowerCase()) ||
-                      invoice.invoiceId!
-                          .toLowerCase()
-                          .contains(searchQuery.value.toLowerCase())) &&
-                  invoice.payments.any((payment) => payment.method!
-                      .toLowerCase()
-                      .contains(methodPayment.value.toLowerCase())))
-              .toList();
-          paidInvResult.value = paid;
-          debtInvResult.value = debt;
+  Future<void> fetch({
+    required List<InvoiceModel> listPaid,
+    required List<InvoiceModel> listDebt,
+    String search = '',
+    PickerDateRange? pickerDateRange,
+    String methodPayment = '',
+  }) async {
+    ResultSet result;
+    if (search.isEmpty) {
+      if (pickerDateRange == null) {
+        if (methodPayment.isEmpty) {
+          // print(
+          //     'object ${isPaid} ${search} ${pickerDateRange} ${methodPayment}');
+          result = await db.getAll('''
+            SELECT * FROM invoices WHERE remove_at IS NULL
+            ORDER BY created_at DESC
+            LIMIT 150
+            ''');
+        } else {
+          result = await db.getAll('''
+            SELECT * FROM invoices WHERE remove_at IS NULL
+            AND payments LIKE ? ORDER BY created_at DESC
+            LIMIT 150
+            ''', [methodPayment]);
         }
       } else {
-        paidInvResult.value = await searchInv(searchQuery.value, true);
-        debtInvResult.value = await searchInv(searchQuery.value, false);
+        result = await db.getAll('''
+          SELECT * FROM invoices WHERE remove_at IS NULL
+          AND created_at BETWEEN ? AND ? ORDER BY created_at DESC
+          LIMIT 150
+          ''', [
+          DateFormat('yyyy-MM-dd').format(pickerDateRange.startDate!),
+          DateFormat('yyyy-MM-dd').format(pickerDateRange.endDate!),
+        ]);
+      }
+    } else {
+      if (pickerDateRange == null) {
+        if (methodPayment.isEmpty) {
+          result = await db.getAll('''
+            SELECT * FROM invoices WHERE remove_at IS NULL
+            AND (customer LIKE ? OR invoice_id LIKE ?) ORDER BY created_at DESC
+            LIMIT 150
+            ''', ['%$search%', '%$search%']);
+        } else {
+          result = await db.getAll('''
+            SELECT * FROM invoices WHERE remove_at IS NULL
+            AND payments LIKE ? AND (customer LIKE ? OR invoice_id LIKE ?) ORDER BY created_at DESC
+            LIMIT 150
+            ''', [
+            methodPayment,
+            '%$search%',
+            '%$search%',
+          ]);
+        }
+      } else {
+        if (methodPayment.isEmpty) {
+          result = await db.getAll('''
+            SELECT * FROM invoices WHERE remove_at IS NULL
+            AND (customer LIKE ? OR invoice_id LIKE ?) AND created_at BETWEEN ? AND ? ORDER BY created_at DESC
+            LIMIT 150
+            ''', [
+            '%$search%',
+            '%$search%',
+            DateFormat('yyyy-MM-dd').format(pickerDateRange.startDate!),
+            DateFormat('yyyy-MM-dd').format(pickerDateRange.endDate!),
+          ]);
+        } else {
+          result = await db.getAll('''
+            SELECT * FROM invoices WHERE remove_at IS NULL
+            AND payments LIKE ? AND (customer LIKE ? OR invoice_id LIKE ?) AND created_at BETWEEN ? AND ? ORDER BY created_at DESC
+            LIMIT 150
+            ''', [
+            methodPayment,
+            '%$search%',
+            '%$search%',
+            DateFormat('yyyy-MM-dd').format(pickerDateRange.startDate!),
+            DateFormat('yyyy-MM-dd').format(pickerDateRange.endDate!),
+          ]);
+        }
       }
     }
+    // listPaid = result
+    //     .where((e) => e['is_debt_paid'] == 1)
+    //     .map((e) => InvoiceModel.fromJson(e))
+    //     .toList();
+    // listDebt = result
+    //     .where((e) => e['is_debt_paid'] == 0)
+    //     .map((e) => InvoiceModel.fromJson(e))
+    //     .toList();
 
-    filteredPaidInv.value = paidInvResult
-      ..sort((a, b) => DateTime.parse(b.createdAt.value!.toIso8601String())
-          .compareTo(DateTime.parse(a.createdAt.value!.toIso8601String())));
-    filteredDebtInv.value = debtInvResult
-      ..sort((a, b) => DateTime.parse(b.createdAt.value!.toIso8601String())
-          .compareTo(DateTime.parse(a.createdAt.value!.toIso8601String())));
+    for (var e in result) {
+      if (e['is_debt_paid'] == 1) {
+        listPaid.add(InvoiceModel.fromJson(e));
+      } else {
+        listDebt.add(InvoiceModel.fromJson(e));
+      }
+    }
   }
+
+  Future<List<InvoiceModel>> loadMore({
+    bool? isPaid,
+    int offset = 15,
+    int limit = 15,
+    String search = '',
+    PickerDateRange? pickerDateRange,
+    String methodPayment = '',
+  }) async {
+    ResultSet result;
+    if (search.isEmpty) {
+      if (pickerDateRange == null) {
+        if (methodPayment.isEmpty) {
+          // print(
+          //     'object ${isPaid} ${search} ${pickerDateRange} ${methodPayment}');
+          result = await db.getAll('''
+            SELECT * FROM invoices WHERE remove_at IS NULL
+            AND is_debt_paid = ? ORDER BY created_at DESC
+            LIMIT ? OFFSET ?
+            ''', [isPaid! ? 1 : 0, limit, offset]);
+        } else {
+          result = await db.getAll('''
+            SELECT * FROM invoices WHERE remove_at IS NULL
+            AND is_debt_paid = ? AND payments LIKE ? ORDER BY created_at DESC
+            LIMIT ? OFFSET ?
+            ''', [isPaid! ? 1 : 0, methodPayment, limit, offset]);
+        }
+      } else {
+        result = await db.getAll('''
+          SELECT * FROM invoices WHERE remove_at IS NULL
+          AND is_debt_paid = ? AND created_at BETWEEN ? AND ? ORDER BY created_at DESC
+          LIMIT ? OFFSET ?
+          ''', [
+          isPaid! ? 1 : 0,
+          DateFormat('yyyy-MM-dd').format(pickerDateRange.startDate!),
+          DateFormat('yyyy-MM-dd').format(pickerDateRange.endDate!),
+          limit,
+          offset
+        ]);
+      }
+    } else {
+      if (pickerDateRange == null) {
+        if (methodPayment.isEmpty) {
+          result = await db.getAll('''
+            SELECT * FROM invoices WHERE remove_at IS NULL
+            AND is_debt_paid = ? AND (customer LIKE ? OR invoice_id LIKE ?) ORDER BY created_at DESC
+            LIMIT ? OFFSET ?
+            ''', [isPaid! ? 1 : 0, '%$search%', '%$search%', limit, offset]);
+        } else {
+          result = await db.getAll('''
+            SELECT * FROM invoices WHERE remove_at IS NULL
+            AND is_debt_paid = ? AND payments LIKE ? AND (customer LIKE ? OR invoice_id LIKE ?) ORDER BY created_at DESC
+            LIMIT ? OFFSET ?
+            ''', [
+            isPaid! ? 1 : 0,
+            methodPayment,
+            '%$search%',
+            '%$search%',
+            limit,
+            offset
+          ]);
+        }
+      } else {
+        if (methodPayment.isEmpty) {
+          result = await db.getAll('''
+            SELECT * FROM invoices WHERE remove_at IS NULL
+            AND is_debt_paid = ? AND (customer LIKE ? OR invoice_id LIKE ?) AND created_at BETWEEN ? AND ? ORDER BY created_at DESC
+            LIMIT ? OFFSET ?
+            ''', [
+            isPaid! ? 1 : 0,
+            '%$search%',
+            '%$search%',
+            DateFormat('yyyy-MM-dd').format(pickerDateRange.startDate!),
+            DateFormat('yyyy-MM-dd').format(pickerDateRange.endDate!),
+            limit,
+            offset
+          ]);
+        } else {
+          result = await db.getAll('''
+            SELECT * FROM invoices WHERE remove_at IS NULL
+            AND is_debt_paid = ? AND payments LIKE ? AND (customer LIKE ? OR invoice_id LIKE ?) AND created_at BETWEEN ? AND ? ORDER BY created_at DESC
+            LIMIT ? OFFSET ?
+            ''', [
+            isPaid! ? 1 : 0,
+            methodPayment,
+            '%$search%',
+            '%$search%',
+            DateFormat('yyyy-MM-dd').format(pickerDateRange.startDate!),
+            DateFormat('yyyy-MM-dd').format(pickerDateRange.endDate!),
+            limit,
+            offset
+          ]);
+        }
+      }
+    }
+    // var result = await db.getAll('''
+    //       SELECT * FROM invoices WHERE remove_at IS NULL
+    //       AND is_debt_paid = ? ORDER BY created_at DESC
+    //       LIMIT ? OFFSET ?
+    //       ''', [isPaid! ? 1 : 0, limit, offset]);
+    var listInvoices = result.map((e) => InvoiceModel.fromJson(e)).toList();
+    return listInvoices;
+  }
+
+  //!===================== SEARCH: VARIABLE =====================
+  // var filteredPaidInv = <InvoiceModel>[].obs;
+  // var filteredDebtInv = <InvoiceModel>[].obs;
+
+  //!===================== SEARCH: FUNCTION =====================
+  // Future<void> applyFilters() async {
+  //   var paidInvResult = <InvoiceModel>[].obs;
+  //   var debtInvResult = <InvoiceModel>[].obs;
+
+  //   if (searchDateQuery.value != null) {
+  //     paidInvResult.value =
+  //         await getByCreatedDate(searchDateQuery.value!, paid: true);
+  //     debtInvResult.value =
+  //         await getByCreatedDate(searchDateQuery.value!, paid: false);
+  //   }
+
+  //   if (methodPayment.value.isNotEmpty && searchDateQuery.value == null) {
+  //     paidInvResult.value =
+  //         await searchByPaymentMethod(methodPayment.value, true);
+  //     debtInvResult.value =
+  //         await searchByPaymentMethod(methodPayment.value, false);
+  //   }
+
+  //   if (searchQuery.value.isNotEmpty) {
+  //     if (searchDateQuery.value != null || methodPayment.value.isNotEmpty) {
+  //       if (searchDateQuery.value != null) {
+  //         var paid = paidInvResult
+  //             .where((invoice) =>
+  //                 invoice.customer.value!.name
+  //                     .toLowerCase()
+  //                     .contains(searchQuery.value.toLowerCase()) ||
+  //                 invoice.invoiceId!
+  //                     .toLowerCase()
+  //                     .contains(searchQuery.value.toLowerCase()))
+  //             .toList();
+  //         var debt = debtInvResult
+  //             .where((invoice) =>
+  //                 invoice.customer.value!.name
+  //                     .toLowerCase()
+  //                     .contains(searchQuery.value.toLowerCase()) ||
+  //                 invoice.invoiceId!
+  //                     .toLowerCase()
+  //                     .contains(searchQuery.value.toLowerCase()))
+  //             .toList();
+  //         paidInvResult.value = paid;
+  //         debtInvResult.value = debt;
+  //       }
+  //       if (methodPayment.value.isNotEmpty) {
+  //         var paid = paidInvResult
+  //             .where((invoice) =>
+  //                 (invoice.customer.value!.name
+  //                         .toLowerCase()
+  //                         .contains(searchQuery.value.toLowerCase()) ||
+  //                     invoice.invoiceId!
+  //                         .toLowerCase()
+  //                         .contains(searchQuery.value.toLowerCase())) &&
+  //                 invoice.payments.any((payment) => payment.method!
+  //                     .toLowerCase()
+  //                     .contains(methodPayment.value.toLowerCase())))
+  //             .toList();
+  //         var debt = debtInvResult
+  //             .where((invoice) =>
+  //                 (invoice.customer.value!.name
+  //                         .toLowerCase()
+  //                         .contains(searchQuery.value.toLowerCase()) ||
+  //                     invoice.invoiceId!
+  //                         .toLowerCase()
+  //                         .contains(searchQuery.value.toLowerCase())) &&
+  //                 invoice.payments.any((payment) => payment.method!
+  //                     .toLowerCase()
+  //                     .contains(methodPayment.value.toLowerCase())))
+  //             .toList();
+  //         paidInvResult.value = paid;
+  //         debtInvResult.value = debt;
+  //       }
+  //     } else {
+  //       paidInvResult.value = await searchInv(searchQuery.value, true);
+  //       debtInvResult.value = await searchInv(searchQuery.value, false);
+  //     }
+  //   }
+
+  //   filteredPaidInv.value = paidInvResult
+  //     ..sort((a, b) => DateTime.parse(b.createdAt.value!.toIso8601String())
+  //         .compareTo(DateTime.parse(a.createdAt.value!.toIso8601String())));
+  //   filteredDebtInv.value = debtInvResult
+  //     ..sort((a, b) => DateTime.parse(b.createdAt.value!.toIso8601String())
+  //         .compareTo(DateTime.parse(a.createdAt.value!.toIso8601String())));
+  // }
 
   Future<List<InvoiceModel>> searchInv(String searchTerm, bool paid) async {
     String query = '''
@@ -211,7 +386,6 @@ class InvoiceService extends GetxService implements InvoiceRepository {
     ]);
     if (paid != null) {
       results = results.where((element) {
-        // print('results ${element}');
         return element['is_debt_paid'] == (paid ? 1 : 0);
       }).toList();
       print('results ${results.length}');
@@ -242,22 +416,6 @@ class InvoiceService extends GetxService implements InvoiceRepository {
     final year = date.year.toString();
     return 'BILL-$year$month';
   }
-
-  //   @override
-  // Future<List<InvoiceModel>> getByCreatedDate(DateTime startOfDate) async {
-  //   DateTime endOfDate = startOfDate.add(Duration(days: 7));
-  //   String query = '''
-  //     SELECT * FROM invoices WHERE
-  //     created_at BETWEEN ? AND ?
-  //     ''';
-  //   List<Map<String, dynamic>> results = await db.getAll(query, [
-  //     DateFormat('yyyy-MM-dd').format(startOfDate),
-  //     DateFormat('yyyy-MM-dd').format(endOfDate),
-  //   ]);
-  //   var invoiceList = results.map((e) => InvoiceModel.fromJson(e)).toList();
-  //   print('created at $invoiceList');
-  //   return invoiceList;
-  // }
 
   @override
   Future<List<InvoiceModel>> getByPaymentDate(DateTime datetime) async {
@@ -291,6 +449,7 @@ class InvoiceService extends GetxService implements InvoiceRepository {
     return results.map((e) => PaymentMapModel.fromJson(e)).toList();
   }
 
+  //!===================== CREATE UPDATE DELETE =====================
   @override
   Future<void> insert(InvoiceModel invoice) async {
     await db.execute(

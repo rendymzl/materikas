@@ -1,5 +1,6 @@
 //! GENERATE INVOICE ===
 import 'package:get/get.dart';
+import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 
 import '../../infrastructure/dal/services/invoice_service.dart';
 import '../../infrastructure/models/customer_model.dart';
@@ -15,6 +16,7 @@ Future<String> generateInvoiceId(CustomerModel? customer) async {
       : 'G';
 
   DateTime date = DateTime.now();
+  PickerDateRange dateRange = PickerDateRange(date, date);
   String year = date.year.toString().substring(2);
   String month = date.month.toString().padLeft(2, '0');
   String day = date.day.toString().padLeft(2, '0');
@@ -25,11 +27,8 @@ Future<String> generateInvoiceId(CustomerModel? customer) async {
 
   String dateCode = '$clientCode$month$day$year$hour$minute$second$millisecond';
 
-  List<InvoiceModel> result = _invoiceService.paidInv
-      .where((element) => element.invoiceId!.contains('$month$day$year'))
-      .toList();
-
-  result = _invoiceService.debtInv
+  List<InvoiceModel> result = await _invoiceService.getByCreatedDate(dateRange);
+  result = result
       .where((element) => element.invoiceId!.contains('$month$day$year'))
       .toList();
 

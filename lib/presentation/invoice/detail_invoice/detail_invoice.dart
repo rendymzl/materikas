@@ -302,6 +302,7 @@ void detailDialog(InvoiceModel invoice) {
                     width: 700,
                     child: Obx(
                       () {
+                        print('payment ${invoice.payments}');
                         return ListView.builder(
                           shrinkWrap: true,
                           itemCount: invoice.payments.length,

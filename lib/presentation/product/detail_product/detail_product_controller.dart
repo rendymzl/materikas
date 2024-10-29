@@ -6,13 +6,15 @@ import '../../../infrastructure/dal/services/product_service.dart';
 import '../../../infrastructure/models/product_model.dart';
 import '../../../infrastructure/utils/display_format.dart';
 import '../../global_widget/app_dialog_widget.dart';
+import '../controllers/product.controller.dart';
 
 class DetailProductController extends GetxController {
   final ProductService _productService = Get.find<ProductService>();
+  final ProductController _productC = Get.put(ProductController());
   final AuthService _authService = Get.find();
 
-  late final products = _productService.products;
-  late final lastCode = _productService.lastProductCode;
+  late final products = _productC.displayedItems;
+  late final lastCode = _productC.lastCode;
 
   final formkey = GlobalKey<FormState>();
 

@@ -12,28 +12,7 @@ import '../../../infrastructure/models/invoice_model/invoice_model.dart';
 class InvoiceController extends GetxController {
   late final AuthService _authService = Get.find();
   late final InvoiceService invoiceService = Get.find();
-
-  // late final foundInvoices = invoiceService.foundInvoices;
-
-  late final debtInv = invoiceService.debtInv;
   late InvoiceModel initInvoice;
-
-  // Observable untuk pencarian dan filter
-  // var searchQuery = ''.obs;
-  var dateRangePicked = PickerDateRange(
-          DateTime.now(), DateTime.now().add(const Duration(days: 1)))
-      .obs;
-
-  // late StreamSubscription<List<InvoiceModel>> subscription;
-  // late final invoices = <InvoiceModel>[].obs;
-  // late final filteredInvoices = <InvoiceModel>[].obs;
-  var displayedItems = <InvoiceModel>[].obs; // Data yang ditampilkan saat ini
-
-  var isLoading = false.obs; // Untuk memantau status loading
-  var hasMore = true.obs; // Memantau apakah masih ada data lagi
-  var page = 1; // Halaman data saat ini
-
-  final int limit = 20; // Batas data per halaman
 
   final formKey = GlobalKey<FormState>();
 
@@ -44,113 +23,178 @@ class InvoiceController extends GetxController {
 
   @override
   void onInit() async {
-    super.onInit();
-    invoiceService.searchQuery.value = '';
-    invoiceService.methodPayment.value = '';
-    invoiceService.searchDateQuery.value = null;
-    // invoiceService.applyFilters();
-    loadMore();
+    await fetch();
 
     // Listen perubahan searchQuery atau selectedCategory
-    everAll([
-      invoiceService.searchQuery,
-      invoiceService.searchDateQuery,
-      invoiceService.changeCount,
-      invoiceService.methodPayment,
-    ], (_) async {
-      if (invoiceService.searchQuery.value.isNotEmpty ||
-          invoiceService.searchDateQuery.value != null ||
-          invoiceService.methodPayment.value.isNotEmpty) {
-        print('ondone: ${invoiceService.changeCount.value}');
-        print('search value from everAll: ${invoiceService.searchQuery.value}');
-        print('paidInv.length after updated: ${invoiceService.paidInv.length}');
-        await invoiceService.applyFilters();
-      }
-      displayedItems.clear();
-      hasMore.value = true;
-      page = 1;
-      loadMore();
+    everAll([invoiceService.updatedCount], (_) async {
+      await fetch();
     });
-    // everAll([invoiceService.paidInv, invoiceService.debtInv], (_) {
-    //   displayedItems.clear();
-    //   hasMore.value = true;
-    //   page = 1;
-    //   loadMore();
-    // });
-    // ever(dateRangePicked, (_) => invoiceService.applyFilters());
     editInvoice.value = await _authService.checkAccess('editInvoice');
     returnInvoice.value = await _authService.checkAccess('returnInvoice');
     paymentInvoice.value = await _authService.checkAccess('paymentInvoice');
     destroyInvoice.value = await _authService.checkAccess('destroyInvoice');
+    super.onInit();
   }
 
-  // @override
-  // void onClose() {
-  //   // Berhenti mendengarkan stream saat controller dihapus dari memori
-  //   subscription.cancel();
-  //   super.onClose();
+  Future<void> fetch() async {
+    if (isLoadingPaid.value) return;
+
+    hasMorePaid.value = true;
+    hasMoreDebt.value = true;
+    displayedItemsPaid.clear();
+    displayedItemsDebt.clear();
+
+    final startTime = DateTime.now();
+
+    await invoiceService.fetch(
+      listPaid: displayedItemsPaid,
+      listDebt: displayedItemsDebt,
+      search: searchQuery.value,
+      pickerDateRange: searchDateQuery.value,
+      methodPayment: methodPayment.value,
+    );
+    offsetPaid = displayedItemsPaid.length;
+    offsetDebt = displayedItemsDebt.length;
+    final endTime = DateTime.now();
+    final duration = endTime.difference(startTime);
+    print('Waktu pengambilan data $offsetPaid: ${duration.inMilliseconds} ms');
+  }
+
+  //!PAID
+  var displayedItemsPaid = <InvoiceModel>[].obs;
+  var isLoadingPaid = false.obs;
+  var hasMorePaid = true.obs;
+  int offsetPaid = 0;
+
+  //!DEBT
+  var displayedItemsDebt = <InvoiceModel>[].obs;
+  var isLoadingDebt = false.obs;
+  var hasMoreDebt = true.obs;
+  int offsetDebt = 0;
+
+  final int limit = 15;
+
+  var searchQuery = ''.obs;
+  var searchDateQuery = Rx<PickerDateRange?>(null);
+  var methodPayment = ''.obs;
+
+  Future<void> fetchPaid({bool isClean = false}) async {
+    if (isLoadingPaid.value) return;
+    // isLoadingPaid.value = true;
+
+    if (isClean) {
+      hasMorePaid.value = true;
+      offsetPaid = 0;
+      displayedItemsPaid.clear();
+    }
+
+    if (!hasMorePaid.value) return;
+    final startTime = DateTime.now();
+
+    List<InvoiceModel> results = await invoiceService.loadMore(
+      isPaid: true,
+      limit: limit,
+      offset: offsetPaid,
+      search: searchQuery.value,
+      pickerDateRange: searchDateQuery.value,
+      methodPayment: methodPayment.value,
+    );
+
+    // if (invoiceService.isFiltered()) {
+    //   hasMorePaid.value = false;
+    //   displayedItemsPaid.assignAll(invoiceService.filteredPaidInv.length > 50
+    //       ? invoiceService.filteredPaidInv.sublist(0, 50)
+    //       : invoiceService.filteredPaidInv);
+    // } else {
+    if (results.isEmpty || offsetPaid > 200) {
+      hasMorePaid.value = false;
+    } else {
+      displayedItemsPaid.addAll(results);
+      offsetPaid += limit;
+    }
+    // }
+
+    isLoadingPaid.value = false;
+    final endTime = DateTime.now();
+    final duration = endTime.difference(startTime);
+    print('Waktu pengambilan data $offsetPaid: ${duration.inMilliseconds} ms');
+  }
+
+  Future<void> fetchDebt({bool isClean = false}) async {
+    if (isLoadingDebt.value) return;
+    // isLoadingDebt.value = true;
+
+    if (isClean) {
+      hasMoreDebt.value = true;
+      offsetDebt = 0;
+      displayedItemsDebt.clear();
+    }
+
+    if (!hasMoreDebt.value) return;
+    final startTime = DateTime.now();
+
+    List<InvoiceModel> results = await invoiceService.loadMore(
+      isPaid: false,
+      limit: limit,
+      offset: offsetDebt,
+      search: searchQuery.value,
+      pickerDateRange: searchDateQuery.value,
+      methodPayment: methodPayment.value,
+    );
+
+    // if (invoiceService.isFiltered()) {
+    //   hasMoreDebt.value = false;
+    //   displayedItemsDebt.assignAll(invoiceService.filteredDebtInv.length > 50
+    //       ? invoiceService.filteredDebtInv.sublist(0, 50)
+    //       : invoiceService.filteredDebtInv);
+    // } else {
+    if (results.isEmpty) {
+      hasMoreDebt.value = false;
+    } else {
+      displayedItemsDebt.addAll(results);
+      offsetDebt += limit;
+    }
+    // }
+
+    isLoadingDebt.value = false;
+    final endTime = DateTime.now();
+    final duration = endTime.difference(startTime);
+    print('Waktu pengambilan data $offsetDebt: ${duration.inMilliseconds} ms');
+  }
+
+  bool isFiltered() {
+    return (searchQuery.isNotEmpty ||
+        searchDateQuery.value != null ||
+        methodPayment.isNotEmpty);
+  }
+  // Future<void> resetScroll() async {
+  //   offsetPaid = 0;
+  //   offsetDebt = 0;
+  //   hasMorePaid.value = true;
+  //   hasMoreDebt.value = true;
+  //   displayedItemsPaid.clear();
+  //   displayedItemsDebt.clear();
+
+  //   await fetchPaid();
+  //   await fetchDebt();
   // }
 
-  void loadMore() {
-    if (isLoading.value || !hasMore.value) return;
-
-    isLoading.value = true;
-
-    // Ambil data dari list yang ada berdasarkan pagination
-    int startIndex = (page - 1) * limit;
-    int endIndex = startIndex + limit;
-
-    List<InvoiceModel> newData = invoiceService.searchQuery.isEmpty &&
-            invoiceService.searchDateQuery.value == null &&
-            invoiceService.methodPayment.value.isEmpty
-        ? startIndex < invoiceService.paidInv.length
-            ? invoiceService.paidInv.sublist(
-                startIndex,
-                endIndex > invoiceService.paidInv.length
-                    ? invoiceService.paidInv.length
-                    : endIndex)
-            : []
-        : startIndex < invoiceService.filteredPaidInv.length
-            ? invoiceService.filteredPaidInv.sublist(
-                startIndex,
-                endIndex > invoiceService.filteredPaidInv.length
-                    ? invoiceService.filteredPaidInv.length
-                    : endIndex)
-            : [];
-    newData.sort((a, b) => DateTime.parse(b.createdAt.value!.toIso8601String())
-        .compareTo(DateTime.parse(a.createdAt.value!.toIso8601String())));
-
-    if (newData.isEmpty) {
-      hasMore.value = false; // Tidak ada data lagi
-    } else {
-      displayedItems
-          .addAll(newData); // Tambahkan data baru ke list yang ditampilkan
-      page++; // Naikkan halaman
-    }
-    isLoading.value = false;
-  }
-
   Timer? debounceTimer;
-  void filterInvoices(dynamic searchValue) {
+  void filterInvoices(dynamic searchValue) async {
     if (searchValue is String) {
       if (debounceTimer?.isActive ?? false) debounceTimer?.cancel();
-      debounceTimer = Timer(const Duration(milliseconds: 500), () {
+      debounceTimer = Timer(const Duration(milliseconds: 200), () async {
         if (formKey.currentState!.validate()) {
-          invoiceService.searchQuery.value = searchValue;
+          searchQuery.value = searchValue;
+          await fetchPaid(isClean: true);
+          await fetchDebt(isClean: true);
         }
       });
     } else if (searchValue is PickerDateRange) {
-      invoiceService.searchDateQuery.value = searchValue;
-      // invoiceService.searchInvoicesByPickerDateRange(searchValue);
+      searchDateQuery.value = searchValue;
+      await fetchPaid(isClean: true);
+      await fetchDebt(isClean: true);
     }
-    // if (searchValue is String) {
-    //   if (debounceTimer?.isActive ?? false) debounceTimer?.cancel();
-    //   debounceTimer = Timer(const Duration(milliseconds: 500), () {
-    //     invoiceService.searchInvoicesByName(searchValue);
-    //   });
-    // } else if (searchValue is PickerDateRange) {
-    //   invoiceService.searchInvoicesByPickerDateRange(searchValue);
-    // }
   }
 
   final startFilteredDate = ''.obs;
@@ -160,9 +204,11 @@ class InvoiceController extends GetxController {
   final selectedFilteredDate = DateTime.now().obs;
 
   void paymentMethodHandleCheckBox(String method) async {
-    invoiceService.methodPayment.value == method
-        ? invoiceService.methodPayment.value = ''
-        : invoiceService.methodPayment.value = method;
+    methodPayment.value == method
+        ? methodPayment.value = ''
+        : methodPayment.value = method;
+    await fetchPaid(isClean: true);
+    await fetchDebt(isClean: true);
   }
 
   handleFilteredDate(BuildContext context) {
@@ -271,7 +317,7 @@ class InvoiceController extends GetxController {
     endFilteredDate.value = '';
     displayFilteredDate.value = '';
     dateIsSelected.value = false;
-    invoiceService.searchDateQuery.value = null;
+    searchDateQuery.value = null;
     // filterInvoices('');
   }
 

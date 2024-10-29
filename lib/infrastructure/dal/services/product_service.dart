@@ -10,64 +10,95 @@ import '../../../domain/core/interfaces/product_repository.dart';
 import '../database/powersync.dart';
 
 class ProductService extends GetxService implements ProductRepository {
-  late final products = <ProductModel>[].obs;
-  late final lastProductCode = ''.obs;
-  late final foundProducts = <ProductModel>[].obs;
-  late final lowStockProducts = <ProductModel>[].obs;
-
-  // @override
-  // void onInit() async {
-  //   super.onInit();
-  // }
-
-  void search(String searchValue) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (searchValue.isEmpty) {
-        List<ProductModel> productsList = [];
-        foundProducts.clear();
-        foundProducts.addAll(products);
-        lowStockProducts.clear();
-        lowStockProducts.addAll(products);
-        lowStockProducts.sort((a, b) => (a.stock.value - a.stockMin.value)
-            .compareTo(b.stock.value - b.stockMin.value));
-
-        productsList.addAll(products);
-        productsList.sort((a, b) => a.productId.compareTo(b.productId));
-        if (products.isNotEmpty) {
-          lastProductCode.value = productsList[products.length - 1].productId;
-        }
-      } else {
-        foundProducts.value = products.where((product) {
-          return product.productName
-              .toLowerCase()
-              .contains(searchValue.toLowerCase());
-        }).toList();
-
-        lowStockProducts.value = products.where((product) {
-          return product.productName
-              .toLowerCase()
-              .contains(searchValue.toLowerCase());
-        }).toList();
-      }
-    });
-  }
+  final updatedCount = 0.obs;
+  final lastCode = ''.obs;
+  final productsLenght = 0.obs;
 
   @override
-  Future<void> subscribe(String storeId) async {
+  Future<void> subscribe() async {
     try {
-      var stream = await db.watch('SELECT * FROM products WHERE store_id = ?',
-          parameters: [
-            storeId
-          ]).map(
-          (data) => data.map((json) => ProductModel.fromJson(json)).toList());
+      var stream =
+          db.watch('SELECT * FROM products').map((data) => data.toList());
 
       stream.listen((update) {
-        products.assignAll(update);
-        search('');
+        updatedCount.value++;
+        lastCode.value = ProductModel.fromRow(update.last).productId;
+        productsLenght.value = update.length;
       });
     } on PostgrestException catch (e) {
-      print(e.message);
+      debugPrint(e.message);
       rethrow;
+    }
+  }
+
+  Future<List<ProductModel>> fetch({
+    int offset = 0,
+    int limit = 25,
+    String search = '',
+    bool isLowStockFilter = false,
+  }) async {
+    if (search.isEmpty) {
+      if (isLowStockFilter) {
+        try {
+          var result = await db.getAll('''
+        SELECT * FROM products
+        ORDER BY stock ASC
+        LIMIT ? OFFSET ?
+        ''', [limit, offset]);
+          var listProducts =
+              result.map((e) => ProductModel.fromRow(e)).toList();
+          return listProducts;
+        } on PostgrestException catch (e) {
+          debugPrint(e.message);
+          rethrow;
+        }
+      } else {
+        try {
+          var result = await db.getAll('''
+        SELECT * FROM products
+        ORDER BY product_name ASC
+        LIMIT ? OFFSET ?
+        ''', [limit, offset]);
+          var listProducts =
+              result.map((e) => ProductModel.fromRow(e)).toList();
+          return listProducts;
+        } on PostgrestException catch (e) {
+          debugPrint(e.message);
+          rethrow;
+        }
+      }
+    } else {
+      if (isLowStockFilter) {
+        try {
+          var result = await db.getAll('''
+        SELECT * FROM products
+        WHERE product_name LIKE ?
+        ORDER BY stock ASC
+        LIMIT ? OFFSET ?
+        ''', ['%${search.toLowerCase()}%', limit, offset]);
+          var listProducts =
+              result.map((e) => ProductModel.fromRow(e)).toList();
+          return listProducts;
+        } on PostgrestException catch (e) {
+          debugPrint(e.message);
+          rethrow;
+        }
+      } else {
+        try {
+          var result = await db.getAll('''
+        SELECT * FROM products
+        WHERE product_name LIKE ?
+        ORDER BY product_name ASC
+        LIMIT ? OFFSET ?
+        ''', ['%${search.toLowerCase()}%', limit, offset]);
+          var listProducts =
+              result.map((e) => ProductModel.fromRow(e)).toList();
+          return listProducts;
+        } on PostgrestException catch (e) {
+          debugPrint(e.message);
+          rethrow;
+        }
+      }
     }
   }
 

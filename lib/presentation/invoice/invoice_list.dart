@@ -77,16 +77,14 @@ class InvoiceList extends StatelessWidget {
                             child: Row(
                               children: [
                                 Checkbox(
-                                  value: controller
-                                          .invoiceService.methodPayment.value ==
-                                      'cash',
+                                  value:
+                                      controller.methodPayment.value == 'cash',
                                   onChanged: (value) => controller
                                       .paymentMethodHandleCheckBox('cash'),
                                 ),
                                 Text(
                                   'Pembayaran Cash',
-                                  style: controller.invoiceService.methodPayment
-                                              .value ==
+                                  style: controller.methodPayment.value ==
                                           'cash'
                                       ? context.textTheme.bodySmall!.copyWith(
                                           color: Theme.of(context)
@@ -108,16 +106,14 @@ class InvoiceList extends StatelessWidget {
                             child: Row(
                               children: [
                                 Checkbox(
-                                  value: controller
-                                          .invoiceService.methodPayment.value ==
+                                  value: controller.methodPayment.value ==
                                       'transfer',
                                   onChanged: (value) => controller
                                       .paymentMethodHandleCheckBox('transfer'),
                                 ),
                                 Text(
                                   'Pembayaran Transfer',
-                                  style: controller.invoiceService.methodPayment
-                                              .value ==
+                                  style: controller.methodPayment.value ==
                                           'transfer'
                                       ? context.textTheme.bodySmall!.copyWith(
                                           color: Theme.of(context)
@@ -273,8 +269,11 @@ class BuildListTile extends StatelessWidget {
       double maxScroll = scrollC.position.maxScrollExtent;
       double currentScroll = scrollC.position.pixels;
 
-      if (maxScroll == currentScroll && controller.hasMore.value) {
-        controller.loadMore();
+      if (maxScroll == currentScroll &&
+          (isDebt
+              ? controller.hasMoreDebt.value
+              : controller.hasMorePaid.value)) {
+        isDebt ? controller.fetchDebt() : controller.fetchPaid();
       }
     }
 
@@ -282,21 +281,21 @@ class BuildListTile extends StatelessWidget {
 
     return Obx(
       () {
-        if (controller.displayedItems.isEmpty && controller.isLoading.value) {
-          return const Center(
-              child:
-                  CircularProgressIndicator()); // Tampilkan loading jika pertama kali
+        if (isDebt) {
+          if (controller.displayedItemsDebt.isEmpty &&
+              controller.isLoadingDebt.value) {
+            return const Center(child: CircularProgressIndicator());
+          }
+        } else {
+          if (controller.displayedItemsPaid.isEmpty &&
+              controller.isLoadingPaid.value) {
+            return const Center(child: CircularProgressIndicator());
+          }
         }
 
-        final inv = controller.invoiceService.searchQuery.isEmpty &&
-                controller.invoiceService.searchDateQuery.value == null &&
-                controller.invoiceService.methodPayment.value.isEmpty
-            ? isDebt
-                ? controller.invoiceService.debtInv
-                : controller.displayedItems
-            : isDebt
-                ? controller.invoiceService.filteredDebtInv
-                : controller.displayedItems;
+        final inv = isDebt
+            ? controller.displayedItemsDebt
+            : controller.displayedItemsPaid;
 
         var totalRemainingDebt = inv.fold<double>(0,
             (previousValue, element) => previousValue + element.remainingDebt);
@@ -311,35 +310,41 @@ class BuildListTile extends StatelessWidget {
           children: [
             Expanded(
               child: ListView.builder(
-                // separatorBuilder: (context, index) =>
-                //     Divider(color: Colors.grey[200]),
                 shrinkWrap: true,
-                controller: isDebt ? null : scrollC,
-                itemCount: (controller.invoiceService.searchQuery.isEmpty &&
-                        controller.invoiceService.searchDateQuery.value ==
-                            null &&
-                        controller.invoiceService.methodPayment.value.isEmpty)
-                    ? isDebt
-                        ? inv.length
-                        : inv.length + 1
-                    : inv.length,
+                controller: scrollC,
+                itemCount: isDebt ? inv.length : inv.length + 1,
                 itemBuilder: (BuildContext context, int index) {
-                  if (!isDebt && index == controller.displayedItems.length) {
-                    // Indikator loading di bagian bawah
-                    if (controller.isLoading.value) {
-                      return const Center(child: CircularProgressIndicator());
-                    } else if (!controller.hasMore.value) {
-                      return const Center(child: Text("Tidak ada data lagi"));
-                    } else {
-                      return const SizedBox.shrink();
+                  if (isDebt) {
+                    if (index == controller.displayedItemsDebt.length) {
+                      // Indikator loading di bagian bawah
+                      if (controller.isLoadingDebt.value) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (!controller.hasMoreDebt.value) {
+                        return const Center(child: Text("Tidak ada data lagi"));
+                      } else {
+                        return const SizedBox.shrink();
+                      }
+                    }
+                  } else {
+                    if (index == controller.displayedItemsPaid.length) {
+                      // Indikator loading di bagian bawah
+                      if (controller.isLoadingPaid.value) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (!controller.hasMorePaid.value) {
+                        return const Center(child: Text("Tidak ada data lagi"));
+                      } else {
+                        return const SizedBox.shrink();
+                      }
                     }
                   }
+
                   String paymentMethod =
                       inv[index].payments.map((e) => e.method).join(', ');
                   final invoice = inv[index];
                   final isHover = false.obs;
                   return MouseRegion(
                     onHover: (event) {
+                      // print('ishover');
                       isHover.value = true;
                       // Change the background color on hover
                       // You can customize the color as needed
@@ -347,6 +352,7 @@ class BuildListTile extends StatelessWidget {
                       // print('Hovered');
                     },
                     onExit: (event) {
+                      // print('ishover out');
                       isHover.value = false;
                       // Reset the background color on exit
                       // print('Exited');
@@ -423,7 +429,7 @@ class BuildListTile extends StatelessWidget {
                                       style: context.textTheme.titleLarge!
                                           .copyWith(fontSize: 18),
                                       overflow: TextOverflow.ellipsis,
-                                      maxLines: 1,
+                                      maxLines: 2,
                                       textAlign: TextAlign.end,
                                     ),
                                   ],
@@ -490,8 +496,10 @@ class BuildListTile extends StatelessWidget {
                             ),
                           ),
                           onTap: () {
+                            print('invoice ${invoice.payments}');
                             InvoiceModel editInvoice =
                                 InvoiceModel.fromJson(invoice.toJson());
+                            print('editInvoice ${editInvoice.payments}');
                             detailDialog(editInvoice);
                           },
                         ),

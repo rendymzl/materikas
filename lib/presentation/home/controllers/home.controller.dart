@@ -3,8 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import '../../../infrastructure/dal/services/auth_service.dart';
-// import '../../../infrastructure/dal/services/invoice_service.dart';
-import '../../../infrastructure/dal/services/product_service.dart';
 import '../../../infrastructure/models/customer_model.dart';
 import '../../../infrastructure/models/invoice_model/cart_item_model.dart';
 import '../../../infrastructure/models/invoice_model/cart_model.dart';
@@ -12,18 +10,17 @@ import '../../../infrastructure/models/invoice_model/invoice_model.dart';
 import '../../../infrastructure/models/product_model.dart';
 import '../../global_widget/date_picker_widget/date_picker_widget_controller.dart';
 import '../../global_widget/field_customer_widget/field_customer_widget_controller.dart';
+import '../../product/controllers/product.controller.dart';
 
 class HomeController extends GetxController {
-  late final ProductService _productService = Get.find<ProductService>();
-  late final AuthService authService = Get.find<AuthService>();
-  // late final InvoiceService _invoiceService = Get.put(InvoiceService());
+  late final AuthService authService = Get.find();
+  late final ProductController _productController = Get.find();
   late final DatePickerController _datePickerC =
       Get.put(DatePickerController());
   late final CustomerInputFieldController _customerInputFieldC =
       Get.put(CustomerInputFieldController());
 
-  late final products = _productService.products;
-  late final foundProducts = _productService.foundProducts;
+  late final products = _productController.displayedItems;
 
   late InvoiceModel invoice;
   final cart = Cart(items: <CartItem>[].obs).obs;
@@ -37,7 +34,9 @@ class HomeController extends GetxController {
 
   @override
   void onInit() async {
+    print('HomeController INIT');
     invoice = await createInvoice();
+    // Get.lazyPut(()=>ProductController());
     super.onInit();
   }
 
@@ -79,7 +78,7 @@ class HomeController extends GetxController {
     print('Memproses barcode: $barcode');
     scannedData.value = barcode; // Update UI dengan hasil scan
     var product =
-        foundProducts.firstWhereOrNull((product) => product.barcode == barcode);
+        products.firstWhereOrNull((product) => product.barcode == barcode);
     if (product != null) {
       addToCart(product);
     }
@@ -149,8 +148,8 @@ class HomeController extends GetxController {
     var initCartItem = checkExistence(cartItem.product, initCartList);
 
     if (initCartItem == null) {
-      var foundProduct = foundProducts
-          .firstWhereOrNull((item) => item.id == cartItem.product.id);
+      var foundProduct =
+          products.firstWhereOrNull((item) => item.id == cartItem.product.id);
       CartItem initItem = CartItem.fromJson(cartItem.toJson());
       if (foundProduct != null) {
         initItem.product.stock.value = foundProduct.stock.value;
@@ -172,8 +171,8 @@ class HomeController extends GetxController {
 
   //! REMOVE FROM CART ===
   void removeFromCart(CartItem cartItem) {
-    var foundProduct = foundProducts
-        .firstWhereOrNull((item) => item.id == cartItem.product.id);
+    var foundProduct =
+        products.firstWhereOrNull((item) => item.id == cartItem.product.id);
     foundProduct!.stock.value += cartItem.quantity.value;
     cart.value.removeItem(cartItem.product.id!);
   }

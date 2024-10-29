@@ -42,6 +42,7 @@ class PaymentModel {
     data['remain'] = remain;
     data['final_amount_paid'] = finalAmountPaid;
     data['date'] = date?.toIso8601String() ?? DateTime.now().toIso8601String();
+    print('object $data');
     return data;
   }
 }

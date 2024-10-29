@@ -99,9 +99,9 @@ class ProductModel extends Product {
               ? row['cost_price'].toDouble()
               : row['cost_price']) as double)
           .obs,
-      sellPrice1: row['sell_price1'].toDouble(),
-      sellPrice2: row['sell_price2'].toDouble(),
-      sellPrice3: row['sell_price3'].toDouble(),
+      sellPrice1: RxDouble(row['sell_price1'].toDouble()),
+      sellPrice2: RxDouble(row['sell_price2'].toDouble()),
+      sellPrice3: RxDouble(row['sell_price3'].toDouble()),
       stock: ((row['stock'] is int ? row['stock'].toDouble() : row['stock'])
               as double)
           .obs,
@@ -110,7 +110,7 @@ class ProductModel extends Product {
               ? row['stock_min'].toDouble()
               : row['stock_min']) as double)
           : RxDouble(10),
-      sold: row['sold'].toDouble(),
+      sold: RxDouble(row['sold'].toDouble()),
     );
   }
 

@@ -30,7 +30,7 @@ class ProductScreen extends GetView<ProductController> {
                         Obx(() => Row(
                               children: [
                                 Text(
-                                  'Total Barang: ${controller.products.length.toString()}',
+                                  'Total Barang: ${controller.productsLenght.toString()}',
                                   style: context.textTheme.bodySmall,
                                 ),
                                 Text(

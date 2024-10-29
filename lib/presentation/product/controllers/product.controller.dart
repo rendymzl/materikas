@@ -4,8 +4,6 @@ import 'dart:io';
 import 'package:get/get.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:excel/excel.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:flutter/services.dart' show ByteData, rootBundle;
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../../infrastructure/dal/services/auth_service.dart';
@@ -16,23 +14,24 @@ import '../detail_product/detail_product_controller.dart';
 class ProductController extends GetxController {
   late final AuthService _authService = Get.find();
   final ProductService _productService = Get.find<ProductService>();
-  DetailProductController controller = Get.put(DetailProductController());
+  // late final DetailProductController controller =
+  //     Get.put(DetailProductController());
 
-  late final products = _productService.products;
-  late final foundProducts = _productService.foundProducts;
-  late final lastCode = _productService.lastProductCode;
-  late final lowStockProduct = _productService.lowStockProducts;
+  late final lastCode = _productService.lastCode;
+  late final productsLenght = _productService.productsLenght;
+  late final searchValue = ''.obs;
 
   final processSequence = 1.obs;
   final isAddExcelLoading = false.obs;
   final processMessage = ''.obs;
 
-  var displayedItems = <ProductModel>[].obs; // Data yang ditampilkan saat ini
-  var isLoading = false.obs; // Untuk memantau status loading
-  var hasMore = true.obs; // Memantau apakah masih ada data lagi
-  var page = 1; // Halaman data saat ini
+  var displayedItems = <ProductModel>[].obs;
+  var isLoading = false.obs;
+  var hasMore = true.obs;
+  var offset = 0;
 
-  final int limit = 20; // Batas data per halaman
+  final int limit = 25;
+  final isLowStock = false.obs;
 
   final editProduct = true.obs;
   final destroyProduct = true.obs;
@@ -41,58 +40,66 @@ class ProductController extends GetxController {
 
   @override
   void onInit() async {
-    super.onInit();
-    loadMore(); // Memuat data awal
-    ever(foundProducts, (value) {
-      hasMore.value = true;
-      page = 1;
-      displayedItems.clear();
-      loadMore();
+    await fetch(isClean: true);
+    ever(_productService.updatedCount, (_) async {
+      await fetch();
     });
     editProduct.value = await _authService.checkAccess('editProduct');
     destroyProduct.value = await _authService.checkAccess('destroyProduct');
+    super.onInit();
   }
 
-  void loadMore() {
-    if (isLoading.value || !hasMore.value) return;
-
+  Future<void> fetch({bool isClean = false}) async {
+    if (isLoading.value) return;
     isLoading.value = true;
 
-    // Ambil data dari list yang ada berdasarkan pagination
-    int startIndex = (page - 1) * limit;
-    int endIndex = startIndex + limit;
-
-    List<ProductModel> newData = [];
-    if (startIndex < foundProducts.length) {
-      newData = foundProducts.sublist(startIndex,
-          endIndex > foundProducts.length ? foundProducts.length : endIndex);
+    print('isClean $isClean');
+    print('offset $offset');
+    if (isClean) {
+      hasMore.value = true;
+      offset = 0;
+      displayedItems.clear();
     }
 
-    if (newData.isEmpty) {
-      hasMore.value = false; // Tidak ada data lagi
+    if (!hasMore.value) return;
+
+    List<ProductModel> results = await _productService.fetch(
+      offset: offset,
+      limit: limit,
+      search: searchValue.value,
+      isLowStockFilter: isLowStock.value,
+    );
+
+    if (results.isEmpty) {
+      hasMore.value = false;
     } else {
-      displayedItems
-          .addAll(newData); // Tambahkan data baru ke list yang ditampilkan
-      page++; // Naikkan halaman
+      displayedItems.addAll(results);
+      offset += limit;
     }
-    print(displayedItems.length);
     isLoading.value = false;
   }
 
   Timer? debounceTimer;
-  void filterProducts(String productName) {
-    if (debounceTimer?.isActive ?? false) debounceTimer?.cancel();
-    debounceTimer = Timer(const Duration(milliseconds: 500), () {
-      _productService.search(productName);
-      hasMore.value = true;
-      page = 1;
-      displayedItems.assignAll(foundProducts);
-    });
+  Future<void> filterProducts(String productName) async {
+    if (!isLoading.value) {
+      if (debounceTimer?.isActive ?? false) debounceTimer?.cancel();
+      debounceTimer = Timer(const Duration(milliseconds: 200), () async {
+        searchValue.value = productName;
+        print('searchValue.value ${searchValue.value}');
+        await fetch(isClean: true);
+      });
+    }
   }
 
-  final isLowStock = false.obs;
-  void toggleLowStock() {
+  void toggleLowStock() async {
     isLowStock.value = !isLowStock.value;
+    await fetch(isClean: true);
+    // if (isLowStock.value) {
+    //   displayedItems.sort((a, b) => (a.stock.value - a.stockMin.value)
+    //       .compareTo(b.stock.value - b.stockMin.value));
+    // } else {
+    //   displayedItems.sort((a, b) => a.productName.compareTo(b.productName));
+    // }
   }
 
   Future<void> pickFile() async {
@@ -204,7 +211,7 @@ class ProductController extends GetxController {
       var product = ProductModel(
         storeId: _authService.store.value!.id!,
         productId:
-            'BR${controller.generateNumberId(numberId + processSequence.value)}',
+            'BR${(numberId + processSequence.value).toString().padLeft(4, '0')}',
         barcode: barcode,
         productName: productName,
         unit: unit,

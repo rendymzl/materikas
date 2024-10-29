@@ -259,12 +259,14 @@ class InvoiceModel {
               .toList(),
         );
       } else {
+        print(jsonDecode(paymentData) as List);
         // Handle the case where paymentData is not a list
         payments = RxList<PaymentModel>(
           (jsonDecode(paymentData) as List)
               .map((i) => PaymentModel.fromJson(i as Map<String, dynamic>))
               .toList(),
         );
+        print('paymentsaa $payments');
         // payments = RxList<PaymentModel>();
       }
     } else {
@@ -294,7 +296,7 @@ class InvoiceModel {
         // payments = RxList<PaymentModel>();
       }
     } else {
-      payments = RxList<PaymentModel>();
+      removeProduct = RxList<RemoveProduct>();
     }
 
     debtAmount = RxDouble(json['debt_amount']?.toDouble() ?? 0);

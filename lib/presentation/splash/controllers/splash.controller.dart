@@ -58,7 +58,7 @@ class SplashController extends GetxController {
       account = authService.account.value;
       if (account!.accountType != 'setup') {
         await _invoiceService.subscribe(account!.storeId!);
-        await _productService.subscribe(account!.storeId!);
+        await _productService.subscribe();
         await _customerService.subscribe(account!.storeId!);
         await _salesService.subscribe(account!.storeId!);
         await _invoiceSalesService.subscribe(account!.storeId!);

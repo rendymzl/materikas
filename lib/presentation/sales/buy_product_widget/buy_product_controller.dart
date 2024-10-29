@@ -10,16 +10,18 @@ import '../../../infrastructure/models/invoice_sales_model.dart';
 import '../../../infrastructure/models/product_model.dart';
 import '../../../infrastructure/models/sales_model.dart';
 import '../../global_widget/date_picker_widget/date_picker_widget_controller.dart';
+import '../../product/controllers/product.controller.dart';
 import '../controllers/sales.controller.dart';
 
 class BuyProductController extends GetxController {
   late final ProductService productService = Get.find();
+  late final ProductController _productC = Get.put(ProductController());
   late SalesController salesC = Get.find();
   late InvoiceSalesService invoiceSalesService = Get.find();
   late final AuthService _authService = Get.find<AuthService>();
   late final DatePickerController _datePickerC =
       Get.put(DatePickerController());
-  late final foundProducts = productService.foundProducts;
+  late final foundProducts = _productC.displayedItems;
   // Rx<SalesModel?> selectedSales = Rx<SalesModel?>(null);
 
   late InvoiceSalesModel invoice;
@@ -38,7 +40,8 @@ class BuyProductController extends GetxController {
   }
 
   void filterProducts(String productName) {
-    productService.search(productName);
+    _productC.searchValue.value = productName;
+    _productC.fetch(isClean: true);
   }
 
   CartItem? checkExistence(
