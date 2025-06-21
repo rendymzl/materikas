@@ -1,63 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../infrastructure/models/invoice_model/invoice_model.dart';
 import '../../global_widget/popup_page_widget.dart';
-import '../field_customer_widget/field_customer_widget.dart';
-import '../field_customer_widget/field_customer_widget_controller.dart';
+import 'payment_button_widget.dart';
 import 'payment_content_widget.dart';
 import 'payment_widget_controller.dart';
 
-void paymentPopup(InvoiceModel invoice,
-    {bool isEdit = false, bool onlyPayment = false}) {
-  PaymentController controller = Get.put(PaymentController());
-  late CustomerInputFieldController customerFieldC =
-      Get.put(CustomerInputFieldController());
-
-  controller.clear();
-  customerFieldC.clear();
-  controller.bill.value = invoice.remainingDebt;
-  controller.moneyChange.value = invoice.remainingDebt;
-  controller.additionalDiscountTextC.text = '';
-  controller.isAdditionalDiscount.value = false;
-
-  if (invoice.customer.value != null) {
-    customerFieldC.asignCustomer(invoice.customer.value!);
-  }
-
+Future<void> paymentPopup() async {
+  final paymentC = Get.find<PaymentController>();
+  print('isEditing? ${paymentC.isEdit.value}');
   showPopupPageWidget(
     title: 'Pembayaran',
     height: MediaQuery.of(Get.context!).size.height * (6 / 7),
     width: MediaQuery.of(Get.context!).size.width * (4 / 11),
-    content: ListView(
-      shrinkWrap: true,
-      padding: const EdgeInsets.all(16),
-      children: [
-        if (invoice.id == null) const CustomerInputField(),
-        PaymentContent(invoice: invoice),
-      ],
+    content: Expanded(
+      child: PaymentContent(),
     ),
-    buttonList: [
-      Obx(() {
-        if (controller.selectedPaymentMethod.value != '') {
-          return Expanded(
-            child: ElevatedButton(
-              onPressed: () async {
-                if (isEdit) {
-                  await controller.addPayment(invoice);
-                  Get.back();
-                } else {
-                  await controller.saveInvoice(invoice,
-                      onlyPayment: onlyPayment);
-                }
-              },
-              child: const Text('Bayar'),
-            ),
-          );
-        } else {
-          return Container();
-        }
-      }),
-    ],
+    buttonList: [PayButtonWidget()],
   );
 }

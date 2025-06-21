@@ -1,5 +1,4 @@
-import 'dart:typed_data';
-
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
@@ -9,279 +8,278 @@ import '../../../infrastructure/models/invoice_model/invoice_model.dart';
 import '../../../infrastructure/models/print_column_model.dart';
 import '../../../infrastructure/utils/display_format.dart';
 import 'generator.dart';
-import 'print_controller.dart';
 
 var divider = Uint8List.fromList(
-    '--------------------------------------------------------------------------------'
+    '------------------------------------------------------------------------------------------------'
         .codeUnits);
+
+var halfDivider = Uint8List.fromList(
+    '----------------------------------------------------------'.codeUnits);
+
 var space = Uint8List.fromList([27, 74, 24]);
 
+final AuthService authService = Get.find<AuthService>();
+final store = authService.store.value;
+
 Future<List<int>> generateInvoiceBytes(InvoiceModel invoice) async {
-  final AuthService authService = Get.find<AuthService>();
-  final PrinterController printerController = Get.put(PrinterController());
-  late final account = authService.account.value;
-  late final store = authService.store.value;
+  List<CartItem> filterPurchase(InvoiceModel invoice) {
+    List<CartItem> workerData = invoice.purchaseList.value.items
+        .where((p) => p.quantity.value > 0)
+        .map((purchased) => purchased)
+        .toList();
+    return workerData;
+  }
+
+  String getPaymentTypes(InvoiceModel invoice) {
+    String paymentTypes = '';
+    if (invoice.payments.isNotEmpty) {
+      for (var payment in invoice.payments) {
+        if (payment.amountPaid > 0) {
+          if (paymentTypes.isNotEmpty) {
+            paymentTypes += ', ';
+          }
+          paymentTypes += payment.method!;
+        }
+      }
+    }
+    return paymentTypes.isEmpty ? 'Cash' : paymentTypes;
+  }
+
+  List<CartItem> purchase = filterPurchase(invoice);
+
   Generator generator = Generator();
   List<int> bytes = [];
 
-  //!widht 80
-  bytes += generator.row([
-    PrintColumn(
-        text: store!.name.value.toUpperCase(),
-        width: 27,
-        bold: true,
-        size: 'large'),
-    PrintColumn(
-        text: '${DateFormat('dd-MM-y', 'id').format(
-          invoice.createdAt.value!,
-        )} ${invoice.invoiceId!}',
-        width: 26,
-        // bold: false,
-        align: 'right'),
-  ]);
+  bytes += halfDivider;
+  bytes += generator.newLine();
 
+//! DETAIL INVOICE
   bytes += generator.row([
     PrintColumn(
-      text: 'Toko Bangunan',
-      width: 35,
+      text: 'No. Invoice',
+      bold: true,
+      width: 20,
+    ),
+    PrintColumn(
+      text: ':${invoice.invoiceId!}',
+      bold: true,
+      width: 30,
     ),
     PrintColumn(
       text: '',
-      width: 2,
+      width: 5,
     ),
     PrintColumn(
       text: 'Kepada Yth.',
-      width: 11,
+      width: 30,
+      bold: true,
     ),
-    PrintColumn(
-      text: ':',
-      width: 2,
-    ),
-    PrintColumn(
-        text:
-            invoice.customer.value != null ? invoice.customer.value!.name : '',
-        width: 30),
+    PrintColumn(text: '', width: 10),
   ]);
 
   bytes += generator.row([
     PrintColumn(
-      text: store.address.value,
-      width: 35,
+      text: 'Tgl. Penjualan',
+      width: 20,
+      bold: true,
+    ),
+    PrintColumn(
+      text: ':${DateFormat('dd MMMM yyyy', 'id').format(
+        invoice.createdAt.value!,
+      )}',
+      width: 30,
+      bold: true,
     ),
     PrintColumn(
       text: '',
-      width: 2,
+      width: 5,
+      bold: true,
     ),
     PrintColumn(
-      text: 'Alamat',
-      width: 11,
+      text: invoice.customer.value != null ? invoice.customer.value!.name : '',
+      width: 30,
+      bold: true,
     ),
-    PrintColumn(
-      text: ':',
-      width: 2,
-    ),
-    PrintColumn(
-        text: invoice.customer.value != null
-            ? invoice.customer.value!.address!
-            : '',
-        width: 30),
+    PrintColumn(text: '', width: 10),
   ]);
 
-  String phone = store.phone.value;
-  String telp = store.telp.value;
-  String slash = (phone.isNotEmpty && telp.isNotEmpty) ? '/' : '';
   bytes += generator.row([
     PrintColumn(
-      text: '$phone $slash $telp',
-      width: 35,
+      text: 'Jenis Transaksi',
+      width: 20,
+      bold: true,
+    ),
+    PrintColumn(
+      text: ':${getPaymentTypes(invoice)}',
+      width: 30,
+      bold: true,
     ),
     PrintColumn(
       text: '',
-      width: 2,
+      width: 5,
     ),
     PrintColumn(
-      text: 'No Telp',
-      width: 11,
+      text: invoice.customer.value != null
+          ? invoice.customer.value!.address!
+          : '',
+      width: 30,
+      bold: true,
     ),
-    PrintColumn(
-      text: ':',
-      width: 2,
-    ),
-    PrintColumn(
-        text: invoice.customer.value != null
-            ? invoice.customer.value!.phone!
-            : '',
-        width: 30),
+    PrintColumn(text: '', width: 10),
   ]);
 
+  bytes += space;
+//! barang
+  bytes += generator.divider();
   bytes += generator.row([
-    PrintColumn(
-      text: 'Kasir: ${account!.name}',
-      width: 35,
-    ),
+    PrintColumn(text: 'No', width: 3, bold: true),
+    PrintColumn(text: 'Nama Barang', width: 42, bold: true),
+    PrintColumn(text: 'Uk', width: 13, bold: true),
+    PrintColumn(text: 'Qty', width: 8, bold: true),
+    PrintColumn(text: 'Harga', width: 11, align: 'right', bold: true),
+    PrintColumn(text: 'Jumlah', width: 13, align: 'right', bold: true),
   ]);
+  bytes += generator.divider();
 
-  bytes += divider;
-  bytes += generator.row([
-    PrintColumn(text: 'No', width: 3),
-    PrintColumn(text: 'Nama Barang', width: 32),
-    PrintColumn(text: 'Harga Satuan    ', width: 13, align: 'right'),
-    PrintColumn(text: 'Jumlah', width: 10),
-    PrintColumn(text: 'Diskon', width: 9, align: 'right'),
-    PrintColumn(text: 'Total Harga', width: 13, align: 'right'),
-  ]);
-  bytes += divider;
-
-  List<CartItem> purchase = printerController.filterPurchase(invoice);
   for (var i = 0; i < purchase.length; i++) {
     var item = purchase[i];
     if (item.quantity.value > 0) {
       bytes += generator.row([
-        PrintColumn(text: '${i + 1}', width: 3),
-        PrintColumn(text: item.product.productName, width: 32),
+        PrintColumn(text: '${i + 1}', width: 3, bold: true),
+        PrintColumn(text: item.product.productName, width: 42, bold: true),
+        PrintColumn(text: item.product.unit, width: 13, bold: true),
         PrintColumn(
-            text:
-                '${currency.format(item.product.getPrice(invoice.priceType.value).value)} x ',
-            width: 13,
-            align: 'right'),
+            text: number.format(item.quantity.value), width: 8, bold: true),
         PrintColumn(
-            text: '${number.format(item.quantity.value)} ${item.product.unit}',
-            width: 10),
-        PrintColumn(
-            text: currency.format(item.individualDiscount.value),
-            width: 9,
-            align: 'right'),
+            text: currency.format(item.getPrice(invoice.priceType.value)),
+            width: 11,
+            align: 'right',
+            bold: true),
         PrintColumn(
             text: currency.format(item.getSubBill(invoice.priceType.value)),
             width: 13,
-            align: 'right'),
+            align: 'right',
+            bold: true),
       ]);
     }
   }
+  bytes += generator.divider();
+  bytes += generator.row([
+    PrintColumn(
+        text: store!.textPrint != null && store!.textPrint!.isNotEmpty
+            ? store!.textPrint![0]
+            : '',
+        width: 62),
+    PrintColumn(text: 'Grand Total', width: 15, bold: true),
+    PrintColumn(
+        text: currency.format(invoice.totalBill),
+        width: 13,
+        align: 'right',
+        bold: true),
+  ]);
+
+  if (store!.textPrint != null && store!.textPrint!.length > 1) {
+    for (var i = 1; i < store!.textPrint!.length; i++) {
+      bytes += generator.row([
+        PrintColumn(text: store!.textPrint![i], width: 62),
+        PrintColumn(text: '', width: 15, bold: true),
+        PrintColumn(text: '', width: 13, align: 'right', bold: true),
+      ]);
+    }
+  }
+
+  // bytes += generator.row([
+  //   PrintColumn(text: 'Transfer BCA 1671979538 A/N Santori Alam', width: 62),
+  //   PrintColumn(text: '', width: 15, bold: true),
+  //   PrintColumn(text: '', width: 13, align: 'right', bold: true),
+  // ]);
+
   for (var i = 0; i < 14 - purchase.length; i++) {
     bytes += space;
   }
-  bytes += divider;
+
   bytes += generator.row([
     PrintColumn(
       text: '',
       width: 5,
     ),
     PrintColumn(
-      text: 'Menerima,',
+      text: 'Customer',
       width: 20,
-    ),
-    PrintColumn(
-      text: 'Hormat Kami,',
-      width: 20,
+      align: 'center',
+      bold: true,
     ),
     PrintColumn(
       text: '',
       width: 5,
     ),
     PrintColumn(
-      text: 'Subtotal',
-      width: 15,
+      text: 'Admin',
+      width: 20,
+      align: 'center',
+      bold: true,
     ),
-    PrintColumn(
-      text: ':',
-      width: 2,
-    ),
-    PrintColumn(
-        text: currency.format(invoice.subtotalBill), width: 13, align: 'right'),
-  ]);
-  bytes += generator.row([
     PrintColumn(
       text: '',
-      width: 50,
+      width: 5,
     ),
     PrintColumn(
-      text: 'Diskon',
-      width: 15,
+      text: 'Driver',
+      width: 20,
+      align: 'center',
+      bold: true,
     ),
-    PrintColumn(
-      text: ':',
-      width: 2,
-    ),
-    PrintColumn(
-        text: invoice.totalDiscount > 0
-            ? '-${currency.format(invoice.totalDiscount)}'
-            : '0',
-        width: 13,
-        align: 'right'),
-  ]);
-  bytes += generator.row([
     PrintColumn(
       text: '',
-      width: 50,
+      width: 5,
     ),
-    PrintColumn(
-      text: 'Biaya Lainnya',
-      width: 15,
-    ),
-    PrintColumn(
-      text: ':',
-      width: 2,
-    ),
-    PrintColumn(
-        text: currency.format(invoice.totalOtherCosts),
-        width: 13,
-        align: 'right'),
-  ]);
-  bytes += generator.row([
-    PrintColumn(
-      text: '',
-      width: 50,
-    ),
-    PrintColumn(
-      text: 'Total',
-      width: 15,
-    ),
-    PrintColumn(
-      text: ':',
-      width: 2,
-    ),
-    PrintColumn(
-        text: currency.format(invoice.totalBill), width: 13, align: 'right'),
   ]);
 
   bytes += space;
-  bytes += generator.row([
-    PrintColumn(
-      text: '',
-      width: 50,
-    ),
-    PrintColumn(
-      text: 'Bayar',
-      width: 15,
-    ),
-    PrintColumn(
-      text: ':',
-      width: 2,
-    ),
-    PrintColumn(
-        text: currency.format(invoice.totalPaid), width: 13, align: 'right'),
-  ]);
-  bytes += generator.row([
-    PrintColumn(
-      text: '',
-      width: 50,
-    ),
-    PrintColumn(
-      text: invoice.remainingDebt <= 0 ? 'Kembalian' : 'Kurang Bayar',
-      width: 15,
-    ),
-    PrintColumn(
-      text: ':',
-      width: 2,
-    ),
-    PrintColumn(
-        text: currency.format(invoice.remainingDebt * -1),
-        width: 13,
-        align: 'right'),
-  ]);
-
-  bytes += [27, 69, 0];
   bytes += space;
+  bytes += space;
+  bytes += space;
+  bytes += space;
+  bytes += space;
+  bytes += space;
+  bytes += space;
+  bytes += space;
+  bytes += space;
+  bytes += space;
+  bytes += space;
+  bytes += space;
+  bytes += space;
+  bytes += space;
+  bytes += space;
+  bytes += space;
+  bytes += space;
+  bytes += space;
+  bytes += space;
+  bytes += space;
+  bytes += space;
+  bytes += space;
+  bytes += space;
+  bytes += space;
+  bytes += space;
+  bytes += space;
+  bytes += space;
+  bytes += space;
+  bytes += space;
+  bytes += space;
+  bytes += space;
+  bytes += space;
+  bytes += space;
+  bytes += space;
+  bytes += space;
+  bytes += space;
+  bytes += space;
+  bytes += space;
+  bytes += space;
+  bytes += space;
+  bytes += space;
+  bytes += space;
+  bytes += space;
+  generator.cut();
+
   return bytes;
 }

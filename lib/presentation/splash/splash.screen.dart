@@ -8,6 +8,7 @@ class SplashScreen extends GetView<SplashController> {
 
   @override
   Widget build(BuildContext context) {
+    //! init App
     controller.init();
 
     return Scaffold(
@@ -18,7 +19,7 @@ class SplashScreen extends GetView<SplashController> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               // Menampilkan CircularProgressIndicator hanya saat belum sinkron
-              if (!controller.authService.hasSynced.value) ...[
+              if (controller.isLoading.value) ...[
                 const CircularProgressIndicator(),
                 const SizedBox(height: 8),
                 const Text('Menghubungkan Akun...'),

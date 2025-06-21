@@ -16,7 +16,8 @@ Future<String> generateInvoiceId(CustomerModel? customer) async {
       : 'G';
 
   DateTime date = DateTime.now();
-  PickerDateRange dateRange = PickerDateRange(date, date);
+  PickerDateRange dateRange =
+      PickerDateRange(date, date.add(Duration(days: 1)));
   String year = date.year.toString().substring(2);
   String month = date.month.toString().padLeft(2, '0');
   String day = date.day.toString().padLeft(2, '0');

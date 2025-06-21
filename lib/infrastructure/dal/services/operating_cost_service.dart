@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:materikas/domain/core/interfaces/operating_cost_repository.dart';
 import 'package:materikas/infrastructure/models/operating_cost_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -6,51 +8,57 @@ import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 
 import '../database/powersync.dart';
 
+Future<List<OperatingCostModel>> convertToModel(
+    List<Map<String, dynamic>> maps) async {
+  return maps.map((e) => OperatingCostModel.fromJson(e)).toList();
+}
+
 class OperatingCostService extends GetxService
     implements OperatingCostRepository {
-  var operatingCosts = <OperatingCostModel>[].obs;
-  var foundOperatingCost = <OperatingCostModel>[].obs;
-
-  void searchInvoicesByPickerDateRange(PickerDateRange? invoiceCreatedAt) {
-    if (invoiceCreatedAt != null) {
-      foundOperatingCost.clear();
-      foundOperatingCost.value = operatingCosts.where((oc) {
-        if (oc.createdAt != null) {
-          DateTime invoiceDate = oc.createdAt!;
-          return invoiceDate.isAfter(invoiceCreatedAt.startDate!) &&
-              invoiceDate.isBefore(invoiceCreatedAt.endDate!);
-        }
-        return false;
-      }).toList();
+  // final operatingCosts = <OperatingCostModel>[].obs;
+  final updatedCount = 0.obs;
+  Future<List<OperatingCostModel>> searchInvoicesByPickerDateRange(
+      PickerDateRange? dateRange) async {
+    if (dateRange != null) {
+      return await getByDate(dateRange);
     } else {
-      foundOperatingCost.clear();
-      foundOperatingCost.addAll(operatingCosts);
+      return [];
     }
-    sortByDate(foundOperatingCost);
   }
 
-  List<OperatingCostModel> sortByDate(
-      List<OperatingCostModel> operatingCostList) {
-    operatingCostList.sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
-    return operatingCostList;
-  }
+  // List<OperatingCostModel> sortByDate(
+  //     List<OperatingCostModel> operatingCostList) {
+  //   operatingCostList.sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
+  //   return operatingCostList;
+  // }
 
   @override
-  Future<void> subscribe(String storeId) async {
+  Future<void> subscribe() async {
     try {
-      var stream = db.watch('SELECT * FROM operating_costs WHERE store_id = ?',
-          parameters: [
-            storeId
-          ]).map((data) =>
-          data.map((json) => OperatingCostModel.fromJson(json)).toList());
+      var stream = db.watch('SELECT store_id FROM operating_costs LIMIT 1');
 
       stream.listen((update) {
-        operatingCosts.assignAll(update);
-        foundOperatingCost.assignAll(update);
-        sortByDate(foundOperatingCost);
+        updatedCount.value++;
       });
     } on PostgrestException catch (e) {
-      print(e.message);
+      debugPrint(e.message);
+      rethrow;
+    }
+  }
+
+  Future<List<OperatingCostModel>> getByDate(
+      PickerDateRange pickerDateRange) async {
+    try {
+      final data = await db.getAll(
+        'SELECT * FROM operating_costs WHERE created_at BETWEEN ? AND ? ORDER BY created_at DESC',
+        [
+          DateFormat('yyyy-MM-dd').format(pickerDateRange.startDate!),
+          DateFormat('yyyy-MM-dd').format(pickerDateRange.endDate!),
+        ],
+      );
+      return await compute(convertToModel, data);
+    } on PostgrestException catch (e) {
+      debugPrint(e.message);
       rethrow;
     }
   }

@@ -10,6 +10,7 @@ class PopupPageWidget extends StatelessWidget {
   final double height;
   final FocusNode? focusNode;
   final VoidCallback? onClose;
+  final bool barrierDismissible;
 
   const PopupPageWidget({
     super.key,
@@ -21,6 +22,7 @@ class PopupPageWidget extends StatelessWidget {
     this.height = 400,
     this.focusNode,
     this.onClose,
+    this.barrierDismissible = true,
   });
 
   @override
@@ -33,7 +35,7 @@ class PopupPageWidget extends StatelessWidget {
           onClose?.call();
         },
         child: Dialog(
-          backgroundColor: Colors.white,
+          // backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),
@@ -45,15 +47,21 @@ class PopupPageWidget extends StatelessWidget {
               child: Column(
                 children: [
                   ListTile(
+                    leading: !barrierDismissible
+                        ? null
+                        : IconButton(
+                            icon: Icon(Icons.arrow_back),
+                            onPressed: () => Get.back(),
+                          ),
                     title: Text(
                       title,
                       style: context.textTheme.titleLarge,
-                      textAlign: iconButton != null ? null : TextAlign.center,
+                      // textAlign: iconButton != null ? null : TextAlign.center,
                     ),
                     trailing: iconButton,
                   ),
                   // const SizedBox(height: 20),
-                  Expanded(child: ListView(children: [content])),
+                  Expanded(child: Column(children: [content])),
                   if (buttonList != null)
                     Padding(
                       padding: const EdgeInsets.only(top: 8),
@@ -93,6 +101,7 @@ Future<void> showPopupPageWidget({
       height: height,
       focusNode: focusNode,
       onClose: onClose,
+      barrierDismissible: barrierDismissible,
     ),
     barrierDismissible: barrierDismissible,
   );

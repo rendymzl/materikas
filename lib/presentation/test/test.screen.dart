@@ -14,28 +14,40 @@ class TestScreen extends GetView<TestController> {
         title: const Text('TestScreen'),
         centerTitle: true,
       ),
-      body: Center(child: Text('data')
-          // Obx(
-          //   () => !controller.isLoading.value
-          //       ? Column(
-          //           children: [
-          //             Text(
-          //               'Akun: ${controller.account.value?.name ?? 'Tidak ada data'}',
-          //               style: const TextStyle(fontSize: 20),
-          //             ),
-          //             Text(
-          //               'Store: ${controller.store.value?.name.value ?? 'Tidak ada data'}',
-          //               style: const TextStyle(fontSize: 20),
-          //             ),
-          //             Text(
-          //               'Total Invoice: ${controller.lenght.value}',
-          //               style: const TextStyle(fontSize: 20),
-          //             ),
-          //           ],
-          //         )
-          //       : const CircularProgressIndicator(),
-          // ),
-          ),
+      body: Center(
+          child: Obx(
+        () => controller.isLoading.value
+            ? CircularProgressIndicator()
+            : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // ElevatedButton(
+                  //     onPressed: () {
+                  //       controller.insertPaymentsSales();
+                  //     },
+                  //     child: const Text('Insert Payments Sales'),
+                  //   ),
+                  //   SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: controller.pickFile,
+                    child: Text('Pilih File Excel'),
+                  ),
+                  Text(
+                    controller.file.value == null
+                        ? 'Belum ada file yang dipilih'
+                        : 'File: ${controller.file.value!.path.split('/').last}',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: () {
+                      controller.readAndUploadExcel();
+                    },
+                    child: const Text('Insert Invoice'),
+                  ),
+                ],
+              ),
+      )),
     );
   }
 }

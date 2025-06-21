@@ -259,14 +259,12 @@ class InvoiceModel {
               .toList(),
         );
       } else {
-        print(jsonDecode(paymentData) as List);
         // Handle the case where paymentData is not a list
         payments = RxList<PaymentModel>(
           (jsonDecode(paymentData) as List)
               .map((i) => PaymentModel.fromJson(i as Map<String, dynamic>))
               .toList(),
         );
-        print('paymentsaa $payments');
         // payments = RxList<PaymentModel>();
       }
     } else {
@@ -401,8 +399,16 @@ class InvoiceModel {
     data['other_costs'] = otherCosts.map((item) => item.toJson()).toList();
     data['init_at'] = initAt.value?.toIso8601String();
     data['remove_at'] = removeAt.value?.toIso8601String();
+    // debugJson(data);
     return data;
   }
+
+  // void debugJson(Map<String, dynamic> data) {
+  //   print("debugjson ==================");
+  //   data.forEach((key, value) {
+  //     print("debugjson $key: $value");
+  //   });
+  // }
 
 //! Bill
   double get subtotalBill {
@@ -482,8 +488,17 @@ class InvoiceModel {
     return totalReturnFinal - remainingDebt;
   }
 
+  double get additionalDIscount {
+    return purchaseList.value.bundleDiscount.value;
+  }
+
+  double get totalInvididualDiscount {
+    return purchaseList.value.items
+        .fold(0, (prev, item) => prev + (item.individualDiscount.value));
+  }
+
   double get totalDiscount {
-    return purchaseList.value.bundleDiscount.value +
+    return additionalDIscount +
         purchaseList.value.items
             .fold(0, (prev, item) => prev + (item.individualDiscount.value));
   }
@@ -534,7 +549,13 @@ class InvoiceModel {
   }
 
   double get remainingDebt {
+    //  print('payment data ${subtotalPaid}');
     return totalBill - subtotalPaid;
+  }
+
+  double get remainingCost {
+    //  print('payment data ${subtotalPaid}');
+    return totalCost - subtotalPaid;
   }
 
   void addPayment(double amount, {String? method, DateTime? date}) {
@@ -546,6 +567,7 @@ class InvoiceModel {
     }
 
     payments.add(PaymentModel(
+      storeId: storeId,
       method: method,
       amountPaid: amount,
       remain: totalBill - (totalPaid + amount),
@@ -598,34 +620,28 @@ class InvoiceModel {
   Map<String, Map<String, double>> totalPaymentsByMethodAndDebtStatus(
       {DateTime? selectedDate}) {
     Map<String, Map<String, double>> totals = {};
-    print('---START $createdAt $totals ----');
     for (var payment in payments) {
-      print('--------------');
       if (payment.method != null) {
         bool isDebt = payment.date!.isAfter(DateTime(createdAt.value!.year,
             createdAt.value!.month, createdAt.value!.day + 1, 0, 0, 0));
+
         String debtStatus = isDebt ? "debt" : "pay";
         if (!totals.containsKey(payment.method)) {
-          totals[payment.method!] = {"debt": 0, "pay": 0};
+          totals[payment.method!] = {"debt": 0, "pay": 0, "deposit": 0};
         }
-        if (selectedDate == null ||
-            (payment.date?.year == selectedDate.year &&
-                payment.date?.month == selectedDate.month &&
-                payment.date?.day == selectedDate.day)) {
-          double prev = totals[payment.method!]![debtStatus]!;
-          double result = prev + payment.amountPaid;
-          print('result $totals $result');
-          double adjustment = result;
-          adjustment += payment.method == 'cash'
-              ? (totals['transfer']?[debtStatus] ?? 0)
-              : (totals['cash']?[debtStatus] ?? 0);
-          print('adjustment $adjustment');
-          if (adjustment > totalBill) {
-            result -= adjustment - totalBill;
-          }
-          totals[payment.method!]![debtStatus] = result;
+        double prev = totals[payment.method!]![debtStatus]!;
+        double result = prev + payment.amountPaid;
+
+        double adjustment = result;
+        adjustment += payment.method == 'cash'
+            ? (totals['transfer']?[debtStatus] ?? 0) + (totals['deposit']?[debtStatus] ?? 0)
+            : (totals['cash']?[debtStatus] ?? 0) + (totals['deposit']?[debtStatus] ?? 0);
+
+
+        if (adjustment > totalBill) {
+          result -= adjustment - totalBill;
         }
-        print('===== NEXT $totals');
+        totals[payment.method!]![debtStatus] = result;
       }
     }
     return totals;

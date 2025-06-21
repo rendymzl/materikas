@@ -17,6 +17,8 @@ class Account {
   DateTime? endDate;
   bool? isActive;
   DateTime updatedAt;
+  int? token;
+  String? affiliateId;
 
   Account({
     this.id,
@@ -33,5 +35,7 @@ class Account {
     this.endDate,
     this.isActive,
     required this.updatedAt,
+    this.token,
+    this.affiliateId,
   });
 }

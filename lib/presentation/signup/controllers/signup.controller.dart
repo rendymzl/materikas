@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:powersync/powersync.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../infrastructure/dal/services/account_service.dart';
 import '../../../infrastructure/dal/services/auth_service.dart';
+import '../../../infrastructure/dal/services/internet_service.dart';
 import '../../../infrastructure/dal/services/store_service.dart';
 import '../../../infrastructure/models/account_model.dart';
 import '../../../infrastructure/models/store_model.dart';
 import '../../../infrastructure/models/user_model.dart';
 import '../../../infrastructure/navigation/routes.dart';
 import '../../global_widget/otp/otp_popup.dart';
+// import '../../splash/controllers/handle_setup_widget.dart';
 
 class SignupController extends GetxController {
   // Controllers for text fields
@@ -94,30 +97,6 @@ class SignupController extends GetxController {
   Future<void> signUpWithEmail(GlobalKey<FormState> formKey) async {
     if (formKey.currentState!.validate()) {
       try {
-        Get.defaultDialog(
-          title: 'Membuat akun...',
-          content: const CircularProgressIndicator(),
-          barrierDismissible: false,
-        );
-
-        AccountModel account = AccountModel(
-          // id: ,
-          accountId: '',
-          name: nameFieldC.text.trim(),
-          email: '${phoneFieldC.text.trim()}@materikas.com',
-          role: 'owner',
-          createdAt: DateTime.now().toLocal(),
-          users: <Cashier>[].obs,
-          password: '',
-          accountType: 'setup',
-          updatedAt: DateTime.now().toLocal(),
-          startDate: DateTime.now(),
-          endDate: DateTime.now(),
-          isActive: false,
-        );
-
-        Get.back();
-
         bool verivied = await otpPopup(phoneFieldC.text);
 
         if (verivied) {
@@ -126,13 +105,36 @@ class SignupController extends GetxController {
             content: const CircularProgressIndicator(),
             barrierDismissible: false,
           );
+
           final AuthResponse userCredential =
               await Supabase.instance.client.auth.signUp(
             email: '${phoneFieldC.text.trim()}@materikas.com',
             password: passwordFieldC.text,
           );
 
+          final storeId = uuid.v4();
+          final accId = uuid.v4();
+
+          AccountModel newAccount = AccountModel(
+            id: accId,
+            accountId: userCredential.user?.id ?? '',
+            storeId: storeId,
+            name: nameFieldC.text.trim(),
+            email: '${phoneFieldC.text.trim()}@materikas.com',
+            role: 'owner',
+            createdAt: DateTime.now(),
+            users: <Cashier>[].obs,
+            password: '',
+            accountType: 'setup',
+            updatedAt: DateTime.now(),
+            startDate: DateTime.now(),
+            endDate: DateTime.now().add(const Duration(days: 7)),
+            isActive: true,
+            token: 2000,
+          );
+
           StoreModel newStore = StoreModel(
+            id: storeId,
             ownerId: userCredential.user?.id ?? '',
             name: RxString(''),
             address: RxString(''),
@@ -141,42 +143,36 @@ class SignupController extends GetxController {
             promo: RxString(''),
             createdAt: DateTime.now().toLocal(),
           );
-          print('menambahkan store');
-          await _storeService.insert(newStore);
 
-          // var store = await _authService.getStore();
-          print('mengambil store: ${userCredential.user?.id}');
-          var store = await _storeService.getStore(userCredential.user!.id);
+          await _storeService.directInsert(newStore);
+          await _accountService.directInsert(newAccount);
 
-          print('store ${store.toJson()}');
-          account.id = userCredential.user?.id ?? '';
-          account.storeId = store.id;
-          account.accountId = userCredential.user?.id ?? '';
-
-          await _accountService.insert(account);
+          _authService.store.value = newStore;
+          _authService.account.value = newAccount;
           Get.back();
+          // await handleSetup();
+          await Get.find<InternetService>().onClose();
           Get.offNamed(Routes.SPLASH);
         }
-
-        // await account.insert();
-        // await sideMenuC.handleInit();
-
-        // Get.snackbar(
-        //   'Pendaftaran Berhasil',
-        //   'Akun telah berhasil dibuat!',
-        //   snackPosition: SnackPosition.BOTTOM,
-        //   backgroundColor: Colors.green,
-        //   colorText: Colors.white,
-        // );
       } catch (e) {
         Get.back();
-        Get.snackbar(
-          'Pendaftaran Gagal',
-          'Mohon periksa kembali isian form!',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
+        if (e.toString().contains('User already registered')) {
+          Get.snackbar(
+            'Pendaftaran Gagal',
+            'Email sudah terdaftar!',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.red,
+            colorText: Colors.white,
+          );
+        } else {
+          Get.snackbar(
+            'Pendaftaran Gagal',
+            'Mohon periksa kembali isian form!',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.red,
+            colorText: Colors.white,
+          );
+        }
         debugPrint(e.toString());
       }
     }

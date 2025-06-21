@@ -3,13 +3,26 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../config.dart';
+import '../../modules/home/views/payment_view.dart';
+import '../../modules/home/views/topup_view.dart';
+import '../../presentation/invoice/views/invoice_detail_view.dart';
+import '../../presentation/invoice/views/invoice_edit_view.dart';
+import '../../presentation/invoice/views/invoice_print_view.dart';
+import '../../presentation/invoice/views/invoice_return_view.dart';
+import '../../presentation/sales/views/buy_product_view.dart';
+import '../../presentation/sales/views/detail_invoice_sales_view.dart';
+import '../../presentation/sales/views/edit_invoice_sales_view.dart';
+import '../../presentation/sales/views/invoice_sales_list_view.dart';
+import '../../presentation/sales/views/payment_sales_invoice_view.dart';
+import '../../presentation/sales/views/product_sales_list_view.dart';
+// import '../../presentation/sales/views/purchase_order_view.dart';
 import '../../presentation/screens.dart';
 import 'bindings/controllers/controllers_bindings.dart';
 import 'routes.dart';
 
 class EnvironmentsBadge extends StatelessWidget {
   final Widget child;
-  EnvironmentsBadge({required this.child});
+  const EnvironmentsBadge({super.key, required this.child});
   @override
   Widget build(BuildContext context) {
     var env = ConfigEnvironments.getEnvironments()['env'];
@@ -28,7 +41,7 @@ class Nav {
   static List<GetPage> routes = [
     GetPage(
       name: Routes.HOME,
-      page: () => const HomeScreen(),
+      page: () => HomeScreen(),
       binding: HomeControllerBinding(),
     ),
     GetPage(
@@ -58,7 +71,7 @@ class Nav {
     ),
     GetPage(
       name: Routes.SALES,
-      page: () => const SalesScreen(),
+      page: () => SalesScreen(),
       binding: SalesControllerBinding(),
     ),
     GetPage(
@@ -96,5 +109,76 @@ class Nav {
       page: () => const TestScreen(),
       binding: TestControllerBinding(),
     ),
+    GetPage(
+        name: Routes.PAYMENT_LIST_VIEW,
+        page: () => const PaymentView(),
+        transition: Transition.cupertino,
+        curve: Easing.linear),
+    GetPage(
+        name: Routes.INVOICE_DETAIL,
+        page: () => const InvoiceDetailView(),
+        transition: Transition.native,
+        curve: Easing.linear),
+    GetPage(
+        name: Routes.INVOICE_RETURN,
+        page: () => const InvoiceReturnView(),
+        transition: Transition.native,
+        curve: Easing.linear),
+    GetPage(
+        name: Routes.INVOICE_EDIT,
+        page: () => const InvoiceEditView(),
+        transition: Transition.native,
+        curve: Easing.linear),
+    GetPage(
+        name: Routes.INVOICE_PRINT,
+        page: () => const InvoicePrintView(),
+        transition: Transition.native,
+        curve: Easing.linear),
+    GetPage(
+        name: Routes.INVOICE_SALES_LIST,
+        page: () => const InvoiceSalesListView(),
+        transition: Transition.cupertino,
+        curve: Easing.linear),
+    // GetPage(
+    //     name: Routes.INVOICE_PURCHASE_ORDER,
+    //     page: () => const PurchaseOrderView(),
+    //     transition: Transition.cupertino,
+    //     curve: Easing.linear),
+    GetPage(
+        name: Routes.INVOICE_PRODUCT_LIST,
+        page: () => const ProductSalesListView(),
+        transition: Transition.cupertino,
+        curve: Easing.linear),
+    GetPage(
+        name: Routes.INVOICE_BUY_PRODUCT,
+        page: () => const BuyProductView(),
+        transition: Transition.native,
+        curve: Easing.linear),
+    GetPage(
+        name: Routes.PAYMENT_SALES_INVOICE,
+        page: () => const PaymentSalesInvoiceView(),
+        transition: Transition.cupertino,
+        curve: Easing.linear),
+    GetPage(
+        name: Routes.DETAIL_INVOICE_SALES,
+        page: () => const DetailInvoiceSalesView(),
+        transition: Transition.cupertino,
+        curve: Easing.linear),
+    GetPage(
+        name: Routes.EDIT_INVOICE_SALES,
+        page: () => const EditInvoiceSalesView(),
+        transition: Transition.cupertino,
+        curve: Easing.linear),
+    GetPage(
+        name: Routes.TOPUP,
+        page: () => const TopupView(),
+        transition: Transition.native,
+        curve: Easing.linear),
+    GetPage(
+        name: Routes.GRAPH,
+        page: () => const GraphScreen(),
+        binding: GraphControllerBinding(),
+        transition: Transition.cupertino,
+        curve: Easing.linear),
   ];
 }

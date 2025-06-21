@@ -16,6 +16,15 @@ add_executable(${BINARY_NAME} WIN32
   "runner.exe.manifest"
 )
 
+# Set the minimum required version of Windows
+set_property(TARGET ${BINARY_NAME} PROPERTY VS_WINDOWS_TARGET_PLATFORM_VERSION "10.0.19041.0")
+
+set(PDFIUM_VERSION "4929" CACHE STRING "" FORCE)
+set(PDFIUM_ARCH "x64" CACHE STRING "" FORCE)
+
+# Enable WebView2-specific features
+add_compile_definitions(USING_WEBVIEW2)
+
 # Apply the standard set of build settings. This can be removed for applications
 # that need different build settings.
 apply_standard_settings(${BINARY_NAME})

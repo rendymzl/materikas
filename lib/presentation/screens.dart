@@ -1,4 +1,5 @@
 export 'package:materikas/presentation/customer/customer.screen.dart';
+export 'package:materikas/presentation/graph/graph.screen.dart';
 export 'package:materikas/presentation/home/home.screen.dart';
 export 'package:materikas/presentation/invoice/invoice.screen.dart';
 export 'package:materikas/presentation/login/login.screen.dart';

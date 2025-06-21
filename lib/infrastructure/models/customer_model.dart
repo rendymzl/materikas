@@ -11,9 +11,11 @@ class CustomerModel extends Customer {
     super.address,
     super.noteAddress,
     super.storeId,
+    super.deposit,
   });
 
   factory CustomerModel.fromJson(Map<String, dynamic> json) {
+    print('deposit ${json['deposit']}');
     return CustomerModel(
       id: json['id'],
       customerId: json['customer_id'],
@@ -21,10 +23,11 @@ class CustomerModel extends Customer {
           ? DateTime.parse(json['created_at']).toLocal()
           : null,
       name: json['name'],
-      phone: json['phone'],
-      address: json['address'],
-      noteAddress: json['note_address'],
+      phone: json['phone'] ?? '',
+      address: json['address'] ?? '',
+      noteAddress: json['note_address'] ?? '',
       storeId: json['store_id'],
+      deposit: json['deposit'],
     );
   }
 
@@ -38,10 +41,12 @@ class CustomerModel extends Customer {
     data['address'] = address;
     data['note_address'] = noteAddress;
     if (storeId != null) data['store_id'] = storeId;
+    if (deposit != null) data['deposit'] = deposit;
     return data;
   }
 
   factory CustomerModel.fromRow(sqlite.Row row) {
+    print('deposit ${row['deposit']}');
     return CustomerModel(
       id: row['id'],
       customerId: row['customer_id'],
@@ -53,6 +58,7 @@ class CustomerModel extends Customer {
       address: row['address'],
       noteAddress: row['note_address'],
       storeId: row['store_id'],
+      deposit: row['deposit'],
     );
   }
 }

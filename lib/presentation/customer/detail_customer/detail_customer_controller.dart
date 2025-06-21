@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import '../../../infrastructure/dal/services/auth_service.dart';
 import '../../../infrastructure/dal/services/customer_service.dart';
 import '../../../infrastructure/models/customer_model.dart';
+import '../../../infrastructure/utils/display_format.dart';
 import '../../global_widget/app_dialog_widget.dart';
 
 class DetailCustomerController extends GetxController {
@@ -20,6 +21,7 @@ class DetailCustomerController extends GetxController {
   final nameController = TextEditingController();
   final phoneController = TextEditingController();
   final addressController = TextEditingController();
+  final depositController = TextEditingController();
 
   final formkey = GlobalKey<FormState>();
 
@@ -29,6 +31,19 @@ class DetailCustomerController extends GetxController {
     'phone': false,
     'address': false,
   }.obs;
+
+  void onDepositChanged(String value) {
+    if (value.isNotEmpty) {
+      String newValue = currency.format(int.parse(value.replaceAll('.', '')));
+
+      if (newValue != depositController.text) {
+        depositController.value = TextEditingValue(
+          text: newValue,
+          selection: TextSelection.collapsed(offset: newValue.length),
+        );
+      }
+    }
+  }
 
   String? nameValidator(String value) {
     value = value.trim();
@@ -59,6 +74,8 @@ class DetailCustomerController extends GetxController {
     nameController.text = customer.name;
     phoneController.text = customer.phone ?? '';
     addressController.text = customer.address ?? '';
+    depositController.text =
+        customer.deposit != null ? currency.format(customer.deposit ?? 0) : '';
   }
 
   //! create
@@ -134,12 +151,14 @@ class DetailCustomerController extends GetxController {
       print(nameController.text);
       if (formkey.currentState!.validate()) {
         final customer = CustomerModel(
-            customerId: idController.text,
-            createdAt: DateTime.now(),
-            name: nameController.text,
-            phone: phoneController.text,
-            address: addressController.text,
-            storeId: _authService.account.value!.storeId);
+          customerId: idController.text,
+          createdAt: DateTime.now(),
+          name: nameController.text,
+          phone: phoneController.text,
+          address: addressController.text,
+          storeId: _authService.account.value!.storeId,
+          deposit: double.tryParse(depositController.text.replaceAll('.', '')),
+        );
         print(customer.toJson());
         print(nameController.text);
         curentCustomer != null

@@ -1,33 +1,32 @@
 import 'package:get/get.dart';
+// import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 
 import '../../../infrastructure/dal/services/operating_cost_service.dart';
 import '../../../infrastructure/models/operating_cost_model.dart';
+// import '../../../infrastructure/utils/display_format.dart';
 
 class OperatingCostController extends GetxController {
   final OperatingCostService _operatingCostService = Get.find();
-  late final operatingCosts = _operatingCostService.foundOperatingCost;
 
-  final initDate = DateTime.now().obs;
   final selectedDate = DateTime.now().obs;
-  final dailyRangeController = DateRangePickerController().obs;
+  // final displayDate = 'Pilih Tanggal'.obs;
   late final dailyOperatingCosts = <OperatingCostModel>[].obs;
 
   @override
   void onInit() async {
     rangePickerHandle(DateTime.now());
-    everAll([selectedDate, operatingCosts],
-        (_) => rangePickerHandle(selectedDate.value));
+    everAll([selectedDate, _operatingCostService.updatedCount],
+        (_) async => rangePickerHandle(selectedDate.value));
     super.onInit();
   }
 
-  Future rangePickerHandle(DateTime pickedDate) async {
+  Future<void> rangePickerHandle(DateTime pickedDate) async {
+    // displayDate.value = DateFormat('dd MMM y', 'id').format(pickedDate);
     selectedDate.value = pickedDate;
-    var items = operatingCosts.where((cost) {
-      return cost.createdAt!.day == selectedDate.value.day &&
-          cost.createdAt!.month == selectedDate.value.month &&
-          cost.createdAt!.year == selectedDate.value.year;
-    }).toList();
+    final pickerDateRange =
+        PickerDateRange(pickedDate, pickedDate.add(Duration(days: 1)));
+    final items = await _operatingCostService.getByDate(pickerDateRange);
     dailyOperatingCosts.assignAll(items);
   }
 

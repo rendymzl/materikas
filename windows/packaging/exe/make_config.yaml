@@ -10,3 +10,4 @@ create_desktop_icon: true
 locales:
   - en
   - id
+script_template: inno_setup.iss

@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import '../../../infrastructure/models/invoice_model/cart_item_model.dart';
+import '../../../infrastructure/utils/display_format.dart';
+// import '../../../infrastructure/utils/display_format.dart';
 
 class QuantityTextField extends StatelessWidget {
   const QuantityTextField({
@@ -10,11 +12,13 @@ class QuantityTextField extends StatelessWidget {
     required this.item,
     required this.onChanged,
     this.isReturn = false,
+    this.title = 'Jumlah',
   });
 
   final CartItem item;
   final Function(String) onChanged;
   final bool isReturn;
+  final String? title;
 
   @override
   Widget build(BuildContext context) {
@@ -31,17 +35,44 @@ class QuantityTextField extends StatelessWidget {
       return TextField(
         controller: qtyTextC,
         textAlign: TextAlign.center,
+        textAlignVertical: TextAlignVertical.top,
         decoration: InputDecoration(
-          labelText: 'Jumlah',
+          labelText: ' $title',
           labelStyle: context.textTheme.bodySmall!
               .copyWith(fontStyle: FontStyle.italic),
-          prefixText: 'x',
+          prefix: vertical
+              ? IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: BoxConstraints(
+                    minWidth: 24, // Lebar minimum
+                    minHeight: 24, // Tinggi minimum
+                  ),
+                  onPressed: () =>
+                      onChanged((qty - 1).clamp(0, qty).toString()),
+                  icon: const Icon(Icons.remove),
+                  iconSize: 16,
+                )
+              : Text('x'),
           counterText: '',
-          suffixText: item.product.unit,
-          filled: true,
-          fillColor: Theme.of(context).colorScheme.secondary.withOpacity(0.2),
-          contentPadding: const EdgeInsets.all(10),
-          border: const OutlineInputBorder(borderSide: BorderSide.none),
+          suffix: vertical
+              ? IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: BoxConstraints(
+                    minWidth: 24, // Lebar minimum
+                    minHeight: 24, // Tinggi minimum
+                  ),
+                  onPressed: () => onChanged((qty + 1).toString()),
+                  icon: const Icon(Icons.add),
+                  iconSize: 16,
+                )
+              : Text(item.product.unit),
+          // filled: true,
+          // fillColor: Theme.of(context).colorScheme.secondary.withOpacity(0.2),
+          contentPadding: !vertical ? null : const EdgeInsets.all(0),
+          border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(5),
+              borderSide: const BorderSide(color: Colors.grey)),
+          // border: const OutlineInputBorder(),
           isDense: true,
         ),
         keyboardType: const TextInputType.numberWithOptions(decimal: true),

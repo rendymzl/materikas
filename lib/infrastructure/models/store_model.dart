@@ -17,6 +17,8 @@ class StoreModel extends Stores {
     required super.createdAt,
     super.billings,
     super.promo,
+    super.logoUrl,
+    super.textPrint,
   });
 
   factory StoreModel.fromJson(Map<String, dynamic> json) {
@@ -42,6 +44,20 @@ class StoreModel extends Stores {
     } else {
       billings = RxList<Billing>([]);
     }
+    late RxList<String> textPrint;
+    if (json['text_print'] != null) {
+      final dynamic textPrintData = json['text_print'] is String
+          ? jsonDecode(json['text_print'])
+          : json['text_print'];
+      if (textPrintData is List) {
+        textPrint = RxList<String>.from(textPrintData.map((e) => e.toString()));
+      } else {
+        textPrint = RxList<String>.from(
+            (jsonDecode(textPrintData) as List).map((e) => e.toString()));
+      }
+    } else {
+      textPrint = RxList<String>([]);
+    }
     return StoreModel(
       id: json['id'],
       ownerId: json['owner_id'],
@@ -52,6 +68,8 @@ class StoreModel extends Stores {
       telp: RxString(json['telp']),
       billings: billings,
       promo: RxString(json['promo'] ?? ''),
+      logoUrl: RxString(json['logo_url'] ?? ''),
+      textPrint: textPrint,
     );
   }
 
@@ -64,8 +82,10 @@ class StoreModel extends Stores {
     data['address'] = address.value;
     data['phone'] = phone.value;
     data['telp'] = telp.value;
-    data['billings'] = billings?.map((item) => item?.toJson()).toList();
+    data['billings'] = billings?.map((item) => item.toJson()).toList();
     data['promo'] = promo?.value;
+    data['logo_url'] = logoUrl?.value ?? '';
+    data['text_print'] = textPrint?.map((e) => e).toList();
     return data;
   }
 
@@ -92,6 +112,20 @@ class StoreModel extends Stores {
     } else {
       billings = RxList<Billing>([]);
     }
+    late RxList<String> textPrint;
+    if (row['text_print'] != null) {
+      final dynamic textPrintData = row['text_print'] is String
+          ? jsonDecode(row['text_print'])
+          : row['text_print'];
+      if (textPrintData is List) {
+        textPrint = RxList<String>.from(textPrintData.map((e) => e.toString()));
+      } else {
+        textPrint = RxList<String>.from(
+            (jsonDecode(textPrintData) as List).map((e) => e.toString()));
+      }
+    } else {
+      textPrint = RxList<String>([]);
+    }
     return StoreModel(
       id: row['id'],
       ownerId: row['owner_id'],
@@ -104,6 +138,8 @@ class StoreModel extends Stores {
       telp: RxString(row['telp']),
       billings: billings,
       promo: RxString(row['promo'] ?? ''),
+      logoUrl: RxString(row['logo_url'] ?? ''),
+      textPrint: textPrint,
     );
   }
 }

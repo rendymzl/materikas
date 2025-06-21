@@ -6,13 +6,21 @@ list(APPEND FLUTTER_PLUGIN_LIST
   app_links
   auto_updater_windows
   connectivity_plus
+  desktop_webview_window
+  directprint
+  file_saver
+  file_selector_windows
+  flutter_inappwebview_windows
+  flutter_thermal_printer
   permission_handler_windows
   powersync_flutter_libs
-  screen_retriever
+  print_usb
+  printing
+  screen_retriever_windows
+  share_plus
   sqlite3_flutter_libs
   thermal_printer
   url_launcher_windows
-  webview_windows
   window_manager
 )
 

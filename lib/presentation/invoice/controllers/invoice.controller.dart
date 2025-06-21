@@ -1,33 +1,72 @@
 import 'dart:async';
 
+// import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+// import 'package:powersync/sqlite3.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 
 import '../../../infrastructure/dal/services/auth_service.dart';
 import '../../../infrastructure/dal/services/invoice_service.dart';
 import '../../../infrastructure/models/invoice_model/invoice_model.dart';
 
+// Future<List<InvoiceModel>> convertToInvoiceModel(
+//     List<Map<String, dynamic>> maps) async {
+//   return maps.map((e) => InvoiceModel.fromJson(e)).toList();
+// }
+
 class InvoiceController extends GetxController {
   late final AuthService _authService = Get.find();
   late final InvoiceService invoiceService = Get.find();
-  late InvoiceModel initInvoice;
-
+  late InvoiceModel displayInvoice;
+  // late InvoiceModel editedInvoice;
   final formKey = GlobalKey<FormState>();
+
+  final isDebt = false.obs;
 
   final editInvoice = true.obs;
   final returnInvoice = true.obs;
   final paymentInvoice = true.obs;
   final destroyInvoice = true.obs;
 
+  int updatedPaidCount = 0;
+  int updatedDebtCount = 0;
+
   @override
   void onInit() async {
-    await fetch();
-
+    // displayedItemsPaid.value = invoiceService.itemsPaid;
+    // displayedItemsDebt.value = invoiceService.itemsDebt;
+    displayedItemsPaid.assignAll(invoiceService.itemsPaid);
+    displayedItemsDebt.assignAll(invoiceService.itemsDebt);
+    // await fetch(isClean: true);
+    // updatedPaidCount = invoiceService.updatedPaidCount.value;
+    // updatedDebtCount = invoiceService.updatedDebtCount.value;
+    // offsetPaid = 15;
+    // offsetDebt = 15;
     // Listen perubahan searchQuery atau selectedCategory
-    everAll([invoiceService.updatedCount], (_) async {
-      await fetch();
+    everAll([
+      invoiceService.itemsPaid,
+      invoiceService.itemsDebt,
+      searchQuery,
+      searchDateQuery,
+      methodPayment
+    ], (_) async {
+      if (isFiltered()) {
+        print('isFiltered');
+        var paid = await fetchPaid(isClean: true);
+        var debt = await fetchDebt(isClean: true);
+        // displayedItemsPaid.value = paid;
+        // displayedItemsDebt.value = debt;
+        displayedItemsPaid.assignAll(paid);
+        displayedItemsDebt.assignAll(debt);
+      } else {
+        print('noFilter');
+        displayedItemsPaid.assignAll(invoiceService.itemsPaid);
+        displayedItemsDebt.assignAll(invoiceService.itemsDebt);
+        // displayedItemsPaid.value = invoiceService.itemsPaid;
+        // displayedItemsDebt.value = invoiceService.itemsDebt;
+      }
     });
     editInvoice.value = await _authService.checkAccess('editInvoice');
     returnInvoice.value = await _authService.checkAccess('returnInvoice');
@@ -36,130 +75,85 @@ class InvoiceController extends GetxController {
     super.onInit();
   }
 
-  Future<void> fetch() async {
-    if (isLoadingPaid.value) return;
-
-    hasMorePaid.value = true;
-    hasMoreDebt.value = true;
-    displayedItemsPaid.clear();
-    displayedItemsDebt.clear();
-
-    final startTime = DateTime.now();
-
-    await invoiceService.fetch(
-      listPaid: displayedItemsPaid,
-      listDebt: displayedItemsDebt,
-      search: searchQuery.value,
-      pickerDateRange: searchDateQuery.value,
-      methodPayment: methodPayment.value,
-    );
-    offsetPaid = displayedItemsPaid.length;
-    offsetDebt = displayedItemsDebt.length;
-    final endTime = DateTime.now();
-    final duration = endTime.difference(startTime);
-    print('Waktu pengambilan data $offsetPaid: ${duration.inMilliseconds} ms');
-  }
-
   //!PAID
-  var displayedItemsPaid = <InvoiceModel>[].obs;
-  var isLoadingPaid = false.obs;
-  var hasMorePaid = true.obs;
+  final displayedItemsPaid = <InvoiceModel>[].obs;
+  // final initItemsPaid = <InvoiceModel>[].obs;
+  final isLoadingPaid = false.obs;
+  final hasMorePaid = true.obs;
   int offsetPaid = 0;
 
   //!DEBT
-  var displayedItemsDebt = <InvoiceModel>[].obs;
-  var isLoadingDebt = false.obs;
-  var hasMoreDebt = true.obs;
+  final displayedItemsDebt = <InvoiceModel>[].obs;
+  // final initItemsDebt = <InvoiceModel>[].obs;
+  final isLoadingDebt = false.obs;
+  final hasMoreDebt = true.obs;
   int offsetDebt = 0;
 
   final int limit = 15;
 
-  var searchQuery = ''.obs;
-  var searchDateQuery = Rx<PickerDateRange?>(null);
-  var methodPayment = ''.obs;
+  final searchQuery = ''.obs;
+  final searchDateQuery = Rx<PickerDateRange?>(null);
+  final methodPayment = ''.obs;
 
-  Future<void> fetchPaid({bool isClean = false}) async {
-    if (isLoadingPaid.value) return;
-    // isLoadingPaid.value = true;
-
+  Future<List<InvoiceModel>> fetchPaid({bool isClean = false}) async {
     if (isClean) {
       hasMorePaid.value = true;
       offsetPaid = 0;
-      displayedItemsPaid.clear();
     }
 
-    if (!hasMorePaid.value) return;
-    final startTime = DateTime.now();
-
-    List<InvoiceModel> results = await invoiceService.loadMore(
-      isPaid: true,
-      limit: limit,
-      offset: offsetPaid,
-      search: searchQuery.value,
-      pickerDateRange: searchDateQuery.value,
-      methodPayment: methodPayment.value,
-    );
-
-    // if (invoiceService.isFiltered()) {
-    //   hasMorePaid.value = false;
-    //   displayedItemsPaid.assignAll(invoiceService.filteredPaidInv.length > 50
-    //       ? invoiceService.filteredPaidInv.sublist(0, 50)
-    //       : invoiceService.filteredPaidInv);
-    // } else {
-    if (results.isEmpty || offsetPaid > 200) {
-      hasMorePaid.value = false;
+    if (hasMorePaid.value) {
+      final results = await invoiceService.fetch(
+        isPaid: true,
+        limit: limit,
+        offset: offsetPaid,
+        search: searchQuery.value,
+        pickerDateRange: searchDateQuery.value,
+        methodPayment: methodPayment.value,
+      );
+      if (results.isEmpty || offsetPaid > 200) {
+        hasMorePaid.value = false;
+        return <InvoiceModel>[];
+      } else {
+        offsetPaid += limit;
+        return results;
+      }
     } else {
-      displayedItemsPaid.addAll(results);
-      offsetPaid += limit;
+      return <InvoiceModel>[];
     }
-    // }
-
-    isLoadingPaid.value = false;
-    final endTime = DateTime.now();
-    final duration = endTime.difference(startTime);
-    print('Waktu pengambilan data $offsetPaid: ${duration.inMilliseconds} ms');
   }
 
-  Future<void> fetchDebt({bool isClean = false}) async {
-    if (isLoadingDebt.value) return;
-    // isLoadingDebt.value = true;
-
+  Future<List<InvoiceModel>> fetchDebt({bool isClean = false}) async {
     if (isClean) {
       hasMoreDebt.value = true;
       offsetDebt = 0;
-      displayedItemsDebt.clear();
     }
-
-    if (!hasMoreDebt.value) return;
-    final startTime = DateTime.now();
-
-    List<InvoiceModel> results = await invoiceService.loadMore(
-      isPaid: false,
-      limit: limit,
-      offset: offsetDebt,
-      search: searchQuery.value,
-      pickerDateRange: searchDateQuery.value,
-      methodPayment: methodPayment.value,
-    );
-
-    // if (invoiceService.isFiltered()) {
-    //   hasMoreDebt.value = false;
-    //   displayedItemsDebt.assignAll(invoiceService.filteredDebtInv.length > 50
-    //       ? invoiceService.filteredDebtInv.sublist(0, 50)
-    //       : invoiceService.filteredDebtInv);
-    // } else {
-    if (results.isEmpty) {
-      hasMoreDebt.value = false;
+    if (hasMoreDebt.value) {
+      final results = await invoiceService.fetch(
+        isPaid: false,
+        limit: limit,
+        offset: offsetDebt,
+        search: searchQuery.value,
+        pickerDateRange: searchDateQuery.value,
+        methodPayment: methodPayment.value,
+      );
+      if (results.isEmpty || offsetDebt > 200) {
+        hasMoreDebt.value = false;
+        return <InvoiceModel>[];
+      } else {
+        offsetDebt += limit;
+        return results;
+      }
     } else {
-      displayedItemsDebt.addAll(results);
-      offsetDebt += limit;
+      return <InvoiceModel>[];
     }
-    // }
+  }
 
-    isLoadingDebt.value = false;
-    final endTime = DateTime.now();
-    final duration = endTime.difference(startTime);
-    print('Waktu pengambilan data $offsetDebt: ${duration.inMilliseconds} ms');
+  void loadPaid() async {
+    displayedItemsPaid.addAll(await fetchPaid());
+  }
+
+  void loadDebt() async {
+    displayedItemsDebt.addAll(await fetchDebt());
   }
 
   bool isFiltered() {
@@ -167,17 +161,6 @@ class InvoiceController extends GetxController {
         searchDateQuery.value != null ||
         methodPayment.isNotEmpty);
   }
-  // Future<void> resetScroll() async {
-  //   offsetPaid = 0;
-  //   offsetDebt = 0;
-  //   hasMorePaid.value = true;
-  //   hasMoreDebt.value = true;
-  //   displayedItemsPaid.clear();
-  //   displayedItemsDebt.clear();
-
-  //   await fetchPaid();
-  //   await fetchDebt();
-  // }
 
   Timer? debounceTimer;
   void filterInvoices(dynamic searchValue) async {
@@ -186,14 +169,10 @@ class InvoiceController extends GetxController {
       debounceTimer = Timer(const Duration(milliseconds: 200), () async {
         if (formKey.currentState!.validate()) {
           searchQuery.value = searchValue;
-          await fetchPaid(isClean: true);
-          await fetchDebt(isClean: true);
         }
       });
     } else if (searchValue is PickerDateRange) {
       searchDateQuery.value = searchValue;
-      await fetchPaid(isClean: true);
-      await fetchDebt(isClean: true);
     }
   }
 
@@ -207,14 +186,12 @@ class InvoiceController extends GetxController {
     methodPayment.value == method
         ? methodPayment.value = ''
         : methodPayment.value = method;
-    await fetchPaid(isClean: true);
-    await fetchDebt(isClean: true);
   }
 
   handleFilteredDate(BuildContext context) {
     startFilteredDate.value = '';
     endFilteredDate.value = '';
-    displayFilteredDate.value = '';
+    // displayFilteredDate.value = '';
     Get.defaultDialog(
       title: 'Pilih Tanggal',
       backgroundColor: Colors.white,
@@ -263,16 +240,15 @@ class InvoiceController extends GetxController {
               cancelText: 'Batal',
               onSelectionChanged: (DateRangePickerSelectionChangedArgs args) {
                 startFilteredDate.value =
-                    DateFormat('dd MMMM y', 'id').format(args.value.startDate!);
+                    DateFormat('dd MMM y', 'id').format(args.value.startDate!);
                 if (args.value.endDate != null) {
                   endFilteredDate.value =
-                      DateFormat('dd MMMM y', 'id').format(args.value.endDate!);
+                      DateFormat('dd MMM y', 'id').format(args.value.endDate!);
                 }
               },
               onCancel: () => Get.back(),
               onSubmit: (value) {
                 if (value is PickerDateRange) {
-                  // if (value.endDate != null) {
                   final newSelectedPickerRange = PickerDateRange(
                       value.startDate,
                       value.endDate != null
@@ -282,34 +258,40 @@ class InvoiceController extends GetxController {
                   selectedFilteredDate.value =
                       newSelectedPickerRange.startDate!;
                   displayFilteredDate.value = value.endDate != null
-                      ? '$startFilteredDate sampai $endFilteredDate'
+                      ? '$startFilteredDate s/d $endFilteredDate'
                       : '$startFilteredDate';
                   filterInvoices(newSelectedPickerRange);
                   dateIsSelected.value = true;
                   Get.back();
-                  // }
                 }
-                // if (value is PickerDateRange) {
-                //   if (value.endDate != null) {
-                //     final newSelectedPickerRange = PickerDateRange(
-                //         value.startDate,
-                //         value.endDate!.add(const Duration(days: 1)));
-
-                //     selectedFilteredDate.value =
-                //         newSelectedPickerRange.startDate!;
-                //     displayFilteredDate.value =
-                //         '$startFilteredDate sampai $endFilteredDate';
-                //     filterInvoices(newSelectedPickerRange);
-                //     dateIsSelected.value = true;
-                //     Get.back();
-                //   }
-                // }
               },
             ),
           ),
         ],
       ),
     );
+  }
+
+  final selectedMode = false.obs;
+  void selectedModeHandle() {
+    selectedMode.value = !selectedMode.value;
+    if (!selectedMode.value) selectedInvoices.clear();
+  }
+
+  final selectedInvoices = <InvoiceModel>[].obs;
+  void selectedHandle(InvoiceModel invoice) async {
+    if (checkExisting(invoice)) {
+      selectedInvoices.remove(invoice);
+      if (selectedInvoices.isEmpty) selectedModeHandle();
+    } else {
+      selectedInvoices.add(invoice);
+    }
+    print('selectedMode ${selectedMode.value}');
+    print('selectedMode selectedInvoices ${selectedInvoices.length}');
+  }
+
+  bool checkExisting(InvoiceModel invoice) {
+    return selectedInvoices.any((inv) => inv.id == invoice.id);
   }
 
   void clearHandle() async {

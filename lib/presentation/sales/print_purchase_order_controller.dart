@@ -158,9 +158,9 @@ class PrintPurchaseOrderController extends GetxController {
       return;
     }
 
-    final bytes = await generateReceiptPurchaseOrder(invoice);
-    await sendBytesToPrint(bytes,
-        PrinterType.usb); // Sesuaikan dengan jenis printer yang digunakan
+    // final bytes = await generateReceiptPurchaseOrder(invoice);
+    // await sendBytesToPrint(bytes,
+    //     PrinterType.usb); // Sesuaikan dengan jenis printer yang digunakan
   }
 
   Future<void> printTransportInv(PurchaseOrderModel invoice) async {
@@ -169,9 +169,9 @@ class PrintPurchaseOrderController extends GetxController {
       return;
     }
 
-    final bytes = await generateInvPurchaseOrder(invoice);
-    await sendBytesToPrint(bytes,
-        PrinterType.usb); // Sesuaikan dengan jenis printer yang digunakan
+    // final bytes = await generateInvPurchaseOrder(invoice);
+    // await sendBytesToPrint(bytes,
+    //     PrinterType.usb); // Sesuaikan dengan jenis printer yang digunakan
   }
 
 //! tes print

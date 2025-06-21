@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import '../global_widget/popup_page_widget.dart';
 import 'controllers/product.controller.dart';
 
-void addFromExcel() {
+void addProductFromExcel() {
   ProductController productC = Get.put(ProductController());
 
   showPopupPageWidget(
@@ -15,11 +15,11 @@ void addFromExcel() {
     content: Padding(
       padding: const EdgeInsets.all(16.0),
       child: Obx(
-        () => productC.isLoading.value
+        () => productC.isAddExcelLoading.value
             ? Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  CircularProgressIndicator(),
+                  Center(child: CircularProgressIndicator()),
                   SizedBox(height: 20),
                   Text(
                     productC.processMessage.value,

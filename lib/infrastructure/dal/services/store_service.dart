@@ -11,12 +11,26 @@ class StoreService extends GetxService implements StoreRepository {
 
   @override
   Future<StoreModel> getStore(id) async {
-    final response =
-        await supabaseClient.from('stores').select().eq('owner_id', id);
-    if (response.isNotEmpty) {
-      stores.value = StoreModel.fromJson(response[0]);
+    StoreModel? store;
+    int retryCount = 0;
+    const maxRetries = 5;
+    const retryDelay = Duration(seconds: 3);
+
+    while (store == null && retryCount < maxRetries) {
+      try {
+        final row = await db.get('SELECT * FROM stores WHERE id = ?', [id]);
+        store = StoreModel.fromRow(row);
+      } catch (e) {
+        retryCount++;
+        if (retryCount < maxRetries) {
+          await Future.delayed(retryDelay);
+        } else {
+          throw Exception(
+              'Gagal mengambil data toko setelah beberapa kali percobaan: $e');
+        }
+      }
     }
-    return stores.value!;
+    return store!;
   }
 
   @override
@@ -31,8 +45,14 @@ class StoreService extends GetxService implements StoreRepository {
         'telp': store.telp.value,
         'promo': store.promo?.value,
         'owner_id': store.ownerId,
+        'logo_url': store.logoUrl?.value,
+        'text_print': store.textPrint?.map((e) => e).toList(),
       }
     ]);
+  }
+
+  Future<void> directInsert(StoreModel store) async {
+    await Supabase.instance.client.from('stores').insert([store.toJson()]);
   }
 
   @override
@@ -46,6 +66,8 @@ class StoreService extends GetxService implements StoreRepository {
       phone = ?, 
       telp = ?, 
       billings = ?, 
+      logo_url = ?, 
+      text_print = ?, 
       promo = ?
     WHERE id = ?
     ''',
@@ -56,6 +78,8 @@ class StoreService extends GetxService implements StoreRepository {
         store.phone.value,
         store.telp.value,
         store.billings?.map((e) => e.toJson()).toList(),
+        store.logoUrl?.value,
+        store.textPrint?.map((e) => e).toList(),
         store.promo?.value,
         store.id,
       ],

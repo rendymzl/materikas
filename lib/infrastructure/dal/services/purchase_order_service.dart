@@ -1,9 +1,15 @@
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../domain/core/interfaces/purchase_order_repository.dart';
 import '../../models/purchase_order_model.dart';
 import '../database/powersync.dart';
+
+Future<List<PurchaseOrderModel>> convertToModel(
+    List<Map<String, dynamic>> maps) async {
+  return maps.map((e) => PurchaseOrderModel.fromJson(e)).toList();
+}
 
 class PurchaseOrderService extends GetxService
     implements PurchaseOrderRepository {
@@ -18,17 +24,15 @@ class PurchaseOrderService extends GetxService
   }
 
   @override
-  Future<void> subscribe(String storeId) async {
+  Future<void> subscribe() async {
     try {
-      var stream = db.watch('SELECT * FROM purchase_orders WHERE store_id = ?',
-          parameters: [
-            storeId
-          ]).map((data) =>
-          data.map((json) => PurchaseOrderModel.fromJson(json)).toList());
+      var stream = db
+          .watch('SELECT * FROM purchase_orders')
+          .map((data) => data.toList());
 
-      stream.listen((update) {
-        purchaseOrder.assignAll(update);
-        foundPurchaseOrder.assignAll(update);
+      stream.listen((update) async {
+        purchaseOrder.assignAll(await compute(convertToModel, update));
+        foundPurchaseOrder.assignAll(await compute(convertToModel, update));
         sortByDate(foundPurchaseOrder);
       });
     } on PostgrestException catch (e) {

@@ -1,6 +1,8 @@
+// import 'package:get/get.dart';
 import 'package:powersync/sqlite3_common.dart' as sqlite;
 
 import '../../domain/core/entities/sales.dart';
+// import '../dal/services/invoice_sales_service.dart';
 import 'invoice_sales_model.dart';
 
 class SalesModel extends Sales {
@@ -12,6 +14,7 @@ class SalesModel extends Sales {
     super.phone,
     super.address,
     super.storeId,
+    super.totalDebt,
   });
 
   factory SalesModel.fromJson(Map<String, dynamic> json) {
@@ -63,9 +66,17 @@ class SalesModel extends Sales {
   }
 
   double getTotalDebt(List<InvoiceSalesModel> salesInvoices) {
-    double totalDebt = getInvoiceListBySalesId(salesInvoices)
-        .fold(0, (prev, invoice) => prev + invoice.remainingDebt);
-
-    return totalDebt;
+    List<InvoiceSalesModel> listById = getInvoiceListBySalesId(salesInvoices);
+    double debt = listById.fold(
+        0,
+        (prev, invoice) =>
+            prev +
+            (invoice.purchaseOrder.value
+                ? 0
+                : invoice.remainingDebt < 0
+                    ? 0
+                    : invoice.remainingDebt));
+    totalDebt = debt;
+    return debt;
   }
 }

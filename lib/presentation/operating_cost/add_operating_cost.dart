@@ -86,8 +86,8 @@ void addOperatingCostDialog() {
                           const OutlineInputBorder(borderSide: BorderSide.none),
                       isDense: true,
                     ),
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
+                    // keyboardType:
+                    //     const TextInputType.numberWithOptions(decimal: true),
                   ),
                 ),
                 const Text('  :   '),
@@ -154,8 +154,8 @@ void addOperatingCostDialog() {
                   border: const OutlineInputBorder(borderSide: BorderSide.none),
                   isDense: true,
                 ),
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
+                // keyboardType:
+                //     const TextInputType.numberWithOptions(decimal: true),
               ),
             ),
           ],

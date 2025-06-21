@@ -1,6 +1,10 @@
 import 'package:powersync/sqlite3_common.dart' as sqlite;
 import 'package:get/get.dart';
+// import '../../../domain/core/entities/product.dart';
+import '../invoice_sales_model.dart';
+import '../product_model.dart';
 import 'cart_item_model.dart';
+import 'invoice_model.dart';
 
 class Cart {
   var items = <CartItem>[].obs;
@@ -108,46 +112,244 @@ class Cart {
   }
 
 //! func
-  void addItem(CartItem newItem) {
+  void addItem(ProductModel product) {
     final existingItem =
-        items.firstWhereOrNull((item) => item.product.id == newItem.product.id);
+        items.firstWhereOrNull((item) => item.product.id == product.id);
     if (existingItem != null) {
-      existingItem.product.stock.value = newItem.product.stock.value;
-      existingItem.quantity.value += newItem.quantity.value;
+      existingItem.quantity.value += 1;
     } else {
-      items.add(newItem);
+      items.add(CartItem(
+          product: ProductModel.fromJson(product.toJson()), quantity: 1));
     }
   }
 
-  void addReturnItem(CartItem newItem) {
-    final existingItem =
-        items.firstWhereOrNull((item) => item.product.id == newItem.product.id);
+  void updateQuantity(String id, double updatedQuantity) {
+    final existingItem = items.firstWhereOrNull((item) {
+      return item.product.id == id;
+    });
     if (existingItem != null) {
-      existingItem.quantityReturn.value += newItem.quantityReturn.value;
-    } else {
-      items.add(newItem);
+      existingItem.quantity.value = updatedQuantity;
     }
   }
 
-  void removeItem(String productId) {
-    items.removeWhere((item) => item.product.id == productId);
+  void removeItemStock(ProductModel product, InvoiceModel currentInvoice,
+      {bool newReturn = false}) {
+    final existingItem =
+        items.firstWhereOrNull((item) => item.product.id == product.id);
+
+    final existingCurrentItem = (newReturn
+            ? currentInvoice.returnList.value!.items
+            : currentInvoice.purchaseList.value.items)
+        .firstWhereOrNull((item) => item.product.id == product.id);
+
+    if (existingItem != null) {
+      newReturn
+          ? existingItem.quantityReturn.value =
+              0 - (existingCurrentItem?.quantityReturn.value ?? 0)
+          : existingItem.quantity.value =
+              0 - (existingCurrentItem?.quantity.value ?? 0);
+    } else {
+      newReturn
+          ? items.add(
+              CartItem(
+                product: ProductModel.fromJson(product.toJson()),
+                quantity: 0,
+                quantityReturn:
+                    0 - (existingCurrentItem?.quantityReturn.value ?? 0),
+              ),
+            )
+          : items.add(
+              CartItem(
+                product: ProductModel.fromJson(product.toJson()),
+                quantity: 0 - (existingCurrentItem?.quantity.value ?? 0),
+                // quantityReturn: existingCurrentItem?.quantityReturn.value ?? 0,
+              ),
+            );
+    }
   }
 
-  void updateQuantity(String productId, double updatedQuantity) {
+  void removeItemStockSales(
+      ProductModel product, InvoiceSalesModel currentInvoice) {
     final existingItem =
-        items.firstWhere((item) => item.product.id == productId);
-    existingItem.quantity.value = updatedQuantity;
+        items.firstWhereOrNull((item) => item.product.id == product.id);
+
+    final existingCurrentItem = (currentInvoice.purchaseList.value.items)
+        .firstWhereOrNull((item) => item.product.id == product.id);
+
+    if (existingItem != null) {
+      existingItem.quantity.value =
+          0 - (existingCurrentItem?.quantity.value ?? 0);
+    } else {
+      items.add(
+        CartItem(
+          product: ProductModel.fromJson(product.toJson()),
+          quantity: 0 - (existingCurrentItem?.quantity.value ?? 0),
+        ),
+      );
+    }
   }
 
-  void updateQuantityReturn(String productId, double updatedQuantityReturn) {
-    final existingItem =
-        items.firstWhere((item) => item.product.id == productId);
-    existingItem.quantityReturn.value = updatedQuantityReturn;
+  void removeItem(String id) {
+    items.removeWhere((item) => item.product.id == id);
   }
 
-  void updateDiscount(String productId, double updatedDiscount) {
+  void addReturnItem(ProductModel product) {
     final existingItem =
-        items.firstWhere((item) => item.product.id == productId);
+        items.firstWhereOrNull((item) => item.product.id == product.id);
+    if (existingItem != null) {
+      existingItem.quantityReturn.value += 1;
+      existingItem.quantity.value -= 1;
+    } else {
+      items.add(CartItem(
+        product: ProductModel.fromJson(product.toJson()),
+        quantity: 0,
+        quantityReturn: 1,
+      ));
+    }
+  }
+
+  void substractFromReturnCart(ProductModel product) {
+    final existingItem =
+        items.firstWhereOrNull((item) => item.product.id == product.id);
+    if (existingItem != null) {
+      existingItem.quantityReturn.value -= 1;
+      existingItem.quantity.value += 1;
+    } else {
+      items.add(CartItem(
+        product: ProductModel.fromJson(product.toJson()),
+        quantity: 0,
+        quantityReturn: -1,
+      ));
+    }
+  }
+
+  void updateQuantityReturn(String id, double updatedQuantityReturn,
+      {bool newReturn = false}) {
+    final existingItem = items.firstWhereOrNull((item) {
+      return item.product.id == id;
+    });
+    if (existingItem != null) {
+      if (newReturn) {
+        existingItem.quantityReturn.value = updatedQuantityReturn;
+      } else {
+        final totalQuantity =
+            existingItem.quantity.value + existingItem.quantityReturn.value;
+        if (updatedQuantityReturn > totalQuantity) {
+          existingItem.quantity.value = 0;
+          existingItem.quantityReturn.value = 0;
+          existingItem.quantityReturn.value = totalQuantity;
+        } else {
+          existingItem.quantity.value = totalQuantity - updatedQuantityReturn;
+          existingItem.quantityReturn.value = updatedQuantityReturn;
+        }
+      }
+    }
+  }
+
+  void updateQuantityStock(
+      ProductModel product, double quantity, InvoiceModel currentInvoice,
+      {bool isEditPurchase = false, bool newReturn = false}) {
+    final existingItem = items.firstWhereOrNull(
+        (item) => item.product.id == product.id);
+    final existingCurrentItem = (newReturn
+            ? currentInvoice.returnList.value!.items
+            : currentInvoice.purchaseList.value.items)
+        .firstWhereOrNull(
+            (item) => item.product.id == product.id);
+
+    final totalQuantity = (existingCurrentItem?.quantity.value ?? 0) +
+        (existingCurrentItem?.quantityReturn.value ?? 0);
+
+    if (existingItem != null) {
+      isEditPurchase
+          ? existingItem.quantity.value =
+              quantity - (existingCurrentItem?.quantity.value ?? 0)
+          : existingItem.quantityReturn.value = newReturn
+              ? quantity - (existingCurrentItem?.quantityReturn.value ?? 0)
+              : quantity > totalQuantity
+                  ? totalQuantity -
+                      (existingCurrentItem?.quantityReturn.value ?? 0)
+                  : quantity - (existingCurrentItem?.quantityReturn.value ?? 0);
+    } else {
+      isEditPurchase
+          ? items.add(
+              CartItem(
+                product: ProductModel.fromJson(product.toJson()),
+                quantity: quantity - (existingCurrentItem?.quantity.value ?? 0),
+              ),
+            )
+          : items.add(
+              CartItem(
+                product: ProductModel.fromJson(product.toJson()),
+                quantity: 0,
+                quantityReturn: newReturn
+                    ? quantity -
+                        (existingCurrentItem?.quantityReturn.value ?? 0)
+                    : quantity > totalQuantity
+                        ? totalQuantity -
+                            (existingCurrentItem?.quantityReturn.value ?? 0)
+                        : quantity -
+                            (existingCurrentItem?.quantityReturn.value ?? 0),
+              ),
+            );
+    }
+  }
+
+  void updateQuantityStockSales(
+      ProductModel product, double quantity, InvoiceSalesModel currentInvoice) {
+    final existingItem = items.firstWhereOrNull(
+        (item) => item.product.id == product.id);
+    final existingCurrentItem = (currentInvoice.purchaseList.value.items)
+        .firstWhereOrNull(
+            (item) => item.product.id == product.id);
+
+    if (existingItem != null) {
+      existingItem.quantity.value =
+          quantity - (existingCurrentItem?.quantity.value ?? 0);
+    } else {
+      items.add(
+        CartItem(
+          product: ProductModel.fromJson(product.toJson()),
+          quantity: quantity - (existingCurrentItem?.quantity.value ?? 0),
+        ),
+      );
+    }
+  }
+
+  // void updateNewQuantityStock(
+  //     ProductModel product, double quantity, InvoiceModel currentInvoice) {
+  //   final existingItem = items.firstWhereOrNull(
+  //       (item) => item.product.id == product.id);
+  //   final existingCurrentItem = (newReturn
+  //           ? currentInvoice.returnList.value!.items
+  //           : currentInvoice.purchaseList.value.items)
+  //       .firstWhereOrNull(
+  //           (item) => item.product.id == product.id);
+
+  //   final totalQuantity = (existingCurrentItem?.quantity.value ?? 0) +
+  //       (existingCurrentItem?.quantityReturn.value ?? 0);
+
+  //   if (existingItem != null) {
+  //     existingItem.quantityReturn.value = newReturn
+  //         ? quantity
+  //         : quantity > totalQuantity
+  //             ? totalQuantity
+  //             : quantity - (existingCurrentItem?.quantityReturn.value ?? 0);
+  //   } else {
+  //     items.add(CartItem(
+  //         product: ProductModel.fromJson(product.toJson()),
+  //         quantity: 0,
+  //         quantityReturn: newReturn
+  //             ? quantity
+  //             : quantity > totalQuantity
+  //                 ? totalQuantity
+  //                 : quantity));
+  //   }
+  // }
+
+  void updateDiscount(String id, double updatedDiscount) {
+    final existingItem =
+        items.firstWhere((item) => item.product.id == id);
     existingItem.individualDiscount.value = updatedDiscount;
   }
 }

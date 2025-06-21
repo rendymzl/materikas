@@ -1,17 +1,17 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
-import 'dart:typed_data';
-import 'dart:ui';
+// import 'dart:typed_data';
+// import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
-import '../billing_widget/billing_controller.dart';
+// import '../billing_widget/billing_controller.dart';
 
 class OtpController extends GetxController {
-  final BillingController billingC = Get.put(BillingController());
+  // final BillingController billingC = Get.put(BillingController());
   final verified = false.obs;
   final countdown = 0.obs;
   final isResendDisabled = false.obs;

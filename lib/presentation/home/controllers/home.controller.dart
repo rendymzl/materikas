@@ -1,251 +1,186 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:get/get.dart';
 
 import '../../../infrastructure/dal/services/auth_service.dart';
-import '../../../infrastructure/models/customer_model.dart';
 import '../../../infrastructure/models/invoice_model/cart_item_model.dart';
 import '../../../infrastructure/models/invoice_model/cart_model.dart';
 import '../../../infrastructure/models/invoice_model/invoice_model.dart';
 import '../../../infrastructure/models/product_model.dart';
-import '../../global_widget/date_picker_widget/date_picker_widget_controller.dart';
-import '../../global_widget/field_customer_widget/field_customer_widget_controller.dart';
+import '../../../infrastructure/utils/display_format.dart';
 import '../../product/controllers/product.controller.dart';
 
 class HomeController extends GetxController {
-  late final AuthService authService = Get.find();
-  late final ProductController _productController = Get.find();
-  late final DatePickerController _datePickerC =
-      Get.put(DatePickerController());
-  late final CustomerInputFieldController _customerInputFieldC =
-      Get.put(CustomerInputFieldController());
+  final isLoading = false.obs;
+  final AuthService authService = Get.find();
+  late final token = Rx<int?>(authService.account.value?.token);
 
-  late final products = _productController.displayedItems;
+  late final productC = Get.put(ProductController());
+  late final RxList<ProductModel> displayedItems;
 
   late InvoiceModel invoice;
+  late final focusNode = FocusNode();
+  late final scrollController = ScrollController();
+
+  final showWarningSubs = false.obs;
+  final showPopupSubs = false.obs;
+  bool isCreatedAtCustom = false;
+  bool fromAuto = false;
+  final createdAt = DateTime.now().obs;
+
   final cart = Cart(items: <CartItem>[].obs).obs;
-  final initCartList = <CartItem>[].obs;
 
-  final priceType = 1.obs;
-
-  late ScrollController scrollController = ScrollController();
-
-  final FocusNode focusNode = FocusNode();
+  final scannedData = ''.obs;
 
   @override
   void onInit() async {
-    print('HomeController INIT');
+    debugPrint('HomeController INIT');
+    isLoading(true);
+    showWarningSubs.value = authService.account.value!.endDate != null &&
+        DateTime.now()
+            .add(const Duration(days: 7))
+            .isAfter(authService.account.value!.endDate!);
+
+    showPopupSubs.value = authService.account.value!.endDate != null &&
+        DateTime.now().isAfter(
+            authService.account.value!.endDate!.add(const Duration(days: 1)));
+
+    // print('awdawdwad enddate ${authService.account.value!.endDate!}');
+    print(
+        'awdawdwad3 day before ${DateTime.now().subtract(const Duration(days: 3))}');
+    print('awdawdwad3 now ${DateTime.now()}');
+    print('awdawdwad ${showPopupSubs.value}');
     invoice = await createInvoice();
-    // Get.lazyPut(()=>ProductController());
+    displayedItems = productC.displayedItems;
+    // _startTimer();
+    // ever(createdAt, (_) {
+    //   if (fromAuto || !isCreatedAtCustom) {
+    //     if (!fromAuto) {
+    //       isCreatedAtCustom = true;
+    //     }
+    //     fromAuto = false;
+    //   }
+    // });
+    isLoading(false);
+    debugPrint('HomeController INIT FINISH');
     super.onInit();
   }
 
-  @override
-  void onClose() {
-    for (var cartItem in initCartList) {
-      var product = products.firstWhereOrNull(
-        (p) => p.id == cartItem.product.id,
-      );
-      if (product != null) {
-        product.stock.value = cartItem.product.stock.value;
-        product.sellPrice1 = cartItem.product.sellPrice1;
-        product.sellPrice2 = cartItem.product.sellPrice2;
-        product.sellPrice3 = cartItem.product.sellPrice3;
-      }
-    }
-    super.onClose();
-  }
-
-  void priceTypeHandleCheckBox(int type) async {
-    priceType.value == type ? priceType.value = 1 : priceType.value = type;
-    invoice.priceType.value = priceType.value;
-  }
-
-  CartItem? checkExistence(
-    ProductModel product,
-    List<CartItem> productList,
-  ) {
-    return productList.firstWhereOrNull(
-      (item) => item.product.id == product.id,
-    );
-  }
-
-  //! SCAN HANDLE ===
-  var scannedData = ''.obs; // Observable untuk menyimpan hasil scan
-
-  // Fungsi untuk memproses input dari scanner
-  void processBarcode(String barcode) {
-    print('Memproses barcode: $barcode');
-    scannedData.value = barcode; // Update UI dengan hasil scan
-    var product =
-        products.firstWhereOrNull((product) => product.barcode == barcode);
-    if (product != null) {
-      addToCart(product);
+  void addToCart(ProductModel product) {
+    cart.value.addItem(product);
+    if (!vertical) {
+      final index = cart.value.items
+          .indexWhere((selectItem) => selectItem.product.id == product.id);
+      Future.delayed(const Duration(milliseconds: 100), () {
+        scrollController.animateTo(
+          index * 80.0,
+          duration: const Duration(milliseconds: 100),
+          curve: Curves.easeInOut,
+        );
+      });
     }
   }
 
-  // Reset data setelah diproses
-  void resetScannedData() {
-    scannedData.value = '';
+  void sellPriceHandle(RxDouble sellPrice, String value) {
+    final valueDouble = value.isEmpty ? 0 : double.parse(value);
+    sellPrice.value = valueDouble.toDouble();
+  }
+
+  void quantityHandle(CartItem cartItem, String quantity) {
+    cart.value
+        .updateQuantity(cartItem.product.id!, double.tryParse(quantity) ?? 0);
+  }
+
+  void discountHandle(String id, String value) {
+    final valueDouble = value.isEmpty ? 0 : double.parse(value);
+    cart.value.updateDiscount(id, valueDouble.toDouble());
+  }
+
+  void removeFromCart(CartItem cartItem) {
+    cart.value.removeItem(cartItem.product.id!);
   }
 
   void handleKeyPress(KeyEvent event) {
-    // Cek apakah key event merupakan input karakter
     if (event is KeyDownEvent) {
-      final String key = event.logicalKey.keyLabel;
-
-      // Jika key adalah Enter, kita anggap selesai menerima input barcode
+      final key = event.logicalKey.keyLabel;
       if (event.logicalKey == LogicalKeyboardKey.enter) {
         processBarcode(scannedData.value);
         resetScannedData();
       } else {
-        // Jika bukan Enter, tambahkan ke scannedData
         scannedData.value += key;
       }
     }
   }
 
-  //! ADD TO CART ===
-  void addToCart(ProductModel product) async {
-    //! add product to initCartItem
-    var initCartItem = checkExistence(product, initCartList);
-
-    if (initCartItem == null) {
-      ProductModel initProduct = ProductModel.fromJson(product.toJson());
-      CartItem initItem = CartItem(product: initProduct, quantity: 0);
-      initCartList.add(initItem);
-      initCartItem = initItem;
-    }
-    //!---
-
-    //! add product to cart
-    CartItem cartItem = CartItem(product: product, quantity: 1);
-    cart.value.addItem(cartItem);
-    //!---
-
-    //! change Stock
-    product.stock.value -= 1;
-    print('stock: ${product.stock.value}');
-    //!---
-
-    //! auto move
-    int index = cart.value.items
-        .indexWhere((selectItem) => selectItem.product.id == product.id);
-
-    Future.delayed(const Duration(milliseconds: 100), () {
-      scrollController.animateTo(
-        index * 80.0,
-        duration: const Duration(milliseconds: 100),
-        curve: Curves.easeInOut,
-      );
-    });
-    //!---
-  }
-
-  //! QUANTITY HANDLE ===
-  void quantityHandle(CartItem cartItem, String quantity) {
-    //! add product to initCartItem
-    var initCartItem = checkExistence(cartItem.product, initCartList);
-
-    if (initCartItem == null) {
-      var foundProduct =
-          products.firstWhereOrNull((item) => item.id == cartItem.product.id);
-      CartItem initItem = CartItem.fromJson(cartItem.toJson());
-      if (foundProduct != null) {
-        initItem.product.stock.value = foundProduct.stock.value;
-      }
-      initCartList.add(initItem);
-      initCartItem = initItem;
-    }
-    //!---
-
-    //! change Quantity
-    cartItem.quantity.value = double.tryParse(quantity) ?? 0;
-    //!---
-
-    //! change Stock
-    cartItem.product.stock.value =
-        initCartItem.product.stock.value - cartItem.quantity.value;
-    //!---
-  }
-
-  //! REMOVE FROM CART ===
-  void removeFromCart(CartItem cartItem) {
-    var foundProduct =
-        products.firstWhereOrNull((item) => item.id == cartItem.product.id);
-    foundProduct!.stock.value += cartItem.quantity.value;
-    cart.value.removeItem(cartItem.product.id!);
-  }
-
-  //! DISCOUNT ===
-  void discountHandle(String productId, String value) {
-    double valueDouble = value == '' ? 0 : double.parse(value);
-    cart.value.updateDiscount(productId, valueDouble);
-  }
-
-  //! SELLPRICE ===
-  void sellPriceHandle(RxDouble sellPrice, String value) {
-    double valueDouble = value == '' ? 0 : double.parse(value);
-    sellPrice.value = valueDouble;
-    // cart.value.updateDiscount(productId, valueDouble);
-  }
-
-  Rx<CustomerModel?> selectedCustomer = Rx<CustomerModel?>(null);
-  // late final invoices = _invoiceService.invoices;
-
-  // final selectedTime = TimeOfDay.now().obs;
-  // final selectedDate = DateTime.now().obs;
-
-  //! CREATE INVOICE ===
-  Future<InvoiceModel> createInvoice() async {
-    late final CustomerModel customer;
-    // selectedTime.value = TimeOfDay.now();
-    DateTime dateTime = DateTime(
-      _datePickerC.selectedDate.value.year,
-      _datePickerC.selectedDate.value.month,
-      _datePickerC.selectedDate.value.day,
-      _datePickerC.selectedTime.value.hour,
-      _datePickerC.selectedTime.value.minute,
+  Future<void> scanBarcode() async {
+    final barcode = await FlutterBarcodeScanner.scanBarcode(
+      '#ff6666',
+      'Batal',
+      true,
+      ScanMode.BARCODE,
     );
-
-    if (selectedCustomer.value != null) {
-      customer = CustomerModel(
-        id: selectedCustomer.value!.id,
-        customerId: selectedCustomer.value!.customerId,
-        name: selectedCustomer.value!.name,
-        phone: selectedCustomer.value!.phone,
-        address: selectedCustomer.value!.address,
-      );
-    } else {
-      customer = CustomerModel(
-        name: _customerInputFieldC.customerNameController.text,
-        phone: _customerInputFieldC.customerPhoneController.text,
-        address: _customerInputFieldC.customerAddressController.text,
-      );
+    if (barcode != '-1') {
+      processBarcode(barcode);
+      resetScannedData();
     }
+  }
 
-    final invoice = InvoiceModel(
+  void processBarcode(String barcode) {
+    scannedData.value = barcode;
+    final product = displayedItems
+        .firstWhereOrNull((product) => product.barcode == barcode);
+    if (product != null) {
+      addToCart(product);
+    }
+  }
+
+  void resetScannedData() => scannedData.value = '';
+
+  Future<InvoiceModel> createInvoice() async {
+    return InvoiceModel(
       storeId: authService.account.value!.storeId,
       account: authService.account.value!,
-      createdAt: dateTime,
-      customer: customer,
+      createdAt: createdAt.value,
+      customer: null,
       purchaseList: cart.value,
       returnList: Cart(items: <CartItem>[].obs),
-      priceType: priceType.value,
+      priceType: 1,
       discount: cart.value.totalIndividualDiscount,
       payments: [],
-      debtAmount: cart.value.getTotalBill(priceType.value),
+      debtAmount: 0,
     );
-
-    return invoice;
   }
 
-  void resetData() async {
+  Future<void> resetData() async {
     cart.value.items.clear();
-    _datePickerC.selectedDate.value = DateTime.now();
-    _datePickerC.selectedTime.value = TimeOfDay.now();
-    _customerInputFieldC.clear();
-    priceType.value = 1;
+    createdAt.value = DateTime.now();
+    isCreatedAtCustom = false;
     invoice = await createInvoice();
   }
+
+  // Timer? _timer;
+  // void _startTimer() {
+  //   _timer = Timer.periodic(const Duration(minutes: 2), (timer) {
+  //     if (!isCreatedAtCustom) {
+  //       fromAuto = true;
+  //       isCreatedAtCustom = false;
+  //       createdAt.value = DateTime.now();
+  //     } else {
+  //       _stopTimer();
+  //     }
+  //   });
+  // }
+
+  // void _stopTimer() {
+  //   _timer?.cancel();
+  // }
+
+  // @override
+  // void onClose() {
+  //   _stopTimer();
+  //   super.onClose();
+  // }
 }

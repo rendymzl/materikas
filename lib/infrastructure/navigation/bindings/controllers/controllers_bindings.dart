@@ -1,4 +1,6 @@
+export 'package:materikas/infrastructure/navigation/bindings/controllers/cart.controller.binding.dart'; 
 export 'package:materikas/infrastructure/navigation/bindings/controllers/customer.controller.binding.dart'; 
+export 'package:materikas/infrastructure/navigation/bindings/controllers/graph.controller.binding.dart'; 
 export 'package:materikas/infrastructure/navigation/bindings/controllers/home.controller.binding.dart'; 
 export 'package:materikas/infrastructure/navigation/bindings/controllers/invoice.controller.binding.dart'; 
 export 'package:materikas/infrastructure/navigation/bindings/controllers/login.controller.binding.dart'; 

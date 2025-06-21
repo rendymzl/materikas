@@ -22,7 +22,7 @@ class RowTableSales extends StatelessWidget {
     String productName = '-';
     String cost = '-';
     String subCost = '-';
-    // String totalCost = '-';
+    String totalCost = '-';
     String discount = '-';
     late String quantityPurchase;
     if (purchaseItem != null && invoice != null) {
@@ -30,6 +30,8 @@ class RowTableSales extends StatelessWidget {
 
       cost = 'Rp${currency.format(purchaseItem!.product.costPrice.value)}';
       subCost = 'Rp${currency.format(purchaseItem!.subCost)}';
+      totalCost =
+          'Rp${currency.format(purchaseItem!.subCost - purchaseItem!.individualDiscount.value)}';
       if (purchaseItem!.individualDiscount.value != 0) {
         discount =
             'Rp-${currency.format(purchaseItem!.individualDiscount.value)}';
@@ -114,7 +116,7 @@ class RowTableSales extends StatelessWidget {
                     ),
                   const SizedBox(width: 8),
                   Text(
-                    isHeader ? 'TOTAL HARGA' : subCost,
+                    isHeader ? 'TOTAL HARGA' : totalCost,
                     style: isHeader
                         ? Theme.of(Get.context!).textTheme.titleLarge
                         : null,

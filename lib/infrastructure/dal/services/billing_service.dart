@@ -118,7 +118,8 @@ class BillingService extends GetxService {
     );
     authService.store.value!.billings!.add(thisMonthBill);
     await storeService.update(authService.store.value!);
-    await authService.getStore();
+    authService.store(
+        await storeService.getStore(authService.account.value!.storeId!));
   }
 
   // Future<void> setPrevMonthBilling() async {

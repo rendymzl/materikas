@@ -10,11 +10,13 @@ class SellTextfield extends StatelessWidget {
     required this.title,
     required this.asignNumber,
     required this.onChanged,
+    this.isDisable = false,
   });
 
   final String title;
   final RxDouble asignNumber;
   final Function(String) onChanged;
+  final bool isDisable;
 
   @override
   Widget build(BuildContext context) {
@@ -33,10 +35,12 @@ class SellTextfield extends StatelessWidget {
             labelStyle: Get.context!.textTheme.bodySmall!
                 .copyWith(fontStyle: FontStyle.italic),
             prefixText: 'Rp ',
+            // prefixIcon: IconButton(onPressed: null, icon: Ic,),
+            // prefix: IconButton(onPressed: null, icon: Text('Rp')),
             counterText: '',
             filled: true,
-            fillColor: Theme.of(context).colorScheme.secondary.withOpacity(0.2),
-            contentPadding: const EdgeInsets.all(10),
+            fillColor: Colors.green.withOpacity(0.2),
+            // contentPadding: const EdgeInsets.all(10),
             border: const OutlineInputBorder(borderSide: BorderSide.none),
             isDense: true,
           ),
@@ -44,6 +48,7 @@ class SellTextfield extends StatelessWidget {
           inputFormatters: [
             FilteringTextInputFormatter.allow(RegExp(r'[0-9]'))
           ],
+          enabled: !isDisable,
           onChanged: (value) {
             if (value.isNotEmpty) {
               String newValue =

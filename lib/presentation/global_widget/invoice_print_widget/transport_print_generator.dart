@@ -7,15 +7,49 @@ import '../../../infrastructure/dal/services/auth_service.dart';
 import '../../../infrastructure/models/invoice_model/cart_item_model.dart';
 import '../../../infrastructure/models/invoice_model/invoice_model.dart';
 import '../../../infrastructure/utils/display_format.dart';
-import 'print_controller.dart';
+// import 'print_controller.dart';
 
-Future<List<int>> generateTransportBytes(InvoiceModel invoice) async {
+Future<List<int>> generateTransportBytes(
+    InvoiceModel invoice, String size) async {
   final AuthService authService = Get.find<AuthService>();
-  final PrinterController printerController = Get.put(PrinterController());
+  // final PrinterController printerController = Get.put(PrinterController());
+  List<CartItem> filterPurchase(InvoiceModel invoice) {
+    List<CartItem> workerData = invoice.purchaseList.value.items
+        .where((p) => p.quantity.value > 0)
+        .map((purchased) => purchased)
+        .toList();
+    return workerData;
+  }
+
+  List<CartItem> filterReturn(InvoiceModel invoice) {
+    List<CartItem> workerData = invoice.purchaseList.value.items
+        .where((p) => p.quantityReturn.value > 0)
+        .map((purchased) => purchased)
+        .toList();
+    return workerData;
+  }
+
+  PaperSize getPaperSize(String paperSize) {
+    switch (paperSize) {
+      case '58mm':
+        return PaperSize.mm58;
+      case '72mm':
+        return PaperSize.mm72;
+      case '80mm':
+        return PaperSize.mm80;
+      case '>100mm':
+        return PaperSize.mm80;
+      default:
+        throw Exception('Ukuran kertas tidak valid');
+    }
+  }
+
+  final PaperSize paperSize = getPaperSize(size);
+
   // late final account = storeServices.account;
   late final store = authService.store.value;
   final profile = await CapabilityProfile.load();
-  final generator = Generator(PaperSize.mm80, profile);
+  final generator = Generator(paperSize, profile);
 
   List<int> bytes = [];
 
@@ -58,38 +92,38 @@ Future<List<int>> generateTransportBytes(InvoiceModel invoice) async {
   bytes += generator.row([
     PosColumn(
       text: invoice.invoiceId!,
-      width: 6,
+      width: 4,
       styles: const PosStyles(bold: true),
     ),
     PosColumn(
       text: DateFormat('dd-MM-y, HH:mm', 'id').format(
         invoice.createdAt.value!,
       ),
-      width: 6,
+      width: 8,
+      styles: PosStyles(align: PosAlign.right),
     ),
   ]);
+
   bytes += generator.row([
     PosColumn(
-      text: 'Pelanggan: ${invoice.customer.value!.name}',
+      text: invoice.customer.value!.name,
       width: 6,
     ),
     PosColumn(
       text: 'Kasir: ${invoice.account.value.name}',
       width: 6,
+      styles: PosStyles(align: PosAlign.right),
     ),
   ]);
   bytes += generator.text(
-    'No Telp: ${invoice.customer.value!.phone}',
-    styles: const PosStyles(
-        // align: PosAlign.center,
-        ),
+    '${invoice.customer.value!.phone}',
+    styles: const PosStyles(),
   );
   bytes += generator.text(
-    'Alamat: ${invoice.customer.value!.address}',
-    styles: const PosStyles(
-        // align: PosAlign.center,
-        ),
+    '${invoice.customer.value!.address}',
+    styles: const PosStyles(),
   );
+
   bytes += generator.feed(1);
 
   // Add items
@@ -97,12 +131,12 @@ Future<List<int>> generateTransportBytes(InvoiceModel invoice) async {
   bytes += generator.row([
     PosColumn(
       text: 'No',
-      width: 1,
+      width: 2,
       styles: const PosStyles(bold: true),
     ),
     PosColumn(
       text: 'Nama Barang',
-      width: 7,
+      width: 6,
       styles: const PosStyles(bold: true),
     ),
     PosColumn(
@@ -112,7 +146,7 @@ Future<List<int>> generateTransportBytes(InvoiceModel invoice) async {
     ),
   ]);
   bytes += generator.hr();
-  List<CartItem> purchase = printerController.filterPurchase(invoice);
+  List<CartItem> purchase = filterPurchase(invoice);
 
   for (var i = 0; i < purchase.length; i++) {
     var item = purchase[i];
@@ -125,29 +159,31 @@ Future<List<int>> generateTransportBytes(InvoiceModel invoice) async {
         PosColumn(
           text: item.product.productName,
           width: 7,
-        ),
-        PosColumn(
-          text: '',
-          width: 4,
-        ),
-      ]);
-      bytes += generator.row([
-        PosColumn(
-          text: '',
-          width: 4,
-          styles: const PosStyles(align: PosAlign.right),
+          styles: PosStyles(align: PosAlign.left),
         ),
         PosColumn(
           text: '${number.format(item.quantity.value)} ${item.product.unit}',
           width: 4,
-          // styles: const PosStyles(align: PosAlign.right),
-        ),
-        PosColumn(
-          text: '',
-          width: 4,
           styles: const PosStyles(align: PosAlign.right),
         ),
       ]);
+      // bytes += generator.row([
+      //   PosColumn(
+      //     text: '',
+      //     width: 4,
+      //     styles: const PosStyles(align: PosAlign.right),
+      //   ),
+      //   PosColumn(
+      //     text: '${number.format(item.quantity.value)} ${item.product.unit}',
+      //     width: 4,
+      //     // styles: const PosStyles(align: PosAlign.right),
+      //   ),
+      //   PosColumn(
+      //     text: '',
+      //     width: 4,
+      //     styles: const PosStyles(align: PosAlign.right),
+      //   ),
+      // ]);
     }
   }
 
@@ -156,19 +192,15 @@ Future<List<int>> generateTransportBytes(InvoiceModel invoice) async {
 
   bytes += generator.feed(2);
   if (invoice.totalReturn > 0) {
-    bytes += generator.row([
-      PosColumn(
-        text: 'Barang yang direturn:',
-        width: 8,
-        styles: const PosStyles(bold: true, align: PosAlign.right),
+    bytes += generator.text(
+      '-- Barang yang direturn --',
+      styles: const PosStyles(
+        bold: true,
+        align: PosAlign.center,
       ),
-      PosColumn(
-        text: '',
-        width: 4,
-      ),
-    ]);
+    );
     bytes += generator.hr();
-    List<CartItem> returned = printerController.filterReturn(invoice);
+    List<CartItem> returned = filterReturn(invoice);
     if (invoice.returnList.value != null) {
       returned.addAll(invoice.returnList.value!.items);
     }
@@ -183,28 +215,31 @@ Future<List<int>> generateTransportBytes(InvoiceModel invoice) async {
           PosColumn(
             text: item.product.productName,
             width: 7,
-          ),
-          PosColumn(
-            text: '',
-            width: 4,
-          ),
-        ]);
-        bytes += generator.row([
-          PosColumn(
-            text: '',
-            width: 4,
+            styles: PosStyles(align: PosAlign.left),
           ),
           PosColumn(
             text:
                 '${number.format(item.quantityReturn.value)} ${item.product.unit}',
             width: 4,
-          ),
-          PosColumn(
-            text: '',
-            width: 4,
             styles: const PosStyles(align: PosAlign.right),
           ),
         ]);
+        // bytes += generator.row([
+        //   PosColumn(
+        //     text: '',
+        //     width: 4,
+        //   ),
+        //   PosColumn(
+        //     text:
+        //         '${number.format(item.quantityReturn.value)} ${item.product.unit}',
+        //     width: 4,
+        //   ),
+        //   PosColumn(
+        //     text: '',
+        //     width: 4,
+        //     styles: const PosStyles(align: PosAlign.right),
+        //   ),
+        // ]);
       }
     }
   }

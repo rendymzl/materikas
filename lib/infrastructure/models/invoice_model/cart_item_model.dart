@@ -5,22 +5,24 @@ import 'package:get/get_rx/get_rx.dart';
 import '../product_model.dart';
 
 class CartItem {
-  final ProductModel product;
+  ProductModel product;
   RxDouble quantity;
   RxDouble individualDiscount;
-  // RxDouble bundleDiscount;
   RxDouble quantityReturn;
+  Rx<DateTime?> returnDate;
+  String? invoiceId;
 
   CartItem({
     required this.product,
     required double quantity,
     double individualDiscount = 0.0,
-    double bundleDiscount = 0.0,
     double quantityReturn = 0.0,
+    DateTime? returnDate,
+    this.invoiceId,
   })  : quantity = quantity.obs,
         individualDiscount = individualDiscount.obs,
-        // bundleDiscount = bundleDiscount.obs,
-        quantityReturn = quantityReturn.obs;
+        quantityReturn = quantityReturn.obs,
+        returnDate = returnDate.obs;
 
   CartItem.fromJson(Map<String, dynamic> json)
       : product = ProductModel.fromJson(json['product']),
@@ -32,14 +34,15 @@ class CartItem {
                 ? json['individual_discount'].toDouble()
                 : json['individual_discount']) as double)
             .obs,
-        // bundleDiscount = ((json['bundle_discount'] is int
-        //         ? json['bundle_discount'].toDouble()
-        //         : json['bundle_discount']) as double)
-        //     .obs,
         quantityReturn = ((json['Quantity_return'] is int
                 ? json['Quantity_return'].toDouble()
                 : json['Quantity_return']) as double)
-            .obs;
+            .obs,
+        returnDate = (json['return_date'] != null
+                ? DateTime.parse(json['return_date']).toLocal()
+                : null)
+            .obs,
+        invoiceId = json['invoice_id'];
 
   CartItem.fromRow(sqlite.Row row)
       : product = ProductModel.fromJson(row['product']),
@@ -51,23 +54,23 @@ class CartItem {
                 ? row['individual_discount'].toDouble()
                 : row['individual_discount']) as double)
             .obs,
-        // bundleDiscount = ((row['bundle_discount'] is int
-        //         ? row['bundle_discount'].toDouble()
-        //         : row['bundle_discount']) as double)
-        //     .obs,
         quantityReturn = ((row['Quantity_return'] is int
                 ? row['Quantity_return'].toDouble()
                 : row['Quantity_return']) as double)
-            .obs;
+            .obs,
+        returnDate = (row['return_date'] != null
+                ? DateTime.parse(row['return_date']).toLocal()
+                : null)
+            .obs,
+        invoiceId = row['invoice_id'];
 
   Map<String, dynamic> toJson() => {
-        // final data = <String, dynamic>{};
         'product': product.toJson(),
         'quantity': quantity.value,
         'individual_discount': individualDiscount.value,
-        // 'bundle_discount' : bundleDiscount.value,
         'Quantity_return': quantityReturn.value,
-        // return data;
+        'return_date': returnDate.value?.toIso8601String(),
+        'invoice_id': invoiceId,
       };
 
   double getPrice(int priceType) {

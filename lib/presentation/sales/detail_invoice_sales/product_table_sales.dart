@@ -28,6 +28,7 @@ class ProductTableSales extends StatelessWidget {
                   Container(
                     color: Colors.green[50],
                     child: ListView.builder(
+                      physics: NeverScrollableScrollPhysics(),
                       shrinkWrap: true,
                       itemCount: invoice.purchaseList.value.items.length,
                       itemBuilder: (context, index) {

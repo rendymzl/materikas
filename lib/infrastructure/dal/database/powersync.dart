@@ -10,6 +10,7 @@ import 'package:powersync/powersync.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+import 'powersync_attachment.dart';
 import 'scheme.dart';
 import 'supabase.dart';
 
@@ -213,6 +214,9 @@ Future<void> openDatabase() async {
     }
   });
 
+  // if (dotenv.get('SUPABASE_BUCKET').isNotEmpty) {
+  //   initializeAttachmentQueue(db);
+  // }
   // Demo using SQLite Full-Text Search with PowerSync.
   // See https://docs.powersync.com/usage-examples/full-text-search for more details
   // await configureFts(db);

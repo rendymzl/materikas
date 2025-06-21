@@ -8,7 +8,8 @@ import '../../../infrastructure/models/invoice_model/cart_item_model.dart';
 
 import '../../../infrastructure/models/print_column_model.dart';
 import '../../../infrastructure/utils/display_format.dart';
-import '../../infrastructure/models/purchase_order_model.dart';
+import '../../infrastructure/models/invoice_sales_model.dart';
+// import '../../infrastructure/models/purchase_order_model.dart';
 import '../global_widget/invoice_print_widget/generator.dart';
 
 var divider = Uint8List.fromList(
@@ -16,7 +17,7 @@ var divider = Uint8List.fromList(
         .codeUnits);
 var space = Uint8List.fromList([27, 74, 24]);
 
-Future<List<int>> generateInvPurchaseOrder(PurchaseOrderModel invoice) async {
+Future<List<int>> generateInvPurchaseOrder(InvoiceSalesModel invoice) async {
   final AuthService authService = Get.find<AuthService>();
   late final store = authService.store.value;
   Generator generator = Generator();
@@ -43,7 +44,7 @@ Future<List<int>> generateInvPurchaseOrder(PurchaseOrderModel invoice) async {
     PrintColumn(
         text: '${DateFormat('dd-MM-y', 'id').format(
           invoice.createdAt.value!,
-        )} ${invoice.orderId!}',
+        )} ${invoice.invoiceName}',
         width: 22,
         align: 'right'),
   ]);

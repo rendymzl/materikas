@@ -1,0 +1,6 @@
+E:\project\flutter_app\materikas\windows\obj\Debug\net6.0\PrintImage.GeneratedMSBuildEditorConfig.editorconfig
+E:\project\flutter_app\materikas\windows\obj\Debug\net6.0\PrintImage.AssemblyInfoInputs.cache
+E:\project\flutter_app\materikas\windows\obj\Debug\net6.0\PrintImage.AssemblyInfo.cs
+E:\project\flutter_app\materikas\windows\obj\Debug\net6.0\PrintImage.csproj.CoreCompileInputs.cache
+E:\project\flutter_app\materikas\windows\obj\Debug\net6.0\PrintImage.sourcelink.json
+E:\project\flutter_app\materikas\windows\obj\Debug\net6.0\PrintImage.csproj.AssemblyReference.cache

@@ -4,12 +4,14 @@ class PrintColumn {
   String align;
   bool bold;
   String size;
+  List<int>? image;
 
   PrintColumn({
     required this.text,
     required this.width,
-    this.align = 'left',
+    this.align = 'left', 
     this.bold = false,
-    this.size = 'normal',
+    this.size = 'small',
+    this.image,
   });
 }

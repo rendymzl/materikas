@@ -20,12 +20,9 @@ void printPurchaseOrderDialog(PurchaseOrderModel invoice) {
     title: 'Print Invoice',
     height: MediaQuery.of(Get.context!).size.height * (0.85),
     width: MediaQuery.of(Get.context!).size.width * (0.6),
-    content: Container(
-      margin: const EdgeInsets.all(8),
-      height: MediaQuery.of(Get.context!).size.height * (0.7),
-      width: MediaQuery.of(Get.context!).size.width * (0.6),
-      child: Obx(() {
-        return Row(
+    content: Obx(() {
+      return Expanded(
+        child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
@@ -193,7 +190,7 @@ void printPurchaseOrderDialog(PurchaseOrderModel invoice) {
                                         ),
                                         // const SizedBox(height: 10),
                                         // buildText('Customer:', bold: true),
-
+            
                                         buildText(
                                             'No Telp: ${invoice.sales.value!.phone}'),
                                         buildText(
@@ -225,7 +222,7 @@ void printPurchaseOrderDialog(PurchaseOrderModel invoice) {
                                           itemBuilder: (context, index) {
                                             var item = invoice.purchaseList
                                                 .value.items[index];
-
+            
                                             return Column(
                                               children: [
                                                 Row(
@@ -268,7 +265,7 @@ void printPurchaseOrderDialog(PurchaseOrderModel invoice) {
                                           },
                                         ),
                                         const Divider(thickness: 1),
-
+            
                                         Row(
                                           mainAxisAlignment:
                                               MainAxisAlignment.end,
@@ -276,7 +273,7 @@ void printPurchaseOrderDialog(PurchaseOrderModel invoice) {
                                             buildText('----------', bold: true),
                                           ],
                                         ),
-
+            
                                         const SizedBox(height: 20),
                                       ],
                                     ),
@@ -332,9 +329,9 @@ void printPurchaseOrderDialog(PurchaseOrderModel invoice) {
               ),
             ),
           ],
-        );
-      }),
-    ),
+        ),
+      );
+    }),
   );
 }
 

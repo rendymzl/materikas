@@ -1,0 +1,2 @@
+E:\project\flutter_app\materikas\windows\printImage\bin\Release\net8.0\win-x64\publish\PrintImage.pdb
+E:\project\flutter_app\materikas\windows\printImage\bin\Release\net8.0\win-x64\publish\PrintImage.exe

@@ -24,7 +24,17 @@ class CostTextfield extends StatelessWidget {
         TextPosition(offset: costTextC.text.length),
       );
 
-      return TextField(
+      String? validator(String value) {
+        var isErr =
+            ((value.isEmpty ? 0 : double.parse(value.replaceAll('.', ''))) >
+                    item.product.sellPrice1.value) &&
+                (item.product.sellPrice1.value != 0);
+        return isErr ? 'Harga modal harus lebih rendah dari harga jual.' : null;
+      }
+
+      return TextFormField(
+          autovalidateMode: AutovalidateMode.always,
+          validator: (value) => validator(value!),
           controller: costTextC,
           textAlign: TextAlign.center,
           decoration: InputDecoration(

@@ -9,29 +9,21 @@ class DatePickerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    StatisticController controller = Get.find();
+    final controller = Get.find<StatisticController>();
 
-    return Obx(
-      () {
-        return Card(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              children: [
-                if (controller.selectedSection.value == 'daily')
-                  const Expanded(child: DatePickerDaily()),
-                if (controller.selectedSection.value == 'weekly')
-                  Expanded(child: DatePickerWeekly(controller: controller)),
-                if (controller.selectedSection.value == 'monthly')
-                  Expanded(child: DatePickerMonthly(controller: controller)),
-                if (controller.selectedSection.value == 'yearly')
-                  Expanded(child: DatePickerYearly(controller: controller)),
-              ],
-            ),
-          ),
-        );
-      },
-    );
+    return Obx(() {
+      if (controller.selectedSection.value == 'daily') {
+        return DatePickerDaily();
+      } else if (controller.selectedSection.value == 'weekly') {
+        return DatePickerWeekly(controller: controller);
+      } else if (controller.selectedSection.value == 'monthly') {
+        return DatePickerMonthly(controller: controller);
+      } else if (controller.selectedSection.value == 'yearly') {
+        return DatePickerYearly(controller: controller);
+      } else {
+        return Container();
+      }
+    });
   }
 }
 
@@ -43,7 +35,7 @@ class DatePickerDaily extends StatelessWidget {
     StatisticController controller = Get.find();
     return SizedBox(
       width: 300,
-      height: 480,
+      height: 280,
       child: SfDateRangePicker(
         controller: controller.dailyRangeController.value,
         navigationDirection: DateRangePickerNavigationDirection.vertical,
@@ -53,7 +45,7 @@ class DatePickerDaily extends StatelessWidget {
             textStyle: context.textTheme.bodyLarge),
         backgroundColor: Colors.white,
         enableMultiView: true,
-        initialSelectedDate: controller.initDate.value,
+        initialSelectedDate: DateTime.now(),
         monthViewSettings: const DateRangePickerMonthViewSettings(
           firstDayOfWeek: 1,
         ),
@@ -61,7 +53,7 @@ class DatePickerDaily extends StatelessWidget {
         minDate: DateTime(2000),
         maxDate: DateTime.now(),
         onSelectionChanged: (DateRangePickerSelectionChangedArgs args) {
-          controller.rangePickerHandle(args.value);
+          controller.dailyPickerHandle(args.value);
         },
       ),
     );
@@ -78,9 +70,12 @@ class DatePickerWeekly extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    DateTime endDate =
+        DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+    DateTime startDate = endDate.subtract(const Duration(days: 7));
     return SizedBox(
       width: 300,
-      height: 480,
+      height: 200,
       child: SfDateRangePicker(
         controller: controller.weeklyRangeController.value,
         navigationDirection: DateRangePickerNavigationDirection.vertical,
@@ -90,7 +85,7 @@ class DatePickerWeekly extends StatelessWidget {
             textStyle: context.textTheme.bodyLarge),
         backgroundColor: Colors.white,
         enableMultiView: true,
-        initialSelectedRange: controller.selectedWeeklyRange.value,
+        initialSelectedRange: PickerDateRange(startDate, endDate),
         monthViewSettings: const DateRangePickerMonthViewSettings(
           firstDayOfWeek: 1,
         ),
@@ -100,7 +95,7 @@ class DatePickerWeekly extends StatelessWidget {
         onSelectionChanged: (DateRangePickerSelectionChangedArgs args) {
           PickerDateRange value = args.value;
           if (value.endDate == null) {
-            controller.rangePickerHandle(value.startDate!);
+            controller.weeklyPickerHandle(value.startDate!);
           }
         },
       ),
@@ -120,7 +115,7 @@ class DatePickerMonthly extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: 300,
-      height: 480,
+      height: 200,
       child: SfDateRangePicker(
         controller: controller.monthlyRangeController.value,
         navigationDirection: DateRangePickerNavigationDirection.vertical,
@@ -138,7 +133,7 @@ class DatePickerMonthly extends StatelessWidget {
         minDate: DateTime(2000),
         maxDate: DateTime.now(),
         onSelectionChanged: (DateRangePickerSelectionChangedArgs args) {
-          controller.monthPickerHandle(args.value);
+          controller.monthlyPickerHandle(args.value);
         },
       ),
     );
@@ -157,7 +152,7 @@ class DatePickerYearly extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: 300,
-      height: 480,
+      height: 200,
       child: SfDateRangePicker(
         controller: controller.yearlyRangeController.value,
         navigationDirection: DateRangePickerNavigationDirection.vertical,
@@ -174,7 +169,7 @@ class DatePickerYearly extends StatelessWidget {
         minDate: DateTime(2000),
         maxDate: DateTime.now(),
         onSelectionChanged: (DateRangePickerSelectionChangedArgs args) {
-          controller.yearPickerHandle(args.value);
+          controller.yearlyPickerHandle(args.value);
         },
       ),
     );

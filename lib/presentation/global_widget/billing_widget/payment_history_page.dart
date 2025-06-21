@@ -14,18 +14,11 @@ void billingHistory() async {
       title: 'Riwayat Pembayaran',
       height: MediaQuery.of(Get.context!).size.height * (0.8),
       width: MediaQuery.of(Get.context!).size.width * (0.75),
-      content: SizedBox(
-        height: MediaQuery.of(Get.context!).size.height * (0.6),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            _buildPaymentHistoryTable(),
-          ],
-        ),
-
-        // buttonList: [
-        //   Expanded(child: _buildBottomActions()),
-        // ]
+      content: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          _buildPaymentHistoryTable(),
+        ],
       ));
 }
 

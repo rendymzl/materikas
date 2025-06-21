@@ -11,6 +11,7 @@ import '../../../presentation/splash/controllers/splash.controller.dart';
 
 class SyncAppBar extends GetxController {
   Rx<SyncStatus> connectionState = db.currentStatus.obs;
+  final hasSynced = false.obs;
   late StreamSubscription<SyncStatus> _syncStatusSubscription;
 
   @override
@@ -18,6 +19,7 @@ class SyncAppBar extends GetxController {
     super.onInit();
     _syncStatusSubscription = db.statusStream.listen((event) {
       connectionState.value = db.currentStatus;
+      hasSynced.value = event.hasSynced ?? false;
     });
   }
 
@@ -68,28 +70,24 @@ class StatusAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   Widget _getStatusIcon(SyncStatus status) {
     if (status.anyError != null) {
+      // The error message is verbose, could be replaced with something
+      // more user-friendly
       if (!status.connected) {
         return _makeIcon(status.anyError!.toString(), Icons.cloud_off);
       } else {
         return _makeIcon(status.anyError!.toString(), Icons.sync_problem);
       }
     } else if (status.connecting) {
-      // Timer.run(() {
-      //   syncController.hasSynced.value = true;
-      // });
       return _makeIcon('Connecting', Icons.cloud_sync_outlined);
     } else if (!status.connected) {
       return _makeIcon('Not connected', Icons.cloud_off);
     } else if (status.uploading && status.downloading) {
+      // The status changes often between downloading, uploading and both,
+      // so we use the same icon for all three
       return _makeIcon('Uploading and downloading', Icons.cloud_sync_outlined);
     } else if (status.uploading) {
       return _makeIcon('Uploading', Icons.cloud_sync_outlined);
     } else if (status.downloading) {
-      // if (status.lastSyncedAt != null) {
-      //   Timer.run(() {
-      //     syncController.hasSynced.value = true;
-      //   });
-      // }
       return _makeIcon('Downloading', Icons.cloud_sync_outlined);
     } else {
       return _makeIcon('Connected', Icons.cloud_queue);

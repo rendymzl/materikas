@@ -12,6 +12,8 @@ class Stores {
   RxString telp;
   RxList<Billing>? billings;
   RxString? promo;
+  RxString? logoUrl;
+  RxList<String>? textPrint;
 
   Stores({
     this.id,
@@ -23,5 +25,7 @@ class Stores {
     required this.telp,
     this.billings,
     this.promo,
+    this.logoUrl,
+    this.textPrint,
   });
 }

@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../../../infrastructure/models/menu_model.dart';
 import '../../../infrastructure/utils/display_format.dart';
-import '../activate_popup/activate_account_popup.dart';
 import '../app_dialog_widget.dart';
-import '../billing_widget/billing_dashboard.dart';
 import 'menu_controller.dart';
 
 class MenuWidget extends GetView<MenuWidgetController> {
@@ -16,135 +15,59 @@ class MenuWidget extends GetView<MenuWidgetController> {
 
   @override
   Widget build(BuildContext context) {
-    bool trial = controller.account.value!.accountType == 'free_trial';
-    bool almostExpired = false;
-    bool isFlexibleFirstMonthNotPaid = false;
-    if (controller.account.value!.endDate != null) {
-      almostExpired = controller.account.value!.endDate!
-          .isBefore(DateTime.now().add(const Duration(days: 5)));
-    }
-    if (controller.account.value!.accountType == 'flexible') {
-      isFlexibleFirstMonthNotPaid =
-          !controller.billingService.getIsLastMonthBillPaid();
+    if (vertical) {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ]);
+    } else {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
     }
     return Container(
-      // padding: const EdgeInsets.all(8),
-      margin: const EdgeInsets.all(8),
-      height: 70 +
-          (controller.authService.isOwner.value &&
-                  (trial || almostExpired || isFlexibleFirstMonthNotPaid)
-              ? 40
-              : 0),
-      child: Column(
-        children: [
-          if (controller.authService.isOwner.value)
-            if (trial || almostExpired || isFlexibleFirstMonthNotPaid)
-              Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                decoration: BoxDecoration(
-                    color: Colors.red, borderRadius: BorderRadius.circular(8)),
-                height: 35,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      isFlexibleFirstMonthNotPaid
-                          ? 'Tagihan bulan lalu sudah terbit, Lakukan pembayaran sebelum tanggal 10.'
-                          : 'Akun anda akan berakhir pada ',
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                    if (!isFlexibleFirstMonthNotPaid)
-                      Text(
-                        controller.account.value!.endDate != null
-                            ? date.format(controller.account.value!.endDate!)
-                            : '',
-                        style: const TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.bold),
-                      ),
-                    if (!isFlexibleFirstMonthNotPaid)
-                      const Text(
-                        ' dan tersisa ',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    if (!isFlexibleFirstMonthNotPaid) controller.countdown,
-                    const SizedBox(width: 12),
-                    InkWell(
-                      onTap: isFlexibleFirstMonthNotPaid
-                          ? () async => billingDashboard()
-                          : () async => activateAccountPopup(),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 4, horizontal: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          isFlexibleFirstMonthNotPaid
-                              ? 'Bayar Tagihan'
-                              : 'Perpanjang Akun',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.primary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        // border: Border(
+        //   bottom: BorderSide(color: Colors.blueGrey[100]!, width: 1),
+        // ),
+      ),
+      child: SizedBox(
+        height: 60,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween, // Align items
+          children: [
+            Expanded(
+              // Allow menu items to expand
+              child: Obx(
+                () {
+                  var data = controller.menuData;
+                  return ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: data.length,
+                    itemBuilder: (context, index) =>
+                        buildMenuEntry(data[index], index, context),
+                  );
+                },
               ),
-          Expanded(
-            child: Row(
+            ),
+            Row(
+              // Group status indicator and logout button
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Expanded(
-                  flex: 5,
-                  child: Container(
-                    padding: EdgeInsets.all(2),
-                    child: Obx(
-                      () {
-                        var data = controller.menuData;
-                        Future.delayed(const Duration(seconds: 2), () {
-                          controller.billingService.onInit();
-                          // print(
-                          //     'controller.expired ${controller.billingService.isExpired}');
-                          if (controller.billingService.isExpired &&
-                              controller
-                                      .authService.account.value!.accountType ==
-                                  'flexible') {
-                            billingDashboard(
-                                expired: controller.billingService.isExpired);
-                          }
-                          if (controller.subsExpired.value &&
-                              controller
-                                      .authService.account.value!.accountType ==
-                                  'subscription') {
-                            activateAccountPopup(
-                                expired: controller.subsExpired.value);
-                          }
-                        });
-                        return ListView.separated(
-                          separatorBuilder: (context, index) =>
-                              const SizedBox(width: 8),
-                          shrinkWrap: true,
-                          scrollDirection: Axis.horizontal,
-                          itemCount: (data.length),
-                          itemBuilder: (context, index) =>
-                              buildMenuEntry(data[index], index, context),
-                        );
-                      },
-                    ),
-                  ),
-                ),
                 Obx(
                   () => Container(
+                    margin: const EdgeInsets.only(right: 8), // Add margin
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(30),
-                      color: controller.authService.connected.value
+                      shape: BoxShape.circle, // Make it circular
+                      color: controller.internetService.isConnected.value
                           ? Colors.green
                           : Colors.red,
                     ),
-                    height: 12,
-                    width: 12,
+                    height: 16,
+                    width: 16,
                   ),
                 ),
                 IconButton(
@@ -159,72 +82,139 @@ class MenuWidget extends GetView<MenuWidgetController> {
                       onConfirm: () => controller.changeUser(),
                       onCancel: () => Get.back(),
                     );
-                    // controller.connected.value
-                    //     ? AppDialog.show(
-                    //         title: 'Keluar',
-                    //         content: 'Keluar dari aplikasi?',
-                    //         confirmText: "Ya",
-                    //         cancelText: "Tidak",
-                    //         confirmColor: Colors.grey,
-                    //         cancelColor: Get.theme.primaryColor,
-                    //         onConfirm: () => controller.signOut(),
-                    //         onCancel: () => Get.back(),
-                    //       )
-                    //     : await Get.defaultDialog(
-                    //         title: 'Error',
-                    //         middleText:
-                    //             'Tidak ada koneksi internet untuk mengeluarkan akun.',
-                    //         confirm: TextButton(
-                    //           onPressed: () {
-                    //             Get.back();
-                    //             Get.back();
-                    //           },
-                    //           child: const Text('OK'),
-                    //         ),
-                    //       );
                   },
                   icon: const Icon(Symbols.logout),
+                  iconSize: 24, // Increase icon size for better visibility
                 ),
               ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   Widget buildMenuEntry(MenuModel data, int index, BuildContext context) {
     return Obx(
-      () => ElevatedButton.icon(
-        onPressed: () => controller.handleClick(index, data.label),
-        icon: Icon(
-          data.icon,
-          color: controller.authService.selectedIndexMenu.value == index
-              ? Colors.white
-              : Colors.grey[700],
-        ),
-        label: Text(
-          data.label,
-          style: TextStyle(
-            fontSize: 14,
-            color: controller.authService.selectedIndexMenu.value == index
-                ? Colors.white
-                : Colors.grey[700],
-            // fontWeight: controller.isExpand.value
-            //     ? FontWeight.w600
-            //     : FontWeight.normal,
+      () => MouseRegion(
+        onEnter: (_) => controller.hoveredIndex.value = index,
+        onExit: (_) => controller.hoveredIndex.value = -1,
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: controller.selectedIndexMenu.value == index
+                    ? Get.theme.primaryColor
+                    : (controller.hoveredIndex.value == index
+                        ? Colors.grey
+                        : Colors.transparent),
+                width: 2,
+              ),
+            ),
           ),
-        ),
-        style: ButtonStyle(
-          alignment: Alignment.centerLeft,
-          enableFeedback: true,
-          backgroundColor: WidgetStatePropertyAll(
-            controller.authService.selectedIndexMenu.value == index
-                ? Theme.of(context).colorScheme.primary
-                : Colors.white,
+          child: TextButton(
+            onPressed: () => controller.handleClick(index, data.label),
+            style: ButtonStyle(
+              padding: const WidgetStatePropertyAll<EdgeInsets>(
+                  EdgeInsets.symmetric(horizontal: 16, vertical: 12)),
+              foregroundColor: WidgetStatePropertyAll<Color>(
+                  controller.selectedIndexMenu.value == index
+                      ? Get.theme.primaryColor
+                      : Colors.grey[700]!),
+              textStyle: const WidgetStatePropertyAll<TextStyle>(
+                  TextStyle(fontSize: 14)),
+              overlayColor: WidgetStatePropertyAll<Color>(Colors.transparent),
+            ),
+            child: Row(
+              children: [
+                Icon(data.icon, fill: 1),
+                const SizedBox(width: 4),
+                Text(data.label, style: TextStyle(fontWeight: FontWeight.w500)),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
+}
+
+Widget buildDrawer(BuildContext context) {
+  final controller = Get.find<MenuWidgetController>();
+  return Drawer(
+    child: Obx(
+      () => ListView(
+        padding: EdgeInsets.zero,
+        children: <Widget>[
+          UserAccountsDrawerHeader(
+            accountName: Text(
+              controller.isOwner.value
+                  ? controller.authService.account.value!.name
+                  : controller.authService.selectedUser.value?.name ?? '',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            accountEmail: const Text(''),
+            currentAccountPicture: const CircleAvatar(
+              backgroundColor: Colors.white,
+              child: Padding(
+                padding: EdgeInsets.all(12.0),
+                child: Image(
+                  image:
+                      AssetImage('assets/icon/logo-materikas-transparent.png'),
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+          ),
+          ...controller.menuData.map((menu) {
+            int index = controller.menuData.indexOf(menu);
+            return ListTile(
+              tileColor: controller.selectedIndexMenu.value == index
+                  ? Get.theme.primaryColor
+                  : null,
+              leading: Icon(
+                menu.icon,
+                color: controller.selectedIndexMenu.value == index
+                    ? Colors.white
+                    : null,
+              ),
+              title: Text(
+                menu.label,
+                style: TextStyle(
+                  color: controller.selectedIndexMenu.value == index
+                      ? Colors.white
+                      : null,
+                ),
+              ),
+              onTap: controller.selectedIndexMenu.value == index
+                  ? () => Get.back()
+                  : () {
+                      Get.back();
+                      Future.delayed(const Duration(milliseconds: 50), () {
+                        controller.handleClick(index, menu.label);
+                      });
+                    },
+            );
+          }),
+          const SizedBox(height: 12),
+          ListTile(
+            leading: const Icon(Symbols.logout),
+            title: const Text('Keluar'),
+            onTap: () async {
+              AppDialog.show(
+                title: 'Keluar',
+                content: 'Ganti Pengguna?',
+                confirmText: "Ya",
+                cancelText: "Tidak",
+                confirmColor: Colors.grey,
+                cancelColor: Get.theme.primaryColor,
+                onConfirm: () => controller.changeUser(),
+                onCancel: () => Get.back(),
+              );
+            },
+          ),
+        ],
+      ),
+    ),
+  );
 }

@@ -24,7 +24,9 @@ class DiscountTextfield extends StatelessWidget {
         TextPosition(offset: discountTextC.text.length),
       );
 
-      return TextField(
+      return TextFormField(
+          autovalidateMode: AutovalidateMode.always,
+          validator: (value) => null,
           controller: discountTextC,
           textAlign: TextAlign.center,
           decoration: InputDecoration(
@@ -35,7 +37,7 @@ class DiscountTextfield extends StatelessWidget {
             counterText: '',
             filled: true,
             fillColor: Theme.of(context).colorScheme.secondary.withOpacity(0.2),
-            contentPadding: const EdgeInsets.all(10),
+            // contentPadding: const EdgeInsets.all(10),
             border: const OutlineInputBorder(borderSide: BorderSide.none),
             isDense: true,
           ),

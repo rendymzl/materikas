@@ -80,7 +80,7 @@ class BillingController extends GetxController {
                   shrinkWrap: true,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(8),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -101,7 +101,7 @@ class BillingController extends GetxController {
                               Text(
                                 '0813 8025 3313',
                                 style: const TextStyle(
-                                  fontFamily: 'Courier',
+                                  // fontFamily: 'Courier',
                                   fontSize: 12,
                                 ),
                               ),
@@ -111,11 +111,18 @@ class BillingController extends GetxController {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              buildText(
-                                  '${package == 'flexible' ? billing?.billingNumber : 'INV-${DateTime.now().millisecondsSinceEpoch}'}',
-                                  bold: true),
-                              buildText(DateFormat('dd-MM-y, HH:mm', 'id')
-                                  .format(DateTime.now())),
+                              Expanded(
+                                child: buildText(
+                                    '${package == 'flexible' ? billing?.billingNumber : 'INV-${DateTime.now().millisecondsSinceEpoch}'}',
+                                    bold: true),
+                              ),
+                              Expanded(
+                                child: buildText(
+                                  DateFormat('dd-MM-y, HH:mm', 'id')
+                                      .format(DateTime.now()),
+                                  align: TextAlign.end,
+                                ),
+                              ),
                             ],
                           ),
                           Row(
@@ -172,7 +179,7 @@ class BillingController extends GetxController {
                             'Terimakasih telah menggunakan layanan Materikas!',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontFamily: 'Courier',
+                              // fontFamily: 'Courier',
                               fontSize: 12,
                             ),
                           ),
@@ -194,11 +201,12 @@ class BillingController extends GetxController {
     );
   }
 
-  Widget buildText(String text, {bool bold = false}) {
+  Widget buildText(String text, {bool bold = false, TextAlign? align}) {
     return Text(
       text,
+      textAlign: align,
       style: TextStyle(
-        fontFamily: 'Courier',
+        // fontFamily: 'Courier',
         fontSize: 12,
         fontWeight: bold ? FontWeight.bold : FontWeight.normal,
       ),

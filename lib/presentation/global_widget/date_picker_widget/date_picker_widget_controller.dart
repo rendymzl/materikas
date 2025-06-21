@@ -18,7 +18,7 @@ class DatePickerController extends GetxController {
         DateTime(date.year, date.month, date.day, date.hour, date.minute));
   }
 
-  void handleDate(BuildContext context) async {
+  Future<void> handleDate(BuildContext context, Rx<DateTime?> dateTime) async {
     Get.defaultDialog(
       title: 'Pilih Tanggal',
       backgroundColor: Colors.white,
@@ -41,8 +41,17 @@ class DatePickerController extends GetxController {
           cancelText: 'Batal',
           onCancel: () => Get.back(),
           onSubmit: (p0) async {
-            selectedDate.value = p0 as DateTime;
+            final selectDate = p0 as DateTime;
+            selectedDate.value = DateTime(
+              selectDate.year,
+              selectDate.month,
+              selectDate.day,
+              selectedTime.value.hour,
+              selectedTime.value.minute,
+            );
             displayDate.value = DateFormat('dd MMMM y', 'id').format(p0);
+            dateTime.value = selectedDate.value;
+            print('---selesai updated invoice $dateTime');
             Get.back();
           },
         ),
@@ -50,7 +59,7 @@ class DatePickerController extends GetxController {
     );
   }
 
-  void handleTime(BuildContext context) async {
+  Future<void> handleTime(BuildContext context, Rx<DateTime?> dateTime) async {
     TimeOfDay? pickedTime = await showTimePicker(
       context: context,
       initialTime: selectedTime.value,
@@ -65,6 +74,8 @@ class DatePickerController extends GetxController {
         pickedTime.minute,
       );
       displayTime.value = DateFormat('HH:mm', 'id').format(selectedDate.value);
+      dateTime.value = selectedDate.value;
+      print('---selesai updated invoice $dateTime');
     }
   }
 }

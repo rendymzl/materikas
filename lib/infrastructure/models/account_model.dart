@@ -22,6 +22,8 @@ class AccountModel extends Account {
     required super.endDate,
     required super.isActive,
     required super.updatedAt,
+    super.token,
+    super.affiliateId,
   });
 
   factory AccountModel.fromJson(Map<String, dynamic> json) {
@@ -68,6 +70,8 @@ class AccountModel extends Account {
       updatedAt: json['updated_at'] != null
           ? DateTime.parse(json['updated_at']).toLocal()
           : DateTime.now(),
+      token: json['token'],
+      affiliateId: json['affiliate_id'],
     );
   }
 
@@ -86,11 +90,14 @@ class AccountModel extends Account {
       'start_date': startDate?.toIso8601String(),
       'end_date': endDate?.toIso8601String(),
       'is_active': isActive,
-      'updated_at': updatedAt.toIso8601String()
+      'updated_at': updatedAt.toIso8601String(),
+      'token': token,
+      'affiliate_id': affiliateId,
     };
   }
 
   factory AccountModel.fromRow(sqlite.Row row) {
+    print('Account value from model ${row.values}');
     late RxList<Cashier> users;
     if (row['users'] != null) {
       final dynamic usersData =
@@ -134,6 +141,8 @@ class AccountModel extends Account {
       updatedAt: row['updated_at'] != null
           ? DateTime.parse(row['updated_at']).toLocal()
           : DateTime.now(),
+      token: row['token'],
+      affiliateId: row['affiliate_id'],
     );
   }
 }

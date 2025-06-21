@@ -1,12 +1,9 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-// import 'app_config.dart';
-
 loadSupabase() async {
-  // await dotenv.load();
   await Supabase.initialize(
-    url: dotenv.get('SUPABASE_URL'),
-    anonKey: dotenv.get('SUPABASE_ANON_KEY'),
+    url: 'https://fohbzceowdszhuamwief.supabase.co',
+    anonKey:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZvaGJ6Y2Vvd2Rzemh1YW13aWVmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjUyMzc2MzEsImV4cCI6MjA0MDgxMzYzMX0.hBbSXniRlT2X7zQPBJ7PF8JZuQteu9tzPkGYE8pxlmQ',
   );
 }

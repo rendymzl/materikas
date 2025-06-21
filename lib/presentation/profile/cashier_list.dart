@@ -23,11 +23,9 @@ class CashierListWidget extends StatelessWidget {
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
-            Obx(
-              () => Text(
-                'Daftar Kasir ${(controller.authService.account.value!.accountType == 'flexible') ? '0/0' : (controller.authService.account.value!.accountType == 'subscription') ? '${controller.account.value!.users.length}/3' : '${controller.account.value!.users.length}/Tanpa batas'}',
-                style: context.textTheme.titleLarge,
-              ),
+            Text(
+              'Daftar Kasir',
+              style: context.textTheme.titleLarge,
             ),
             Divider(color: Colors.grey[200]),
             Obx(

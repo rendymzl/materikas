@@ -34,33 +34,40 @@ class PropertiesRow extends StatelessWidget {
           Expanded(
             child: Text(
               title,
-              style: primary
-                  ? subtraction
-                      ? Theme.of(Get.context!).textTheme.titleLarge!.copyWith(
-                          color: Colors.red)
-                      : payment
+              style: value.contains('PO')
+                  ? Theme.of(Get.context!)
+                      .textTheme
+                      .titleLarge!
+                      .copyWith(color: Colors.amber)
+                  : primary
+                      ? subtraction
                           ? Theme.of(Get.context!)
                               .textTheme
                               .titleLarge!
-                              .copyWith(
-                                  color: paymentMethod ==
-                                          'cash'
-                                      ? Colors.green
-                                      : Colors.blue)
-                          : Theme.of(Get.context!).textTheme.titleLarge
-                  : subtraction
-                      ? Theme.of(Get.context!).textTheme.bodyMedium!.copyWith(
-                          color: Colors.red)
-                      : payment
-                          ? Theme
-                                  .of(Get.context!)
+                              .copyWith(color: Colors.red)
+                          : payment
+                              ? Theme.of(Get.context!)
+                                  .textTheme
+                                  .titleLarge!
+                                  .copyWith(
+                                      color: paymentMethod == 'cash'
+                                          ? Colors.green
+                                          : Colors.blue)
+                              : Theme.of(Get.context!).textTheme.titleLarge
+                      : subtraction
+                          ? Theme.of(Get.context!)
                               .textTheme
                               .bodyMedium!
-                              .copyWith(
-                                  color: paymentMethod == 'cash'
-                                      ? Colors.green
-                                      : Colors.blue)
-                          : Theme.of(Get.context!).textTheme.bodyMedium,
+                              .copyWith(color: Colors.red)
+                          : payment
+                              ? Theme.of(Get.context!)
+                                  .textTheme
+                                  .bodyMedium!
+                                  .copyWith(
+                                      color: paymentMethod == 'cash'
+                                          ? Colors.green
+                                          : Colors.blue)
+                              : Theme.of(Get.context!).textTheme.bodyMedium,
               textAlign: titleTextAlign,
             ),
           ),
@@ -68,29 +75,34 @@ class PropertiesRow extends StatelessWidget {
           Expanded(
               child: Text(
             value,
-            style: primary
-                ? subtraction
-                    ? Theme.of(Get.context!)
-                        .textTheme
-                        .titleLarge!
-                        .copyWith(color: Colors.red)
-                    : payment
+            style: value.contains('PO')
+                ? Theme.of(Get.context!).textTheme.titleLarge!.copyWith(
+                    color: Colors.amber)
+                : primary
+                    ? subtraction
                         ? Theme.of(Get.context!).textTheme.titleLarge!.copyWith(
-                            color: paymentMethod == 'cash'
-                                ? Colors.green
-                                : Colors.blue)
-                        : Theme.of(Get.context!).textTheme.titleLarge
-                : subtraction
-                    ? Theme.of(Get.context!)
-                        .textTheme
-                        .bodyMedium!
-                        .copyWith(color: Colors.red)
-                    : payment
+                            color: Colors.red)
+                        : payment
+                            ? Theme.of(Get.context!)
+                                .textTheme
+                                .titleLarge!
+                                .copyWith(
+                                    color: paymentMethod == 'cash'
+                                        ? Colors.green
+                                        : Colors.blue)
+                            : Theme.of(Get.context!).textTheme.titleLarge
+                    : subtraction
                         ? Theme.of(Get.context!).textTheme.bodyMedium!.copyWith(
-                            color: paymentMethod == 'cash'
-                                ? Colors.green
-                                : Colors.blue)
-                        : Theme.of(Get.context!).textTheme.bodyMedium,
+                            color: Colors.red)
+                        : payment
+                            ? Theme.of(Get.context!)
+                                .textTheme
+                                .bodyMedium!
+                                .copyWith(
+                                    color: paymentMethod == 'cash'
+                                        ? Colors.green
+                                        : Colors.blue)
+                            : Theme.of(Get.context!).textTheme.bodyMedium,
             textAlign: valueTextAlign,
           )),
         ],

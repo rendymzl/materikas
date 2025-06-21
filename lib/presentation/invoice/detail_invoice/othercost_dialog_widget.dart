@@ -8,7 +8,7 @@ import '../../../infrastructure/utils/display_format.dart';
 import '../../global_widget/popup_page_widget.dart';
 
 void otherCostDialogWidget(InvoiceModel invoice) {
-  late InvoiceService _invoiceService = Get.find();
+  late InvoiceService invoiceService = Get.find();
   final otherCostNameTextC = TextEditingController();
   final otherCostAmountTextC = TextEditingController();
 
@@ -22,7 +22,7 @@ void otherCostDialogWidget(InvoiceModel invoice) {
       invoice.addOtherCost(otherCostNameTextC.text,
           double.parse(otherCostAmountTextC.text.replaceAll('.', '')));
 
-      await _invoiceService.update(invoice);
+      await invoiceService.update(invoice);
       Get.back();
 
       await Get.defaultDialog(
@@ -44,106 +44,100 @@ void otherCostDialogWidget(InvoiceModel invoice) {
 
   showPopupPageWidget(
     title: 'Tambah Biaya Lainnya',
-    height: 150,
+    height: 250,
     width: 450,
-    content: Row(
+    content: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Expanded(
-          child: TextFormField(
-            controller: otherCostNameTextC,
-            textAlign: TextAlign.center,
-            decoration: InputDecoration(
-              labelText: 'Nama Biaya',
-              labelStyle: Get.context!.textTheme.bodySmall!
-                  .copyWith(fontStyle: FontStyle.italic),
-              counterText: '',
-              filled: true,
-              fillColor:
-                  Theme.of(Get.context!).colorScheme.secondary.withOpacity(0.2),
-              border: const OutlineInputBorder(borderSide: BorderSide.none),
-              isDense: true,
-            ),
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            validator: (value) {
-              if (value == '') {
-                return 'Kode tidak boleh kosong';
-              } else {
-                return null;
-              }
-            },
+        TextFormField(
+          controller: otherCostNameTextC,
+          textAlign: TextAlign.center,
+          decoration: InputDecoration(
+            labelText: 'Nama Biaya',
+            labelStyle: Get.context!.textTheme.bodySmall!
+                .copyWith(fontStyle: FontStyle.italic),
+            counterText: '',
+            filled: true,
+            fillColor:
+                Theme.of(Get.context!).colorScheme.secondary.withOpacity(0.2),
+            border: const OutlineInputBorder(borderSide: BorderSide.none),
+            isDense: true,
           ),
+          // keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          validator: (value) {
+            if (value == '') {
+              return 'Nama tidak boleh kosong';
+            } else {
+              return null;
+            }
+          },
         ),
-        const Text('  :   '),
-        Expanded(
-          child: TextFormField(
-            controller: otherCostAmountTextC,
-            textAlign: TextAlign.center,
-            maxLength: 15,
-            decoration: InputDecoration(
-              labelText: 'Jumlah Biaya',
-              labelStyle: Get.context!.textTheme.bodySmall!
-                  .copyWith(fontStyle: FontStyle.italic),
-              prefixText: 'Rp',
-              counterText: '',
-              filled: true,
-              fillColor:
-                  Theme.of(Get.context!).colorScheme.secondary.withOpacity(0.2),
-              border: const OutlineInputBorder(borderSide: BorderSide.none),
-              isDense: true,
-            ),
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'[0-9]'))
-            ],
-            onChanged: (value) {
-              if (value.isNotEmpty) {
-                String newValue =
-                    currency.format(int.parse(value.replaceAll('.', '')));
-
-                if (newValue != otherCostAmountTextC.text) {
-                  otherCostAmountTextC.value = TextEditingValue(
-                    text: newValue,
-                    selection: TextSelection.collapsed(offset: newValue.length),
-                  );
-                }
-              }
-            },
+        // const Text('  :   '),
+        SizedBox(height: 20),
+        TextFormField(
+          controller: otherCostAmountTextC,
+          textAlign: TextAlign.center,
+          maxLength: 15,
+          decoration: InputDecoration(
+            labelText: 'Jumlah Biaya',
+            labelStyle: Get.context!.textTheme.bodySmall!
+                .copyWith(fontStyle: FontStyle.italic),
+            prefixText: 'Rp',
+            counterText: '',
+            filled: true,
+            fillColor:
+                Theme.of(Get.context!).colorScheme.secondary.withOpacity(0.2),
+            border: const OutlineInputBorder(borderSide: BorderSide.none),
+            isDense: true,
           ),
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp(r'[0-9]'))
+          ],
+          onChanged: (value) {
+            if (value.isNotEmpty) {
+              String newValue =
+                  currency.format(int.parse(value.replaceAll('.', '')));
+
+              if (newValue != otherCostAmountTextC.text) {
+                otherCostAmountTextC.value = TextEditingValue(
+                  text: newValue,
+                  selection: TextSelection.collapsed(offset: newValue.length),
+                );
+              }
+            }
+          },
         ),
       ],
     ),
     buttonList: [
-      Row(
-        children: [
-          SizedBox(
-            width: 150,
-            child: OutlinedButton(
-              onPressed: () => Get.back(),
-              child: const Text('Batal'),
-              style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.all(16),
-                textStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-              ),
-            ),
+      SizedBox(
+        width: 100,
+        child: OutlinedButton(
+          onPressed: () => Get.back(),
+          style: ElevatedButton.styleFrom(
+            padding: EdgeInsets.all(16),
+            textStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(width: 12),
-          SizedBox(
-            width: 150,
-            child: ElevatedButton(
-              onPressed: () {
-                if (otherCostNameTextC.text != '' &&
-                    otherCostAmountTextC.text != '') {
-                  process(invoice);
-                }
-              },
-              child: const Text('Tambah Biaya'),
-              style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.all(16),
-                textStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-              ),
-            ),
+          child: const Text('Batal'),
+        ),
+      ),
+      const SizedBox(width: 12),
+      SizedBox(
+        width: 100,
+        child: ElevatedButton(
+          onPressed: () {
+            if (otherCostNameTextC.text != '' &&
+                otherCostAmountTextC.text != '') {
+              process(invoice);
+            }
+          },
+          style: ElevatedButton.styleFrom(
+            padding: EdgeInsets.all(16),
+            textStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
           ),
-        ],
+          child: const Text('Simpan'),
+        ),
       ),
     ],
   );

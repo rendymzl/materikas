@@ -26,7 +26,7 @@ final ThemeData appTheme = ThemeData(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8), // Bentuk medium rounded
         ),
-        padding: EdgeInsets.symmetric(horizontal: 32.0, vertical: 22.0),
+        padding: EdgeInsets.symmetric(horizontal: 32.0, vertical: 18.0),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
@@ -37,7 +37,7 @@ final ThemeData appTheme = ThemeData(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8), // Bentuk medium rounded
         ),
-        padding: EdgeInsets.symmetric(horizontal: 32.0, vertical: 22.0),
+        padding: EdgeInsets.symmetric(horizontal: 32.0, vertical: 18.0),
       ),
     ),
     cardTheme: CardTheme(

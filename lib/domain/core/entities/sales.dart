@@ -6,6 +6,7 @@ class Sales {
   String? phone;
   String? address;
   String? storeId;
+  double? totalDebt;
 
   Sales({
     this.id,
@@ -15,5 +16,6 @@ class Sales {
     this.phone,
     this.address,
     this.storeId,
+    this.totalDebt,
   });
 }

@@ -7,6 +7,7 @@ class Customer {
   String? address;
   String? noteAddress;
   String? storeId;
+  double? deposit;
 
   Customer({
     this.id,
@@ -17,5 +18,6 @@ class Customer {
     this.address,
     this.noteAddress,
     this.storeId,
+    this.deposit,
   });
 }

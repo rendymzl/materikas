@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -5,6 +6,11 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../domain/core/interfaces/customer_repository.dart';
 import '../../models/customer_model.dart';
 import '../database/powersync.dart';
+
+Future<List<CustomerModel>> convertToModel(
+    List<Map<String, dynamic>> maps) async {
+  return maps.map((e) => CustomerModel.fromJson(e)).toList();
+}
 
 class CustomerService extends GetxService implements CustomerRepository {
   late final customers = <CustomerModel>[].obs;
@@ -22,7 +28,8 @@ class CustomerService extends GetxService implements CustomerRepository {
         List<CustomerModel> customersList = [];
         customersList.addAll(customers);
         customersList.sort((a, b) => a.createdAt!.compareTo(b.createdAt!));
-        List<CustomerModel> subList = customersList.take(200).toList();
+        List<CustomerModel> subList = customersList.take(200).toList()
+          ..sort((a, b) => b.name.compareTo(a.name));
         foundCustomers.clear();
         foundCustomers.addAll(subList);
         customersList.sort((a, b) {
@@ -33,26 +40,23 @@ class CustomerService extends GetxService implements CustomerRepository {
         lastCustomersId.value =
             customersList.isEmpty ? 'CST0' : customersList.last.customerId!;
       } else {
-        foundCustomers.value = customers.where((customer) {
-          return customer.name
-              .toLowerCase()
-              .contains(searchValue.toLowerCase());
-        }).toList();
+        foundCustomers.value = customers
+            .where((customer) =>
+                customer.name.toLowerCase().contains(searchValue.toLowerCase()))
+            .toList()
+          ..sort((a, b) => b.name.compareTo(a.name));
       }
     });
   }
 
   @override
-  Future<void> subscribe(String storeId) async {
+  Future<void> subscribe() async {
     try {
-      var stream = db.watch('SELECT * FROM customers WHERE store_id = ?',
-          parameters: [
-            storeId
-          ]).map(
-          (data) => data.map((json) => CustomerModel.fromJson(json)).toList());
+      var stream =
+          db.watch('SELECT * FROM customers').map((data) => data.toList());
 
-      stream.listen((update) {
-        customers.assignAll(update);
+      stream.listen((update) async {
+        customers.assignAll(await compute(convertToModel, update));
         search('');
       });
     } on PostgrestException catch (e) {
@@ -66,8 +70,8 @@ class CustomerService extends GetxService implements CustomerRepository {
     await db.execute(
       '''
     INSERT INTO customers(
-      id, customer_id, created_at, name, phone, address, note_address, store_id
-    ) VALUES(uuid(), ?, ?, ?, ?, ?, ?, ?)
+      id, customer_id, created_at, name, phone, address, note_address, store_id, deposit
+    ) VALUES(uuid(), ?, ?, ?, ?, ?, ?, ?, ?)
     ''',
       [
         customer.customerId,
@@ -77,12 +81,14 @@ class CustomerService extends GetxService implements CustomerRepository {
         customer.address,
         customer.noteAddress,
         customer.storeId,
+        customer.deposit,
       ],
     );
   }
 
   @override
   Future<void> update(CustomerModel customer) async {
+    print('deposit inserted ${customer.deposit}');
     await db.execute(
       '''
     UPDATE customers SET
@@ -92,7 +98,8 @@ class CustomerService extends GetxService implements CustomerRepository {
       phone = ?, 
       address = ?, 
       note_address = ?, 
-      store_id = ?
+      store_id = ?,
+      deposit = ?
     WHERE id = ?
     ''',
       [
@@ -103,6 +110,7 @@ class CustomerService extends GetxService implements CustomerRepository {
         customer.address,
         customer.noteAddress,
         customer.storeId,
+        customer.deposit,
         customer.id,
       ],
     );

@@ -1,188 +1,214 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../../../infrastructure/models/invoice_sales_model.dart';
-import '../../../infrastructure/models/purchase_order_model.dart';
+import '../../../infrastructure/navigation/routes.dart';
 import '../../../infrastructure/utils/display_format.dart';
+import '../../global_widget/date_picker_widget/date_picker_widget_controller.dart';
+import '../../global_widget/properties_row_widget.dart';
+import '../buy_product_widget/buy_product_controller.dart';
+import '../detail_sales/payment_sales/payment_sales_controller.dart';
+import '../detail_sales/payment_sales/payment_sales_popup.dart';
 
 class CalculateSalesPrice extends StatelessWidget {
-  const CalculateSalesPrice({
-    super.key,
-    required this.invoice,
-    this.isEdit = false,
-    this.po = false,
-    this.purchaseOrder,
-  });
+  const CalculateSalesPrice(
+      {super.key, required this.editableInvoice, this.isEdit = false});
 
-  final InvoiceSalesModel invoice;
+  final InvoiceSalesModel editableInvoice;
   final bool isEdit;
-  final bool po;
-  final PurchaseOrderModel? purchaseOrder;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      child: Row(
+    return Obx(
+      () => Column(
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Expanded(
-            child: Obx(
-              () {
-                if (purchaseOrder != null) {
-                  invoice.purchaseList.value =
-                      purchaseOrder!.purchaseList.value;
-                }
-                final cartItems = invoice.purchaseList.value.items;
-                return SizedBox(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      PropertiesRowWidget(
-                        title: 'Total Harga (${cartItems.length} Barang)',
-                        value: currency.format(
-                          invoice.subtotalCost,
-                        ),
-                      ),
-                      if (invoice.totalDiscount > 0)
-                        PropertiesRowWidget(
-                          title: 'Total Diskon',
-                          value: '-${currency.format(invoice.totalDiscount)}',
-                        ),
-                      Divider(color: Colors.grey[200]),
-                      if (isEdit)
-                        PropertiesRowWidget(
-                          title: 'Total Belanja',
-                          value: currency.format(invoice.totalCost),
-                        ),
-                      if (isEdit)
-                        PropertiesRowWidget(
-                          title: 'Total Pembayaran',
-                          value: currency.format(invoice.totalPaid),
-                          color: Colors.green,
-                        ),
-                      // if (invoice.totalPaid < invoice.totalCost)
-                      SizedBox(
-                        height: 48,
-                        child: ListTile(
-                          title: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              SizedBox(
-                                width: 300,
-                                child: Text(
-                                    po
-                                        ? 'Total Purchase Order'
-                                        : isEdit
-                                            ? 'Sisa Bayar'
-                                            : 'Total Belanja:',
-                                    style: const TextStyle(
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.bold,
-                                    )),
-                              ),
-                              Text(
-                                'Rp${currency.format(isEdit ? invoice.remainingDebt : invoice.totalCost)}',
-                                style: TextStyle(
-                                    fontSize: 32,
-                                    fontWeight: FontWeight.bold,
-                                    color:
-                                        Theme.of(context).colorScheme.primary),
-                              )
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 30),
-                      // if (invoice.totalPaid < invoice.totalCost)
-                      //   ListTile(
-                      //     title:
-                      //         PaymentButton(invoice: invoice, isEdit: isEdit),
-                      //   )
-                    ],
-                  ),
-                );
-              },
+          if (editableInvoice.totalDiscount > 0)
+            PropertiesRowWidget(
+              primary: true,
+              title: 'Diskon',
+              value: '-${currency.format(editableInvoice.totalDiscount)}',
+              color: Colors.red,
             ),
-          ),
+          if (isEdit)
+            PropertiesRowWidget(
+              title: 'Total Belanja',
+              value: currency.format(editableInvoice.totalCost),
+            ),
+          if (isEdit)
+            PropertiesRowWidget(
+              title: 'Total Pembayaran',
+              value: currency.format(editableInvoice.totalPaid),
+              color: Colors.green,
+            ),
+          if (isEdit) const Divider(color: Colors.grey),
+          if (editableInvoice.purchaseList.value.items.isNotEmpty)
+            PaymentButton(invoice: editableInvoice, isEdit: isEdit),
         ],
       ),
     );
   }
 }
 
-class PropertiesRowWidget extends StatelessWidget {
-  const PropertiesRowWidget({
-    super.key,
-    required this.title,
-    required this.value,
-    this.subValue,
-    this.primary = false,
-    this.italic = false,
-    this.color,
-  });
+class PaymentButton extends StatelessWidget {
+  const PaymentButton({super.key, required this.invoice, required this.isEdit});
 
-  final String title;
-  final String value;
-  final String? subValue;
-  final bool primary;
-  final bool italic;
-  final Color? color;
+  final InvoiceSalesModel invoice;
+  final bool isEdit;
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    final buyProductC = Get.find<BuyProductController>();
+    final datePickerC = Get.find<DatePickerController>();
+    final cartItems = invoice.purchaseList.value.items;
+
+    return Obx(
+      () => Row(
         children: [
           Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(title,
-                    style: primary
-                        ? context.textTheme.titleLarge!.copyWith(
-                            fontWeight: FontWeight.bold,
-                            fontStyle: italic ? FontStyle.italic : null,
-                            color: color)
-                        : context.textTheme.titleMedium!.copyWith(
-                            fontWeight: FontWeight.w400,
-                            fontStyle: italic ? FontStyle.italic : null,
-                            color: color)),
-                Row(
-                  children: [
-                    Text(
-                      subValue != null
-                          ? subValue!.isEmpty ||
-                                  subValue == '0' ||
-                                  subValue == '-0'
-                              ? '-'
-                              : '$subValue'
-                          : '',
-                      style: context.textTheme.bodySmall!
-                          .copyWith(fontStyle: FontStyle.italic, color: color),
-                    ),
-                    const SizedBox(width: 16),
-                  ],
-                ),
-              ],
+            child: ListTile(
+              onTap: isEdit
+                  ? null
+                  : () async {
+                      invoice.createdAt.value = datePickerC.selectedDate.value;
+
+                      if ((isEdit &&
+                              (invoice.invoiceName.value == null ||
+                                  invoice.invoiceName.value!.isEmpty)) ||
+                          (!isEdit && buyProductC.nomorInvoice.value.isEmpty)) {
+                        _showErrorDialog('Masukkan Nomor Invoice.');
+                      } else if (invoice.totalCost > 0) {
+                        final paymentSalesC = Get.put(PaymentSalesController());
+                        if (!isEdit) {
+                          invoice.invoiceName.value =
+                              buyProductC.nomorInvoice.value;
+                          invoice.purchaseOrder.value =
+                              buyProductC.isPurchaseOrder.value;
+                        }
+
+                        if (buyProductC.isPurchaseOrder.value) {
+                          paymentSalesC.displayInvoice = invoice;
+                          paymentSalesC.assign(invoice, isEditMode: isEdit);
+                          _showConfirmPurchaseOrder(paymentSalesC);
+                        } else {
+                          paymentSalesC.displayInvoice = invoice;
+                          paymentSalesC.assign(invoice, isEditMode: isEdit);
+                          if (vertical) {
+                            await Get.toNamed(Routes.PAYMENT_SALES_INVOICE);
+                          } else {
+                            if (invoice.purchaseList.value.items.isNotEmpty) {
+                              await paymentSalesPopup();
+                            }
+                          }
+                        }
+                      } else {
+                        _showErrorDialog('Tidak ada Barang yang ditambahkan.');
+                      }
+                    },
+              tileColor: isEdit ? null : Theme.of(context).colorScheme.primary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              title: _buildPaymentButtonContent(cartItems, context),
+              trailing: isEdit
+                  ? null
+                  : const Icon(Symbols.shopping_basket,
+                      fill: 1, color: Colors.white),
             ),
           ),
-          Text(
-            value == '0' || value == '-0'
-                ? '-'
-                : value == 'title'
-                    ? ''
-                    : 'Rp$value',
-            style: primary
-                ? context.textTheme.titleLarge!.copyWith(
-                    fontWeight: FontWeight.bold,
-                    fontStyle: italic ? FontStyle.italic : null,
-                    color: color)
-                : context.textTheme.titleMedium!.copyWith(
-                    fontWeight: FontWeight.w400,
-                    fontStyle: italic ? FontStyle.italic : null,
-                    color: color),
-          )
         ],
+      ),
+    );
+  }
+
+  Widget _buildPaymentButtonContent(List cartItems, BuildContext context) {
+    return SizedBox(
+      height: 50,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                isEdit ? 'TOTAL' : 'Total Harga',
+                style: context.textTheme.titleLarge!.copyWith(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: isEdit
+                      ? Theme.of(context).colorScheme.primary
+                      : Colors.white,
+                ),
+              ),
+              Text(
+                '(${cartItems.length} Item)',
+                style: context.textTheme.titleSmall!.copyWith(
+                  fontStyle: FontStyle.italic,
+                  fontWeight: FontWeight.bold,
+                  color: isEdit
+                      ? Theme.of(context).colorScheme.primary
+                      : Colors.white,
+                ),
+              ),
+            ],
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Rp${currency.format(invoice.remainingDebt)}',
+                style: context.textTheme.titleLarge!.copyWith(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: isEdit
+                      ? Theme.of(context).colorScheme.primary
+                      : Colors.white,
+                ),
+              ),
+              if (invoice.totalDiscount > 0 && !isEdit)
+                Text(
+                  'Rp-${currency.format(invoice.subtotalCost)}',
+                  style: context.textTheme.titleLarge!.copyWith(
+                    fontSize: 14,
+                    color: isEdit
+                        ? Theme.of(context).colorScheme.primary.withOpacity(0.5)
+                        : Colors.white.withOpacity(0.5),
+                    decoration: TextDecoration.lineThrough,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showConfirmPurchaseOrder(
+      PaymentSalesController paymentSalesC) async {
+    await Get.defaultDialog(
+      title: 'Konfirmasi',
+      middleText: 'Apakah anda yakin ingin menyimpan invoice ini sebagai PO?',
+      confirm: ElevatedButton(
+        onPressed: () async => await paymentSalesC.saveToDatabase(),
+        child: const Text('Ya'),
+      ),
+      cancel: OutlinedButton(
+        onPressed: () => Get.back(),
+        child: const Text('Tidak'),
+      ),
+    );
+  }
+
+  void _showErrorDialog(String message) {
+    Get.defaultDialog(
+      title: 'Error',
+      middleText: message,
+      confirm: TextButton(
+        onPressed: () => Get.back(),
+        child: const Text('OK'),
       ),
     );
   }

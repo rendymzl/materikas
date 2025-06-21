@@ -6,7 +6,8 @@ import '../../infrastructure/models/store_model.dart';
 import '../global_widget/popup_page_widget.dart';
 import 'detail_store.controller.dart';
 
-Future<void> detailStore({StoreModel? foundStore, bool setup = false}) async {
+Future<void> detailStore(
+    {StoreModel? foundStore, bool setup = false, bool isMobile = false}) async {
   DetailStoreController controller = Get.put(DetailStoreController());
 
   controller.bindingEditData(foundStore);
@@ -30,9 +31,10 @@ Future<void> detailStore({StoreModel? foundStore, bool setup = false}) async {
       //           color: Colors.red,
       //         ))
       //     : null,
-      height: MediaQuery.of(Get.context!).size.height * (3 / 4),
-      width: MediaQuery.of(Get.context!).size.width * (3 / 10),
-      barrierDismissible: setup,
+      // height:
+      //     MediaQuery.of(Get.context!).size.height * (isMobile ? 0.65 : 3 / 4),
+      // width: MediaQuery.of(Get.context!).size.width * (isMobile ? 0.9 : 3 / 10),
+      barrierDismissible: !setup,
       content: ListView(
         shrinkWrap: true,
         padding: const EdgeInsets.all(16),

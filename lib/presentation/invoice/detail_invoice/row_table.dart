@@ -68,20 +68,24 @@ class RowTable extends StatelessWidget {
                 title: Row(
                   children: [
                     Expanded(
-                        flex: 6,
+                        flex: 12,
                         child: Row(
                           children: [
                             Text(
                               isHeader ? 'NAMA BARANG' : productName,
                               style: isHeader
-                                  ? Theme.of(Get.context!).textTheme.titleLarge
+                                  ? Theme.of(Get.context!)
+                                      .textTheme
+                                      .titleLarge!
+                                      .copyWith(color: Colors.white)
                                   : null,
                             ),
                             const SizedBox(width: 16),
                           ],
                         )),
+                    Expanded(child: SizedBox()),
                     Expanded(
-                        flex: 5,
+                        flex: 4,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -95,11 +99,12 @@ class RowTable extends StatelessWidget {
                             Expanded(
                               flex: isHeader ? 4 : 1,
                               child: Text(
-                                isHeader ? 'HARGA BARANG' : price,
+                                isHeader ? 'HARGA' : price,
                                 style: isHeader
                                     ? Theme.of(Get.context!)
                                         .textTheme
-                                        .titleLarge
+                                        .titleLarge!
+                                        .copyWith(color: Colors.white)
                                     : null,
                                 textAlign: TextAlign.right,
                               ),
@@ -107,7 +112,7 @@ class RowTable extends StatelessWidget {
                           ],
                         )),
                     Expanded(
-                        flex: 2,
+                        flex: 4,
                         child: Text(
                           isHeader
                               ? 'JUMLAH'
@@ -115,14 +120,17 @@ class RowTable extends StatelessWidget {
                                   ? quantityReturn
                                   : quantityPurchase,
                           style: isHeader
-                              ? Theme.of(Get.context!).textTheme.titleLarge
+                              ? Theme.of(Get.context!)
+                                  .textTheme
+                                  .titleLarge!
+                                  .copyWith(color: Colors.white)
                               : isReturn
                                   ? Theme.of(Get.context!).textTheme.bodySmall
                                   : null,
                           textAlign: TextAlign.right,
                         )),
                     Expanded(
-                        flex: 3,
+                        flex: 4,
                         child: Text(
                           isHeader
                               ? 'DISKON'
@@ -130,7 +138,10 @@ class RowTable extends StatelessWidget {
                                   ? ''
                                   : discount,
                           style: isHeader
-                              ? Theme.of(Get.context!).textTheme.titleLarge
+                              ? Theme.of(Get.context!)
+                                  .textTheme
+                                  .titleLarge!
+                                  .copyWith(color: Colors.white)
                               : null,
                           textAlign: TextAlign.right,
                         )),
@@ -157,7 +168,10 @@ class RowTable extends StatelessWidget {
                                       ? subTotalReturn
                                       : subTotalPurchase,
                               style: isHeader
-                                  ? Theme.of(Get.context!).textTheme.titleLarge
+                                  ? Theme.of(Get.context!)
+                                      .textTheme
+                                      .titleLarge!
+                                      .copyWith(color: Colors.white)
                                   : isReturn
                                       ? const TextStyle(color: Colors.red)
                                       : null,

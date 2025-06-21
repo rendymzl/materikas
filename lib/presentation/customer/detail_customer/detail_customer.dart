@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 
 import '../../../infrastructure/models/customer_model.dart';
+import '../../../infrastructure/utils/display_format.dart';
 import '../../global_widget/popup_page_widget.dart';
 import '../controllers/customer.controller.dart';
 import 'detail_customer_controller.dart';
@@ -33,8 +34,9 @@ void detailCustomer({CustomerModel? foundCustomer}) {
                 color: Colors.red,
               ))
           : null,
-      height: MediaQuery.of(Get.context!).size.height * (3 / 4),
-      width: MediaQuery.of(Get.context!).size.width * (3 / 10),
+      height:
+          MediaQuery.of(Get.context!).size.height * (vertical ? 0.65 : 3 / 4),
+      width: MediaQuery.of(Get.context!).size.width * (vertical ? 0.9 : 3 / 10),
       content: ListView(
         shrinkWrap: true,
         padding: const EdgeInsets.all(16),
@@ -111,6 +113,26 @@ void detailCustomer({CustomerModel? foundCustomer}) {
                   ),
                   onChanged: (value) =>
                       controller.clickedField['address'] = true,
+                  onFieldSubmitted: (_) => controller.handleSave(foundCustomer),
+                ),
+                const SizedBox(height: 20),
+                TextFormField(
+                  controller: controller.depositController,
+                  keyboardType: TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9]'))
+                  ],
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'Deposit',
+                    labelStyle: TextStyle(color: Colors.grey),
+                    floatingLabelStyle: TextStyle(
+                        color: Theme.of(Get.context!).colorScheme.primary),
+                    focusedErrorBorder: outlineRed,
+                    errorBorder: outlineRed,
+                  ),
+                  onChanged: (value) =>
+                      controller.onDepositChanged(value),
                   onFieldSubmitted: (_) => controller.handleSave(foundCustomer),
                 ),
               ],

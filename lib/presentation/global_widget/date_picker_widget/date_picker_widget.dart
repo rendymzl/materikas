@@ -4,17 +4,22 @@ import 'package:intl/intl.dart';
 
 import 'date_picker_widget_controller.dart';
 
-//! view
 class DatePickerWidget extends GetView<DatePickerController> {
-  const DatePickerWidget({super.key});
+  const DatePickerWidget({super.key, required this.dateTime});
+  final Rx<DateTime?> dateTime;
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(DatePickerController());
+    Get.lazyPut(() => DatePickerController());
+    controller.asignDateTime(dateTime.value!);
+    // dateTime = controller.selectedDate;
     return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
       children: [
         InkWell(
-          onTap: () async => controller.handleDate(context),
+          onTap: () async {
+            await controller.handleDate(context, dateTime);
+          },
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
             decoration: BoxDecoration(
@@ -23,7 +28,7 @@ class DatePickerWidget extends GetView<DatePickerController> {
             ),
             child: Obx(
               () => Text(
-                DateFormat('dd MMMM y', 'id')
+                DateFormat('dd MMM y', 'id')
                     .format(controller.selectedDate.value),
                 style: const TextStyle(color: Colors.white),
               ),
@@ -32,7 +37,9 @@ class DatePickerWidget extends GetView<DatePickerController> {
         ),
         const SizedBox(width: 8),
         InkWell(
-          onTap: () async => controller.handleTime(context),
+          onTap: () async {
+            await controller.handleTime(context, dateTime);
+          },
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
             decoration: BoxDecoration(

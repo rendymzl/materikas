@@ -1,121 +1,112 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:hive/hive.dart';
 
 import '../../../infrastructure/dal/database/powersync.dart';
 import '../../../infrastructure/dal/services/auth_service.dart';
+import '../../../infrastructure/dal/services/internet_service.dart';
+import '../../../infrastructure/dal/services/store_service.dart';
 import '../../../infrastructure/navigation/routes.dart';
+import '../../../infrastructure/utils/hive_boxex.dart';
 import '../../global_widget/menu_widget/menu_controller.dart';
 
 class SelectUserController extends GetxController {
-  late final AuthService authService = Get.find();
-  late final MenuWidgetController _menuC =
+  final AuthService authService = Get.find();
+  final StoreService storeService = Get.find();
+  final MenuWidgetController _menuC =
       Get.put(MenuWidgetController(), permanent: true);
 
-  late final Box<dynamic> box;
   final isLoading = false.obs;
-  // late final loadingStatus = authService.loadingStatus;
-  // late final isConnected = authService.connected;
   late final account = authService.account;
   late final store = authService.store;
 
-  // final workers = <Cashier>[].obs;
-  var selectedUser = ''.obs;
+  final Rx<String> selectedUserString = Rx<String>('');
 
   final TextEditingController passwordController = TextEditingController();
 
-  void selectUser(String user) {
-    selectedUser.value = user;
+  void selectUserString(String user) {
+    selectedUserString.value = user;
   }
 
   @override
   void onInit() async {
     isLoading.value = true;
-    // authService.loadingStatus.value = 'Menghubungkan User...';
-    box = await Hive.openBox('selectedUser');
-    // authService.loadingStatus.value = 'Menghubungkan Akun...';
-    await authService.getAccount();
-    await authService.getStore();
-    if (account.value!.users.isEmpty) selectedUser.value = 'owner';
-    // isLoading.value = false;
-    // print('SelectUserController : ${account.value}');
-    String? user = await isSelectedUser();
-    if (user?.isNotEmpty ?? false) {
-      selectedUser.value = user!;
-      authService.getSelectedCashier(user);
-      authService.selectedIndexMenu.value = 0;
-
-      _menuC.getMenu();
-      Get.offAllNamed(Routes.HOME);
+    // final users = account.value?.users;
+    // if (users == null || users.isEmpty) {
+    //   goToHome();
+    // } else {
+    final selectedUser = await authService.getSelectedCashier();
+    if (selectedUser != null) {
+      selectedUserString.value = selectedUser.name;
+      goToHome();
+    } else {
+      final userName = await HiveBox.getSelectedUser();
+      if (userName != null && userName.isNotEmpty) {
+        selectedUserString.value = userName;
+        goToHome();
+      }
     }
-    await Future.delayed(const Duration(seconds: 2));
+    // }
     isLoading.value = false;
     super.onInit();
   }
 
-  Future<String?> isSelectedUser() async {
-    return box.get('user');
-  }
-
   void goToHome() {
-    authService.getSelectedCashier(selectedUser.value);
-    box.put('user', selectedUser.value);
-    authService.isOwner.value = account.value!.role == selectedUser.value;
     _menuC.getMenu();
     Get.offAllNamed(Routes.HOME);
   }
 
   void loginUserHandle() {
-    if (selectedUser.isNotEmpty) {
-      // Implementasi logika login
-      if (account.value!.role == selectedUser.value) {
-        if (account.value!.password == passwordController.text) {
-          print('Login berhasil untuk ${selectedUser.value}');
+    if (selectedUserString.isNotEmpty) {
+      final accountValue = account.value;
+      if (accountValue == null) return;
+
+      print('objecta casr role ${accountValue.role}');
+
+      if (accountValue.role == selectedUserString.value) {
+        if (accountValue.password == passwordController.text) {
+          print('Login berhasil untuk ${selectedUserString.value}');
+          HiveBox.saveSelectedUser(selectedUserString.value);
+
           goToHome();
         } else {
-          Get.defaultDialog(
-            title: 'Error',
-            content: const Text('Ada yang salah, silahkan coba lagi'),
-          );
+          showErrorDialog('Pin yang dimasukkan salah');
         }
       } else {
-        var cashier = account.value!.users.firstWhereOrNull(
-          (u) => u.name == selectedUser.value,
-        );
+        final cashier = accountValue.users
+            .firstWhereOrNull((u) => u.name == selectedUserString.value);
         if (cashier != null) {
           if (cashier.password == passwordController.text) {
+            print('objecta aws ${selectedUserString.value}');
+            print('objecta casr ${cashier.name}');
+            authService.selectedUser.value = cashier;
+
             goToHome();
           } else {
-            Get.defaultDialog(
-              title: 'Error',
-              content:
-                  const Text('Password tidak cocok dengan akun yang dipilih!'),
-            );
+            showErrorDialog('Pin yang dimasukkan salah');
           }
+        } else {
+          showErrorDialog('User tidak ditemukan');
         }
       }
     } else {
-      // Tampilkan pesan kesalahan jika akun atau password tidak diisi
-      Get.defaultDialog(
-        title: 'Error',
-        content: const Text('Harap pilih akun dan masukkan password!'),
-      );
+      showErrorDialog('Pilih akun dan masukkan password!');
     }
+  }
+
+  void showErrorDialog(String message) {
+    Get.defaultDialog(
+      title: 'Error',
+      content: Text(message),
+    );
   }
 
   Future<void> signOut() async {
     await Future.delayed(const Duration(milliseconds: 200));
-    // try {
-    if (authService.connected.value) {
+    if (Get.find<InternetService>().isConnected.value) {
       await logout();
-      // box.delete('user');
       Get.offNamed(Routes.LOGIN);
     } else {
-      await Get.defaultDialog(
-        title: 'Error',
-        content:
-            const Text('Tidak ada koneksi internet untuk mengeluarkan akun.'),
-      );
+      showErrorDialog('Tidak ada koneksi internet untuk mengeluarkan akun.');
     }
   }
 }

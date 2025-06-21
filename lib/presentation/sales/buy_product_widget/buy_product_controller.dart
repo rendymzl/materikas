@@ -7,56 +7,67 @@ import '../../../infrastructure/dal/services/product_service.dart';
 import '../../../infrastructure/models/invoice_model/cart_item_model.dart';
 import '../../../infrastructure/models/invoice_model/cart_model.dart';
 import '../../../infrastructure/models/invoice_sales_model.dart';
+import '../../../infrastructure/models/log_stock_model.dart';
 import '../../../infrastructure/models/product_model.dart';
 import '../../../infrastructure/models/sales_model.dart';
 import '../../global_widget/date_picker_widget/date_picker_widget_controller.dart';
-import '../../product/controllers/product.controller.dart';
+// import '../../product/controllers/product.controller.dart';
 import '../controllers/sales.controller.dart';
+import '../detail_sales/payment_sales/payment_sales_controller.dart';
 
 class BuyProductController extends GetxController {
+  final createdAt = DateTime.now().obs;
   late final ProductService productService = Get.find();
-  late final ProductController _productC = Get.put(ProductController());
   late SalesController salesC = Get.find();
   late InvoiceSalesService invoiceSalesService = Get.find();
   late final AuthService _authService = Get.find<AuthService>();
   late final DatePickerController _datePickerC =
       Get.put(DatePickerController());
-  late final foundProducts = _productC.displayedItems;
-  // Rx<SalesModel?> selectedSales = Rx<SalesModel?>(null);
+  late final foundProducts = productService.products;
 
-  late InvoiceSalesModel invoice;
   final cart = Cart(items: <CartItem>[].obs).obs;
   final initCartList = <CartItem>[].obs;
   final removeCartList = <CartItem>[].obs;
   final nomorInvoice = ''.obs;
+  final isPurchaseOrder = false.obs;
+
+  late InvoiceSalesModel currentInvoice;
+  late InvoiceSalesModel editInvoice;
 
   late ScrollController scrollController = ScrollController();
 
-  @override
-  void onInit() async {
-    print('on init');
-    invoice = await createInvoice();
-    super.onInit();
+  void init() async {
+    nomorInvoice.value = '';
+    isPurchaseOrder.value = false;
+    cart.value.items.clear();
+    editInvoice = await createInvoice();
+    print('init buyC');
   }
 
-  void filterProducts(String productName) {
-    _productC.searchValue.value = productName;
-    _productC.fetch(isClean: true);
+  void assign(InvoiceSalesModel invoice) async {
+    currentInvoice = invoice;
+    editInvoice = InvoiceSalesModel.fromJson(invoice.toJson());
+    final paymentSalesC = Get.put(PaymentSalesController());
+    paymentSalesC.displayInvoice = invoice;
+    paymentSalesC.assign(editInvoice, isEditMode: true);
   }
 
-  CartItem? checkExistence(
-    ProductModel product,
-    List<CartItem> productList,
-  ) {
-    return productList.firstWhereOrNull(
-      (item) => item.product.id == product.id,
-    );
+  //! PURCHASE ORDER HANDLE ===
+  void purchaseOrderHandle() {
+    print(isPurchaseOrder.value);
+    isPurchaseOrder.value = !isPurchaseOrder.value;
   }
 
   //! DISCOUNT ===
   void discountHandle(String productId, String value) {
     double valueDouble = value == '' ? 0 : double.parse(value);
     cart.value.updateDiscount(productId, valueDouble);
+  }
+
+  //! DISCOUNT ===
+  void discountEditHandle(String productId, String value, Cart cart) {
+    double valueDouble = value == '' ? 0 : double.parse(value);
+    cart.updateDiscount(productId, valueDouble);
   }
 
   //! SELL ===
@@ -71,122 +82,57 @@ class BuyProductController extends GetxController {
     cartItem.product.costPrice.value = valueDouble;
   }
 
-  //! ADD TO CART ===
-  void addToCart(ProductModel product, {bool po = false}) async {
-    //! add product to initCartItem
-    var initCartItem = checkExistence(product, initCartList);
-
-    if (initCartItem == null) {
-      ProductModel initProduct = ProductModel.fromJson(product.toJson());
-      CartItem initItem = CartItem(product: initProduct, quantity: 0);
-      initCartList.add(initItem);
-      initCartItem = initItem;
-    }
-    //!---
-
-    //! change Stock
-    if (!po) {
-      product.stock.value += 1;
-      print('stock: ${product.stock.value}');
-    }
-    //!---
-
-    //! add product to cart
-    CartItem cartItem = CartItem(product: product, quantity: 1);
-    cart.value.addItem(cartItem);
-    //!---
-
-    //! auto move
-    int index = cart.value.items
-        .indexWhere((selectItem) => selectItem.product.id == product.id);
-
-    Future.delayed(const Duration(milliseconds: 100), () {
-      scrollController.animateTo(
-        index * 80.0,
-        duration: const Duration(milliseconds: 100),
-        curve: Curves.easeInOut,
-      );
-    });
-    //!---
-  }
-
-  //! ADD TO CART ===
-  void addToCartEdit(ProductModel product, Cart cart, {bool po = false}) async {
-    //! add product to initCartItem
-    var initCartItem = checkExistence(product, initCartList);
-
-    if (initCartItem == null) {
-      ProductModel initProduct = ProductModel.fromJson(product.toJson());
-      CartItem initItem = CartItem(product: initProduct, quantity: 0);
-      initCartList.add(initItem);
-      initCartItem = initItem;
-    }
-    //!---
-
-    //! change Stock
-    if (!po) {
-      product.stock.value += 1;
-      print('stock: ${product.stock.value}');
-    }
-    //!---
-
-    //! add product to cart
-    CartItem cartItem = CartItem(product: product, quantity: 1);
-    cart.addItem(cartItem);
-    //!---
-  }
-
   //! QUANTITY HANDLE ===
-  void quantityHandle(CartItem cartItem, String quantity, {bool po = false}) {
-    //! add product to initCartItem
-    var initCartItem = checkExistence(cartItem.product, initCartList);
-
-    if (initCartItem == null) {
-      var foundProduct = foundProducts
-          .firstWhereOrNull((item) => item.id == cartItem.product.id);
-      CartItem initItem = CartItem.fromJson(cartItem.toJson());
-      if (foundProduct != null) {
-        initItem.product.stock.value = foundProduct.stock.value;
-      }
-      initCartList.add(initItem);
-      initCartItem = initItem;
-    }
-    //!---
-
-    //! change Quantity
-    cartItem.quantity.value = double.tryParse(quantity) ?? 0;
-    //!---
-
-    //! change Stock
-    if (!po) {
-      cartItem.product.stock.value = initCartItem.product.stock.value +
-          cartItem.quantity.value -
-          initCartItem.quantity.value;
-    }
-    //!---
-    print('-------------${initCartList.length}-------------');
+  void quantityHandle(CartItem cartItem, String quantity) {
+    cart.value
+        .updateQuantity(cartItem.product.id!, double.tryParse(quantity) ?? 0);
   }
 
   //! REMOVE FROM CART ===
-  void removeFromCart(CartItem cartItem, Cart cart, {bool po = false}) {
-    var initCartItem = checkExistence(cartItem.product, initCartList);
-    var foundProduct = foundProducts
-        .firstWhereOrNull((item) => item.id == cartItem.product.id);
+  void removeFromCart(CartItem cartItem) {
+    cart.value.removeItem(cartItem.product.id!);
+  }
 
-    if (foundProduct != null) {
-      cartItem.product.stock.value = foundProduct.stock.value;
-      if (initCartItem != null) {
-        foundProduct.costPrice = initCartItem.product.costPrice;
-        foundProduct.sellPrice1 = initCartItem.product.sellPrice1;
-        foundProduct.sellPrice2 = initCartItem.product.sellPrice2;
-        foundProduct.sellPrice3 = initCartItem.product.sellPrice3;
-      }
+  //! EDIT
+  final amountOfChange = Cart(items: <CartItem>[].obs).obs;
+
+  void addToCart(ProductModel product) async {
+    amountOfChange.value.addItem(product);
+    editInvoice.purchaseList.value.addItem(product);
+    for (var aa in amountOfChange.value.items) {
+      print('aaaaaaaaa ${aa.quantity.value}');
     }
+  }
 
-    if (!po) cartItem.product.stock.value -= cartItem.quantity.value;
-    removeCartList.add(cartItem);
-    cart.removeItem(cartItem.product.id!);
-    print('=================');
+  void removeFromEditCart(ProductModel product, Cart cart) {
+    amountOfChange.value.removeItemStockSales(product, currentInvoice);
+    cart.removeItem(product.id!);
+
+    for (var aa in cart.items) {
+      print(
+          'aaaaaaaaa purchaseList ${aa.product.productName} ${aa.quantity.value}');
+    }
+    for (var aa in amountOfChange.value.items) {
+      print('aaaaaaaaa amount ${aa.product.productName} ${aa.quantity.value}');
+    }
+  }
+
+  void quantityEditHandle(CartItem cartItem, String quantity, Cart cart) {
+    print('cartItem.product.productId ${cartItem.product.productName}');
+    print('cartItem.product.productId ${cartItem.product.productId}');
+    amountOfChange.value.updateQuantityStockSales(
+        cartItem.product, double.tryParse(quantity) ?? 0, currentInvoice);
+
+    cart.updateQuantity(cartItem.product.id!, double.tryParse(quantity) ?? 0);
+
+    for (var aa in cart.items) {
+      print(
+          'aaaaaaaaa awdawdawdawdawdwa ${aa.product.productName} ${aa.quantity.value}');
+    }
+    for (var aa in amountOfChange.value.items) {
+      print(
+          'aaaaaaaaa purchase ${aa.product.productName} ${aa.quantity.value}');
+    }
   }
 
   //! CREATE INVOICE ===
@@ -214,8 +160,10 @@ class BuyProductController extends GetxController {
     }
 
     final invoice = InvoiceSalesModel(
+      id: null,
       storeId: _authService.account.value!.storeId,
-      invoiceId: nomorInvoice.value,
+      invoiceNumber: null,
+      invoiceName: nomorInvoice.value,
       createdAt: dateTime,
       sales: sales,
       purchaseList: cart.value,
@@ -226,6 +174,7 @@ class BuyProductController extends GetxController {
       debtAmount: cart.value.totalCost,
     );
 
+    print('awdawdawdwa ${sales.id}');
     return invoice;
   }
 
@@ -234,64 +183,111 @@ class BuyProductController extends GetxController {
   }
 
   //! UPDATE ===
-  Future<void> updateInvoice(InvoiceSalesModel invoice) async {
+  Future<void> updateInvoice() async {
+    print('awdawdawdawdawdawdawwad ');
+    await Future.delayed(const Duration(milliseconds: 100));
     Get.defaultDialog(
       title: 'Menyimpan Invoice...',
       content: const CircularProgressIndicator(),
       barrierDismissible: false,
     );
+    print('awdawdawdawdawdawdawwad 2');
     try {
-      var productList = <ProductModel>[];
+      var logs = <LogStock>[];
 
-      for (var purchaseCart in invoice.purchaseList.value.items) {
-        var initProduct = initCartList.firstWhereOrNull((item) {
-          return item.product.id == purchaseCart.product.id;
-        });
-        if (initProduct != null) {
-          purchaseCart.product.costPrice = initProduct.product.costPrice;
-          purchaseCart.product.sellPrice1 = initProduct.product.sellPrice1;
-          purchaseCart.product.sellPrice2 = initProduct.product.sellPrice2;
-          purchaseCart.product.sellPrice3 = initProduct.product.sellPrice3;
-
-          var updatedProduct = initCartList.firstWhereOrNull(
-            (item) => item.product.id == purchaseCart.product.id,
+      if (!editInvoice.purchaseOrder.value) {
+        for (var cart in amountOfChange.value.items) {
+          var log = LogStock(
+            productId: cart.product.productId,
+            productUuid: cart.product.id!,
+            productName: cart.product.productName,
+            storeId: editInvoice.storeId,
+            label: 'Edit Pembelian',
+            amount: cart.quantity.value,
+            createdAt: DateTime.now(),
           );
-          if (updatedProduct != null) {
-            ProductModel updatedProduct =
-                ProductModel.fromJson(purchaseCart.product.toJson());
-            productList.add(updatedProduct);
-          }
+          print('aaaw ${log.toJson()}');
+          logs.add(log);
         }
       }
 
-      for (var removedCart in removeCartList) {
-        print('---------- ${removeCartList.length}');
-        var initProduct = initCartList.firstWhereOrNull(
-            (item) => item.product.id == removedCart.product.id);
-        if (initProduct != null) {
-          removedCart.product.costPrice = initProduct.product.costPrice;
-          removedCart.product.sellPrice1 = initProduct.product.sellPrice1;
-          removedCart.product.sellPrice2 = initProduct.product.sellPrice2;
-          removedCart.product.sellPrice3 = initProduct.product.sellPrice3;
-        }
-        print('stock removedCart ${removedCart.product.stock.value}');
-        ProductModel updatedProduct =
-            ProductModel.fromJson(removedCart.product.toJson());
-        var foundUpdatedProduct = productList
-            .firstWhereOrNull((item) => item.id == updatedProduct.id);
-        if (foundUpdatedProduct != null) {
-          foundUpdatedProduct.stock.value = removedCart.product.stock.value;
-        } else {
-          productList.add(updatedProduct);
+      bool isPriceChanged = false;
+      var productChangeList = <ProductModel>[];
+
+      for (var editedCart in editInvoice.purchaseList.value.items) {
+        var currentProduct =
+            await productService.getProductById(editedCart.product.id!);
+
+        var isChange = editedCart.product.costPrice.value !=
+                currentProduct.costPrice.value ||
+            editedCart.product.sellPrice1.value !=
+                currentProduct.sellPrice1.value ||
+            editedCart.product.sellPrice2?.value !=
+                currentProduct.sellPrice2?.value ||
+            editedCart.product.sellPrice3?.value !=
+                currentProduct.sellPrice3?.value;
+
+        if (isChange) productChangeList.add(editedCart.product);
+
+        if (!isPriceChanged) {
+          isPriceChanged = isChange;
         }
       }
 
-      await productService.updateList(productList);
+      DateTime date = DateTime.now();
+      String year = date.year.toString().substring(2);
+      String month = date.month.toString().padLeft(2, '0');
+      String day = date.day.toString().padLeft(2, '0');
+      String hour = date.hour.toString().padLeft(2, '0');
+      String minute = date.minute.toString().padLeft(2, '0');
+      String second = date.second.toString().padLeft(2, '0');
+      String millisecond = date.millisecond.toString().padLeft(3, '0');
+      String dateCode = '$month$day$year$hour$minute$second$millisecond';
 
-      await invoiceSalesService.update(invoice);
-      clear();
+      editInvoice.invoiceNumber ??= dateCode;
+
+      for (var payment in editInvoice.payments) {
+        if (payment.id == null) {
+          payment.invoiceId = editInvoice.invoiceNumber.toString();
+          payment.invoiceCreatedAt = editInvoice.createdAt.value;
+        }
+        print('payment_sales ${payment.toJson()}');
+      }
+
+      await productService.insertListLog(logs);
+
+      await invoiceSalesService.update(editInvoice);
+
+      currentInvoice.id = editInvoice.id;
+      currentInvoice.invoiceName = editInvoice.invoiceName;
+      currentInvoice.createdAt.value = editInvoice.createdAt.value;
+      currentInvoice.sales.value = editInvoice.sales.value;
+      currentInvoice.purchaseList.value = editInvoice.purchaseList.value;
+      currentInvoice.discount.value = editInvoice.discount.value;
+      currentInvoice.payments.value = editInvoice.payments;
+      currentInvoice.debtAmount.value = editInvoice.debtAmount.value;
+      currentInvoice.isDebtPaid.value = editInvoice.isDebtPaid.value;
+      currentInvoice.purchaseOrder.value = editInvoice.purchaseOrder.value;
 
       Get.back();
+
+      if (isPriceChanged) {
+        bool confirm = await Get.defaultDialog(
+          title: "Konfirmasi Perubahan Harga",
+          middleText:
+              "Harga produk telah diubah. \nApakah harga sebelumnya ingin diubah ke harga terbaru?",
+          // confirmTextColor: Colors.white,
+          // cancelTextColor: Colors.white,
+          textConfirm: "Ya",
+          textCancel: "Tidak",
+          // buttonColor: Get.theme.primaryColor,
+          onCancel: () => Get.back(result: false),
+          onConfirm: () => Get.back(result: true),
+        );
+        if (confirm) {
+          await productService.updateList(productChangeList);
+        }
+      }
 
       await Get.defaultDialog(
         title: 'Berhasil',
@@ -306,22 +302,5 @@ class BuyProductController extends GetxController {
       Get.back();
       Get.back();
     }
-  }
-
-  //! CLEAR ===
-  void clear() async {
-    invoice = await createInvoice();
-    cart.value.items.clear();
-
-    for (var cart in initCartList) {
-      var foundProduct =
-          foundProducts.firstWhereOrNull((item) => item.id == cart.product.id);
-      foundProduct!.costPrice.value = cart.product.costPrice.value;
-      foundProduct.sellPrice1.value = cart.product.sellPrice1.value;
-      foundProduct.sellPrice2?.value = cart.product.sellPrice2!.value;
-      foundProduct.sellPrice3?.value = cart.product.sellPrice3!.value;
-    }
-    initCartList.clear();
-    removeCartList.clear();
   }
 }

@@ -18,19 +18,21 @@ class PaymentListWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(
       () => ListView.separated(
-        separatorBuilder: (context, index) => const SizedBox(height: 4),
+        separatorBuilder: (context, index) => const SizedBox(height: 8),
+        physics: NeverScrollableScrollPhysics(),
         shrinkWrap: true,
         itemCount: editInvoice.payments.length,
         itemBuilder: (context, index) {
           return Card(
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(4),
             ),
             color: editInvoice.payments[index].method == 'cash'
                 ? Colors.green[50]
                 : Colors.blue[50],
             child: ListTile(
               dense: true,
+              minVerticalPadding: 0,
               title: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -82,7 +84,7 @@ class PaymentListWidget extends StatelessWidget {
                   Expanded(
                       flex: 3,
                       child: Text(
-                          'Rp${currency.format(editInvoice.totalPaidByIndex(index) > editInvoice.totalBill ? editInvoice.payments[index].amountPaid : editInvoice.payments[index].finalAmountPaid)}',
+                          'Rp${currency.format(editInvoice.totalPaidByIndex(index) >= editInvoice.totalBill ? editInvoice.payments[index].amountPaid : editInvoice.payments[index].finalAmountPaid)}',
                           style: Theme.of(Get.context!)
                               .textTheme
                               .titleSmall!

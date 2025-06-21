@@ -9,10 +9,10 @@ import '../../infrastructure/models/store_model.dart';
 import '../global_widget/app_dialog_widget.dart';
 
 class DetailStoreController extends GetxController {
-  final AuthService _authService = Get.find();
-  final StoreService _storeService = Get.find();
+  final AuthService authService = Get.find();
+  final StoreService storeService = Get.find();
 
-  late final store = _authService.store;
+  late final store = authService.store;
 
   final storeNameController = TextEditingController();
   final storeAddressController = TextEditingController();
@@ -58,7 +58,7 @@ class DetailStoreController extends GetxController {
 
   //! create
   Future addStore(StoreModel store) async {
-    await _storeService.insert(store);
+    await storeService.insert(store);
     await Get.defaultDialog(
       title: 'Berhasil',
       middleText: 'Toko berhasil ditambahkan',
@@ -67,7 +67,8 @@ class DetailStoreController extends GetxController {
         child: const Text('OK'),
       ),
     );
-    _authService.getStore();
+    authService.store(
+        await storeService.getStore(authService.account.value!.storeId!));
     Get.back();
   }
 
@@ -77,7 +78,7 @@ class DetailStoreController extends GetxController {
     StoreModel currentStore,
   ) async {
     updatedStore.id = currentStore.id;
-    await _storeService.update(updatedStore);
+    await storeService.update(updatedStore);
     await Get.defaultDialog(
       title: 'Berhasil',
       middleText: 'Toko berhasil diupdate',
@@ -86,7 +87,7 @@ class DetailStoreController extends GetxController {
         child: const Text('OK'),
       ),
     );
-    _authService.getStore();
+    authService.store(updatedStore);
     Get.back();
   }
 
@@ -100,7 +101,7 @@ class DetailStoreController extends GetxController {
       confirmColor: Colors.grey,
       cancelColor: Get.theme.primaryColor,
       onConfirm: () async {
-        _storeService.delete(store.id!);
+        storeService.delete(store.id!);
         Get.back();
         Get.back();
       },
@@ -114,16 +115,23 @@ class DetailStoreController extends GetxController {
       clickedField['name'] = true;
       print(storeNameController.text);
       if (formkey.currentState!.validate()) {
-        final store = StoreModel(
-            name: storeNameController.text.obs,
-            address: storeAddressController.text.obs,
-            phone: storePhoneController.text.obs,
-            telp: storeTelpController.text.obs,
-            id: '',
-            createdAt: DateTime.now());
-        currentStore != null
-            ? await updateStore(store, currentStore)
-            : await addStore(store);
+        if (currentStore != null) {
+          final store = StoreModel.fromJson(currentStore.toJson());
+          store.name.value = storeNameController.text;
+          store.address.value = storeAddressController.text;
+          store.phone.value = storePhoneController.text;
+          store.telp.value = storeTelpController.text;
+          await updateStore(store, currentStore);
+        } else {
+          final store = StoreModel(
+              name: storeNameController.text.obs,
+              address: storeAddressController.text.obs,
+              phone: storePhoneController.text.obs,
+              telp: storeTelpController.text.obs,
+              id: '',
+              createdAt: DateTime.now());
+          await addStore(store);
+        }
       }
     } catch (e) {
       Get.defaultDialog(

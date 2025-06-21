@@ -1,8 +1,17 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:materikas/infrastructure/dal/database/powersync_attachment.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:powersync/powersync.dart' as powersync;
 
 import '../../../infrastructure/dal/services/auth_service.dart';
+import '../../../infrastructure/dal/services/internet_service.dart';
 import '../../../infrastructure/dal/services/product_service.dart';
+import '../../../infrastructure/models/log_stock_model.dart';
 import '../../../infrastructure/models/product_model.dart';
 import '../../../infrastructure/utils/display_format.dart';
 import '../../global_widget/app_dialog_widget.dart';
@@ -12,6 +21,7 @@ class DetailProductController extends GetxController {
   final ProductService _productService = Get.find<ProductService>();
   final ProductController _productC = Get.put(ProductController());
   final AuthService _authService = Get.find();
+  final InternetService internetService = Get.find();
 
   late final products = _productC.displayedItems;
   late final lastCode = _productC.lastCode;
@@ -33,9 +43,35 @@ class DetailProductController extends GetxController {
 
   late final Map<String, TextEditingController> textControllers;
 
+  var selectedImage = Rx<File?>(null);
+  final ImagePicker _picker = ImagePicker();
+  late XFile image;
+
+  // Fungsi untuk memilih gambar dari galeri
+  Future<void> pickImage() async {
+    var status = await Permission.camera.request();
+    if (internetService.isConnected.value || windows) {
+      if (status.isGranted) {
+        final XFile? pickedImage =
+            await _picker.pickImage(source: ImageSource.gallery);
+        if (pickedImage != null) {
+          image = pickedImage;
+          selectedImage.value = File(image.path);
+
+          // Gunakan gambar yang dipilih
+        }
+      } else {
+        Get.snackbar("Izin ditolak", "izinkan akses kamera.");
+      }
+    } else {
+      Get.snackbar("Aktifkan Internet", "Izin kamera diperlukan.");
+    }
+  }
+
   @override
   void onInit() async {
     super.onInit();
+    selectedImage.value = null;
     textControllers = {
       'code': codeTextC,
       'barcode': codeTextC,
@@ -58,9 +94,24 @@ class DetailProductController extends GetxController {
 
   String? fieldValidator(String value, String fieldKey, String errorMessage) {
     value = value.trim();
-    if ((value.isEmpty || value == '0') && clickedField[fieldKey] == true) {
+    if ((value.isEmpty) && clickedField[fieldKey] == true) {
       return errorMessage;
     }
+    if (fieldKey == 'cost' &&
+        clickedField[fieldKey] == true &&
+        (int.parse(sellPriceTextC1.text.isNotEmpty
+                ? sellPriceTextC1.text.replaceAll('.', '')
+                : '0') !=
+            0) &&
+        (int.parse(costPriceTextC.text.isNotEmpty
+                ? costPriceTextC.text.replaceAll('.', '')
+                : '0') >
+            int.parse(sellPriceTextC1.text.isNotEmpty
+                ? sellPriceTextC1.text.replaceAll('.', '')
+                : '0'))) {
+      return 'Harga modal harus lebih rendah dari harga jual.';
+    }
+
     return null;
   }
 
@@ -102,6 +153,8 @@ class DetailProductController extends GetxController {
     int numberId =
         (lastCode.value != '') ? int.parse(lastCode.value.substring(2)) : 0;
     // numberId = generateNumberId(numberId);
+    selectedImage.value = null;
+    print('bbbbb ${foundProduct?.imageUrl ?? 'ds'}');
     ProductModel product = foundProduct ??
         ProductModel(
           id: '',
@@ -136,9 +189,9 @@ class DetailProductController extends GetxController {
         product.sellPrice3?.value == null || product.sellPrice3!.value == 0
             ? ''
             : currency.format(product.sellPrice3!.value);
-    stockTextC.text = product.stock.value == 0
+    stockTextC.text = product.finalStock.value == 0
         ? ''
-        : number.format(product.stock.value).replaceAll('.', '');
+        : number.format(product.finalStock.value).replaceAll('.', '');
     minStockTextC.text = product.stockMin.value == 0
         ? ''
         : number.format(product.stockMin.value);
@@ -148,7 +201,7 @@ class DetailProductController extends GetxController {
   }
 
 //! create
-  Future addProduct(ProductModel product, bool isPopUp) async {
+  Future addProduct(ProductModel product) async {
     bool isProductExist =
         products.any((item) => item.productId == product.productId);
     if (isProductExist) {
@@ -161,6 +214,18 @@ class DetailProductController extends GetxController {
         ),
       );
     } else {
+      var log = LogStock(
+        productId: product.productId,
+        productUuid: product.id!,
+        productName: product.productName,
+        storeId: product.storeId,
+        label: 'Stok Awal',
+        amount: product.stock.value,
+        createdAt: DateTime.now(),
+      );
+      print('newLog ${log.toJson()}');
+      // Future.delayed(
+      //     Duration(seconds: 5), () => _productService.insertLog(log));
       await _productService.insert(product);
       await Get.defaultDialog(
         title: 'Berhasil',
@@ -173,7 +238,6 @@ class DetailProductController extends GetxController {
           child: const Text('OK'),
         ),
       );
-      if (!isPopUp) Get.back();
     }
   }
 
@@ -182,8 +246,25 @@ class DetailProductController extends GetxController {
     ProductModel newProduct,
     ProductModel currentProduct,
   ) async {
+    DateTime now = DateTime.now();
     newProduct.id = currentProduct.id;
+    newProduct.imageUrl ??= currentProduct.imageUrl;
+    currentProduct.imageUrl = newProduct.imageUrl;
+
+    newProduct.lastUpdated = now;
     await _productService.update(newProduct);
+
+    var log = LogStock(
+      productId: newProduct.productId,
+      productUuid: newProduct.id!,
+      productName: newProduct.productName,
+      storeId: newProduct.storeId,
+      label: 'Update',
+      amount: newProduct.stock.value,
+      createdAt: now,
+    );
+    await _productService.insertLog(log);
+    currentProduct.currentStock!.value = currentProduct.stock.value;
     await Get.defaultDialog(
       title: 'Berhasil',
       middleText: 'Product berhasil diupdate',
@@ -220,9 +301,34 @@ class DetailProductController extends GetxController {
     }
   }
 
+  // Fungsi untuk mengunggah gambar ke server
+  Future<RxString?> uploadImage(ProductModel? currentProduct) async {
+    if (selectedImage.value != null) {
+      try {
+        String imageId = powersync.uuid.v4();
+        String storageDirectory = await attachmentQueue.getStorageDirectory();
+        await attachmentQueue.localStorage
+            .copyFile(image.path, '$storageDirectory/$imageId.jpg');
+
+        int photoSize = await image.length();
+
+        if (currentProduct != null && currentProduct.imageUrl != null) {
+          await attachmentQueue.deleteFile(currentProduct.imageUrl!.value);
+        }
+        await attachmentQueue.saveFile(imageId, photoSize);
+
+        return imageId.obs;
+      } catch (e) {
+        return null;
+      }
+    } else {
+      return null;
+    }
+  }
+
   //! handle save
-  Future handleSave(ProductModel? currentProduct,
-      {bool isPopUp = false}) async {
+  Future handleSave(ProductModel? currentProduct) async {
+    // _productC.loadingNewImage.value = true;
     clickedField.assignAll({
       'code': true,
       'productName': true,
@@ -240,7 +346,12 @@ class DetailProductController extends GetxController {
     if (formkey.currentState!.validate()) {
       // double? stock = double.tryParse(stockTextC.text);
       // stock ??= 0;
+      final imgUrl = await uploadImage(currentProduct);
+
+      print('imgUrl save $imgUrl');
+
       final newProduct = ProductModel(
+        id: powersync.uuid.v4(),
         productId: codeTextC.text.toUpperCase(),
         createdAt: DateTime.now(),
         storeId: _authService.account.value!.storeId!,
@@ -266,12 +377,17 @@ class DetailProductController extends GetxController {
             : (double.parse(minStockTextC.text.replaceAll('.', ''))).obs,
         sold:
             soldTextC.text == '' ? 0.0.obs : (double.parse(soldTextC.text)).obs,
+        imageUrl: imgUrl,
+        lastUpdated: DateTime.now(),
       );
 
       currentProduct == null
-          ? addProduct(newProduct, isPopUp)
-          : updateProduct(newProduct, currentProduct);
+          ? await addProduct(newProduct)
+          : await updateProduct(newProduct, currentProduct);
+
+      selectedImage.value = null;
     }
+    // _productC.loadingNewImage.value = false;
   }
 
   var scannedData = ''.obs; // Observable untuk menyimpan hasil scan
@@ -286,5 +402,23 @@ class DetailProductController extends GetxController {
   // Reset data setelah diproses
   void resetScannedData() {
     scannedData.value = '';
+  }
+
+  Future<void> scanBarcode() async {
+    final barcode = await FlutterBarcodeScanner.scanBarcode(
+      '#ff6666', // Warna garis pemindai
+      'Batal', // Teks tombol batal
+      true, // Apakah lampu kilat aktif
+      ScanMode.BARCODE, // Mode pemindaian
+    );
+
+    if (barcode != '-1') {
+      barcodeTextC.text = barcode;
+      // scannedData.value = barcode;
+      // textC.text = barcode;
+      processBarcode(barcode);
+      // processBarcode(barcode);
+      resetScannedData();
+    }
   }
 }

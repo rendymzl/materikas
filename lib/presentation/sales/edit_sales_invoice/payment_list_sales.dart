@@ -18,6 +18,7 @@ class PaymentListSalesWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(
       () => ListView.separated(
+        physics: NeverScrollableScrollPhysics(),
         separatorBuilder: (context, index) => const SizedBox(height: 4),
         shrinkWrap: true,
         itemCount: editInvoice.payments.length,

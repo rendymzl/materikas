@@ -17,17 +17,25 @@ class CartSalesWidget extends StatelessWidget {
     required this.item,
     required this.index,
     required this.cart,
-    this.po = false,
+    // this.po = false,
   });
 
   final CartItem item;
   final int index;
   final Cart cart;
-  final bool po;
+  // final bool po;
 
   @override
   Widget build(BuildContext context) {
     late BuyProductController controller = Get.find();
+
+    // print('aaaassssddd ${item.quantity.value}');
+
+    // for (var aa in cart.items) {
+    //   print('aaaassssddd aa ${aa.quantity}');
+    // }
+
+    // controller.cart.value = Cart.fromJson(cart.toJson());awd
 
     final discountTextC = TextEditingController();
     discountTextC.text = currency.format(item.individualDiscount.value);
@@ -40,6 +48,8 @@ class CartSalesWidget extends StatelessWidget {
     costPriceTextC.selection = TextSelection.fromPosition(
       TextPosition(offset: costPriceTextC.text.length),
     );
+
+    // bool isMobile = MediaQuery.of(context).size.width < 600;
     return Obx(
       () {
         return Container(
@@ -66,7 +76,7 @@ class CartSalesWidget extends StatelessWidget {
                       borderRadius: const BorderRadius.all(Radius.circular(5))),
                   child: IconButton(
                     onPressed: () =>
-                        controller.removeFromCart(item, cart, po: po),
+                        controller.removeFromEditCart(item.product, cart),
                     icon: const Icon(
                       Symbols.close,
                       size: 12,
@@ -88,10 +98,8 @@ class CartSalesWidget extends StatelessWidget {
                             Expanded(
                               child: CostTextfield(
                                 item: item,
-                                onChanged: (value) => controller.costHandle(
-                                  item,
-                                  value,
-                                ),
+                                onChanged: (value) =>
+                                    controller.costHandle(item, value),
                               ),
                             ),
                           ],
@@ -108,7 +116,7 @@ class CartSalesWidget extends StatelessWidget {
                               child: QuantityTextField(
                                 item: item,
                                 onChanged: (value) => controller
-                                    .quantityHandle(item, value, po: po),
+                                    .quantityEditHandle(item, value, cart),
                               ),
                             ),
                           ],
@@ -118,22 +126,19 @@ class CartSalesWidget extends StatelessWidget {
                     const SizedBox(width: 16),
                     Expanded(
                       flex: 6,
-                      child: po
-                          ? const SizedBox()
-                          : SizedBox(
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: DiscountTextfield(
-                                      item: item,
-                                      onChanged: (value) =>
-                                          controller.discountHandle(
-                                              item.product.id!, value),
-                                    ),
-                                  ),
-                                ],
+                      child: SizedBox(
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: DiscountTextfield(
+                                item: item,
+                                onChanged: (value) => controller.discountEditHandle(
+                                    item.product.id!, value, cart),
                               ),
                             ),
+                          ],
+                        ),
+                      ),
                     ),
                     Expanded(
                       flex: 7,
@@ -159,73 +164,71 @@ class CartSalesWidget extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 12),
-                if (!po)
-                  Row(
-                    children: [
-                      Expanded(
-                        flex: 6,
-                        child: SizedBox(
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: SellTextfield(
-                                  title: 'Harga Jual 1',
-                                  asignNumber: item.product.sellPrice1,
-                                  onChanged: (value) => controller.sellHandle(
-                                    item.product.sellPrice1,
-                                    value,
-                                  ),
+                // if (!po)
+                Row(
+                  children: [
+                    Expanded(
+                      flex: 6,
+                      child: SizedBox(
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: SellTextfield(
+                                title: 'Harga Jual 1',
+                                asignNumber: item.product.sellPrice1,
+                                onChanged: (value) => controller.sellHandle(
+                                  item.product.sellPrice1,
+                                  value,
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        flex: 6,
-                        child: SizedBox(
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: SellTextfield(
-                                  title: 'Harga Jual 2',
-                                  asignNumber:
-                                      item.product.sellPrice2 ?? 0.0.obs,
-                                  onChanged: (value) => controller.sellHandle(
-                                    item.product.sellPrice2 ?? 0.0.obs,
-                                    value,
-                                  ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      flex: 6,
+                      child: SizedBox(
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: SellTextfield(
+                                title: 'Harga Jual 2',
+                                asignNumber: item.product.sellPrice2 ?? 0.0.obs,
+                                onChanged: (value) => controller.sellHandle(
+                                  item.product.sellPrice2 ?? 0.0.obs,
+                                  value,
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        flex: 6,
-                        child: SizedBox(
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: SellTextfield(
-                                  title: 'Harga Jual 3',
-                                  asignNumber:
-                                      item.product.sellPrice3 ?? 0.0.obs,
-                                  onChanged: (value) => controller.sellHandle(
-                                    item.product.sellPrice3 ?? 0.0.obs,
-                                    value,
-                                  ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      flex: 6,
+                      child: SizedBox(
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: SellTextfield(
+                                title: 'Harga Jual 3',
+                                asignNumber: item.product.sellPrice3 ?? 0.0.obs,
+                                onChanged: (value) => controller.sellHandle(
+                                  item.product.sellPrice3 ?? 0.0.obs,
+                                  value,
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
-                      const Expanded(flex: 6, child: SizedBox()),
-                    ],
-                  ),
+                    ),
+                    const Expanded(flex: 6, child: SizedBox()),
+                  ],
+                ),
               ],
             ),
           ),
